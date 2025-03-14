@@ -243,7 +243,9 @@ const openApiExamplesRules: NormalizationRules = {
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.last,
     '/*': {
-      ...openApiExtensionRules,
+      ...openApiExtensionRulesFunction({
+        validate: checkType(...TYPE_JSON_ANY)
+      }),
     },
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },

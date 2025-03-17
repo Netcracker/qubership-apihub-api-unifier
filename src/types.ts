@@ -76,7 +76,7 @@ export type OpenApiExtensionKey = `${typeof OPEN_API_EXTENSION_PREFIX}${string}`
 
 export interface RemoveOasExtensionsOptions {
   removeOasExtensions?: boolean
-  shouldRemoveOasExtension?: (extensionKey: OpenApiExtensionKey | undefined) => boolean
+  shouldRemoveOasExtension?: (extensionKey: OpenApiExtensionKey) => boolean
 }
 
 export interface InternalRemoveOasExtensionsOptions extends RemoveOasExtensionsOptions {}

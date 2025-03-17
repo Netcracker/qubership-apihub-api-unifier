@@ -1,4 +1,9 @@
-import { InternalRemoveOasExtensionsOptions, NormalizationRule, RemoveOasExtensionsOptions } from './types'
+import {
+  InternalRemoveOasExtensionsOptions,
+  NormalizationRule,
+  OpenApiExtensionKey,
+  RemoveOasExtensionsOptions,
+} from './types'
 import { resolveSpec, SPEC_TYPE_GRAPH_API } from './spec-type'
 import { syncClone, SyncCloneHook } from '@netcracker/qubership-apihub-json-crawl'
 import { RULES } from './rules'
@@ -6,7 +11,7 @@ import { createCycledJsoHandlerHook } from './cycle-jso'
 
 const createRemoveOasExtensionsHook: (options: InternalRemoveOasExtensionsOptions) => RemoveOasExtensionsCrawlHook = (options) => {
   const removeOasExtensionsHook: RemoveOasExtensionsCrawlHook = ({ key, value, rules }) => {
-    if (rules?.isExtension) {
+    if (rules?.isExtension && options.shouldRemoveOasExtension?.(key as OpenApiExtensionKey)) {
       return { value: undefined }
     }
 

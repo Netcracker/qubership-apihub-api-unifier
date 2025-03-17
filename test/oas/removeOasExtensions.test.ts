@@ -64,6 +64,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean, extension: unknown
       ...(includeExtensions ? { 'x-xml-extension': extension } : {}),
     },
   }
+
   OPEN_API_JSON_SCHEMA_FULLY_CYCLED['items'] = OPEN_API_JSON_SCHEMA_FULLY_CYCLED
   OPEN_API_JSON_SCHEMA_FULLY_CYCLED['additionalItems'] = OPEN_API_JSON_SCHEMA_FULLY_CYCLED
   OPEN_API_JSON_SCHEMA_FULLY_CYCLED['properties']['something'] = OPEN_API_JSON_SCHEMA_FULLY_CYCLED
@@ -117,7 +118,9 @@ function createFullyCycledOpenApi(includeExtensions: boolean, extension: unknown
       content: OPEN_API_CONTENT,
     },
   }
+
   OPEN_API_CONTENT.something.encoding.something.headers = OPEN_API_HEADERS
+
   const OPEN_API_SERVER = {
     ...(includeExtensions ? { 'x-server-extension': extension } : {}),
     url: 'str',
@@ -188,6 +191,40 @@ function createFullyCycledOpenApi(includeExtensions: boolean, extension: unknown
       something: ['str'],
     },
   ]
+  const OPEN_API_PATH_ITEM = {
+    ...(includeExtensions ? { 'x-pathItem-extension': extension } : {}),
+    description: 'str',
+    parameters: [OPEN_API_PARAMETER],
+    servers: [OPEN_API_SERVER],
+    get: {
+      ...(includeExtensions ? { 'x-operation-extension': extension } : {}),
+      description: 'str',
+      parameters: [OPEN_API_PARAMETER],
+      deprecated: true,
+      responses: OPEN_API_RESPONSES,
+      callbacks: {
+        onSomething: null as any,
+      },
+      requestBody: OPEN_API_REQUEST_BODY,
+      summary: 'str',
+      operationId: 'str',
+      externalDocs: OPEN_API_EXTERNAL_DOCS,
+      servers: [OPEN_API_SERVER],
+      security: OPEN_API_SECURITY,
+      tags: ['str'],
+    },
+  }
+  const OPEN_API_CALLBACK = {
+    ...(includeExtensions ? { 'x-callback-extension': extension } : {}),
+    '{$request.body#/callbackUrl}': OPEN_API_PATH_ITEM,
+  }
+
+  OPEN_API_PATH_ITEM.get.callbacks.onSomething = OPEN_API_CALLBACK
+
+  const OPEN_API_PATHS = {
+    ...(includeExtensions ? { 'x-paths-extension': extension } : {}),
+    '/something': OPEN_API_PATH_ITEM,
+  }
   return {
     ...(includeExtensions ? { 'x-root-extension': extension } : {}),
     openapi: '3.0.1',
@@ -233,6 +270,9 @@ function createFullyCycledOpenApi(includeExtensions: boolean, extension: unknown
       examples: OPEN_API_EXAMPLES,
       headers: OPEN_API_HEADERS,
       links: OPEN_API_LINKS,
+      callbacks: {
+        onSomething: OPEN_API_CALLBACK,
+      },
       securitySchemes: {
         http: {
           ...(includeExtensions ? { 'x-httpSecurityScheme-extension': extension } : {}),
@@ -299,29 +339,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean, extension: unknown
       parameters: OPEN_API_PARAMETERS,
       requestBodies: OPEN_API_REQUEST_BODIES,
     },
-    paths: {
-      ...(includeExtensions ? { 'x-paths-extension': extension } : {}),
-      something: {
-        ...(includeExtensions ? { 'x-pathItem-extension': extension } : {}),
-        description: 'str',
-        parameters: [OPEN_API_PARAMETER],
-        servers: [OPEN_API_SERVER],
-        get: {
-          ...(includeExtensions ? { 'x-operation-extension': extension } : {}),
-          description: 'str',
-          parameters: [OPEN_API_PARAMETER],
-          deprecated: true,
-          responses: OPEN_API_RESPONSES,
-          requestBody: OPEN_API_REQUEST_BODY,
-          summary: 'str',
-          operationId: 'str',
-          externalDocs: OPEN_API_EXTERNAL_DOCS,
-          servers: [OPEN_API_SERVER],
-          security: OPEN_API_SECURITY,
-          tags: ['str'],
-        },
-      },
-    },
+    paths: OPEN_API_PATHS,
   }
 }
 

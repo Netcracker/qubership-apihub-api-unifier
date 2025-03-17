@@ -1,6 +1,4 @@
 import { normalize, NormalizeOptions } from '../../src'
-import openapiWithExtensions from '../resources/openapi-with-extensions.json'
-import openapiWithoutExtensions from '../resources/openapi-without-extensions.json'
 
 const DEFAULT_OPTIONS: NormalizeOptions = {
   resolveRef: false,
@@ -9,62 +7,62 @@ const DEFAULT_OPTIONS: NormalizeOptions = {
   shouldRemoveOasExtension: () => true,
 }
 
-function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKey, unknown> {
+function createFullyCycledOpenApi(includeExtensions: boolean, extension: unknown = 'example'): Record<PropertyKey, unknown> {
   const OPEN_API_EXTERNAL_DOCS = {
-    ...(includeExtensions ? { 'x-externalDocs-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-externalDocs-extension': extension } : {}),
     url: 'str',
     description: 'str',
   }
 
   const OPEN_API_JSON_SCHEMA_FULLY_CYCLED = {
-    ...(includeExtensions ? { 'x-schema-extension': 'example' } : {}),
-      type: 'object',
-      title: 'str',
-      description: 'str',
-      format: 'str',
-      default: 42,
-      multipleOf: 42,
-      maximum: 42,
-      minimum: 42,
-      maxLength: 42,
-      minLength: 42,
-      pattern: 'str',
-      maxItems: 42,
-      minItems: 42,
-      uniqueItems: true,
-      maxProperties: 42,
-      minProperties: 42,
-      required: ['str'],
-      enum: ['str'],
-      readOnly: true,
-      writeOnly: true,
-      deprecated: true,
-      $ref: 'str',
-      example: 'str',
-      examples: ['str'],
-      nullable: true,
-      exclusiveMaximum: true,
-      exclusiveMinimum: true,
-      items: null as any,
-      additionalItems: null as any,
-      properties: {
-        something: null as any,
-      },
-      additionalProperties: {
-        something: null as any,
-      },
-      allOf: null as any,
-      oneOf: null as any,
-      anyOf: null as any,
-      not: null as any,
-      definitions: {
-        something: null as any,
-      },
-      externalDocs: OPEN_API_EXTERNAL_DOCS,
-      xml: {
-        name: 'user',
-        ...(includeExtensions ? { 'x-xml-extension': 'example' } : {}),
-      },
+    ...(includeExtensions ? { 'x-schema-extension': extension } : {}),
+    type: 'object',
+    title: 'str',
+    description: 'str',
+    format: 'str',
+    default: 42,
+    multipleOf: 42,
+    maximum: 42,
+    minimum: 42,
+    maxLength: 42,
+    minLength: 42,
+    pattern: 'str',
+    maxItems: 42,
+    minItems: 42,
+    uniqueItems: true,
+    maxProperties: 42,
+    minProperties: 42,
+    required: ['str'],
+    enum: ['str'],
+    readOnly: true,
+    writeOnly: true,
+    deprecated: true,
+    $ref: 'str',
+    example: 'str',
+    examples: ['str'],
+    nullable: true,
+    exclusiveMaximum: true,
+    exclusiveMinimum: true,
+    items: null as any,
+    additionalItems: null as any,
+    properties: {
+      something: null as any,
+    },
+    additionalProperties: {
+      something: null as any,
+    },
+    allOf: null as any,
+    oneOf: null as any,
+    anyOf: null as any,
+    not: null as any,
+    definitions: {
+      something: null as any,
+    },
+    externalDocs: OPEN_API_EXTERNAL_DOCS,
+    xml: {
+      name: 'user',
+      ...(includeExtensions ? { 'x-xml-extension': extension } : {}),
+    },
   }
   OPEN_API_JSON_SCHEMA_FULLY_CYCLED['items'] = OPEN_API_JSON_SCHEMA_FULLY_CYCLED
   OPEN_API_JSON_SCHEMA_FULLY_CYCLED['additionalItems'] = OPEN_API_JSON_SCHEMA_FULLY_CYCLED
@@ -78,7 +76,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
 
   const OPEN_API_EXAMPLES = {
     something: {
-      ...(includeExtensions ? { 'x-example-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-example-extension': extension } : {}),
       description: 'str',
       value: 'str',
       summary: 'str',
@@ -87,13 +85,13 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
   }
   const OPEN_API_CONTENT = {
     something: {
-      ...(includeExtensions ? { 'x-mediaType-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-mediaType-extension': extension } : {}),
       examples: OPEN_API_EXAMPLES,
       example: 'str',
       schema: OPEN_API_JSON_SCHEMA_FULLY_CYCLED,
       encoding: {
         something: {
-          ...(includeExtensions ? { 'x-encoding-extension': 'example' } : {}),
+          ...(includeExtensions ? { 'x-encoding-extension': extension } : {}),
           contentType: 'str',
           headers: null as any,
           style: 'str',
@@ -105,7 +103,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
   }
   const OPEN_API_HEADERS: Record<PropertyKey, unknown> = {
     something: {
-      ...(includeExtensions ? { 'x-header-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-header-extension': extension } : {}),
       description: 'str',
       examples: OPEN_API_EXAMPLES,
       required: true,
@@ -121,12 +119,12 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
   }
   OPEN_API_CONTENT.something.encoding.something.headers = OPEN_API_HEADERS
   const OPEN_API_SERVER = {
-    ...(includeExtensions ? { 'x-server-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-server-extension': extension } : {}),
     url: 'str',
     description: 'str',
     variables: {
       something: {
-        ...(includeExtensions ? { 'x-serverVariable-extension': 'example' } : {}),
+        ...(includeExtensions ? { 'x-serverVariable-extension': extension } : {}),
         default: 'str',
         description: 'str',
         enum: ['str'],
@@ -135,7 +133,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
   }
   const OPEN_API_LINKS = {
     something: {
-      ...(includeExtensions ? { 'x-link-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-link-extension': extension } : {}),
       description: 'str',
       operationId: 'str',
       operationRef: 'str',
@@ -147,18 +145,18 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
     },
   }
   const OPEN_API_RESPONSE = {
-    ...(includeExtensions ? { 'x-response-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-response-extension': extension } : {}),
     description: 'str',
     headers: OPEN_API_HEADERS,
     content: OPEN_API_CONTENT,
     links: OPEN_API_LINKS,
   }
   const OPEN_API_RESPONSES = {
-    ...(includeExtensions ? { 'x-responses-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-responses-extension': extension } : {}),
     something: OPEN_API_RESPONSE,
   }
   const OPEN_API_PARAMETER = {
-    ...(includeExtensions ? { 'x-parameter-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-parameter-extension': extension } : {}),
     description: 'str',
     examples: OPEN_API_EXAMPLES,
     required: true,
@@ -177,7 +175,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
     something: OPEN_API_PARAMETER,
   }
   const OPEN_API_REQUEST_BODY = {
-    ...(includeExtensions ? { 'x-requestBody-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-requestBody-extension': extension } : {}),
     description: 'str',
     content: OPEN_API_CONTENT,
     required: true,
@@ -191,29 +189,29 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
     },
   ]
   return {
-    ...(includeExtensions ? { 'x-root-extension': 'example' } : {}),
+    ...(includeExtensions ? { 'x-root-extension': extension } : {}),
     openapi: '3.0.1',
     info: {
-      ...(includeExtensions ? { 'x-info-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-info-extension': extension } : {}),
       description: 'str',
       title: 'str',
       version: 'str',
       termsOfService: 'str',
       contact: {
-        ...(includeExtensions ? { 'x-contact-extension': 'example' } : {}),
+        ...(includeExtensions ? { 'x-contact-extension': extension } : {}),
         name: 'str',
         url: 'str',
         email: 'str',
       },
       license: {
-        ...(includeExtensions ? { 'x-license-extension': 'example' } : {}),
+        ...(includeExtensions ? { 'x-license-extension': extension } : {}),
         name: 'str',
         url: 'str',
       },
     },
     tags: [
       {
-        ...(includeExtensions ? { 'x-tag-extension': 'example' } : {}),
+        ...(includeExtensions ? { 'x-tag-extension': extension } : {}),
         name: 'str',
         description: 'str',
         externalDocs: OPEN_API_EXTERNAL_DOCS,
@@ -225,7 +223,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
     ],
     security: OPEN_API_SECURITY,
     components: {
-      ...(includeExtensions ? { 'x-components-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-components-extension': extension } : {}),
       schemas: {
         something: OPEN_API_JSON_SCHEMA_FULLY_CYCLED,
       },
@@ -237,27 +235,27 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
       links: OPEN_API_LINKS,
       securitySchemes: {
         http: {
-          ...(includeExtensions ? { 'x-httpSecurityScheme-extension': 'example' } : {}),
+          ...(includeExtensions ? { 'x-httpSecurityScheme-extension': extension } : {}),
           type: 'http',
           description: 'str',
           scheme: 'str',
           bearerFormat: 'str',
         },
         apiKey: {
-          ...(includeExtensions ? { 'x-securityScheme-extension': 'example' } : {}),
+          ...(includeExtensions ? { 'x-securityScheme-extension': extension } : {}),
           type: 'apiKey',
           description: 'str',
           name: 'str',
           in: 'str',
         },
         oauth2: {
-          ...(includeExtensions ? { 'x-oauth2SecurityScheme-extension': 'example' } : {}),
+          ...(includeExtensions ? { 'x-oauth2SecurityScheme-extension': extension } : {}),
           type: 'oauth2',
           description: 'str',
           flows: {
-            ...(includeExtensions ? { 'x-oauthFlows-extension': 'example' } : {}),
+            ...(includeExtensions ? { 'x-oauthFlows-extension': extension } : {}),
             implicit: {
-              ...(includeExtensions ? { 'x-oauthImplicitFlow-extension': 'example' } : {}),
+              ...(includeExtensions ? { 'x-oauthImplicitFlow-extension': extension } : {}),
               authorizationUrl: 'str',
               refreshUrl: 'str',
               scopes: {
@@ -265,7 +263,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
               },
             },
             password: {
-              ...(includeExtensions ? { 'x-oauthPasswordFlow-extension': 'example' } : {}),
+              ...(includeExtensions ? { 'x-oauthPasswordFlow-extension': extension } : {}),
               tokenUrl: 'str',
               refreshUrl: 'str',
               scopes: {
@@ -273,7 +271,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
               },
             },
             authorizationCode: {
-              ...(includeExtensions ? { 'x-oauthAuthorizationCodeFlow-extension': 'example' } : {}),
+              ...(includeExtensions ? { 'x-oauthAuthorizationCodeFlow-extension': extension } : {}),
               refreshUrl: 'str',
               authorizationUrl: 'str',
               tokenUrl: 'str',
@@ -282,7 +280,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
               },
             },
             clientCredentials: {
-              ...(includeExtensions ? { 'x-oauthClientCredentialsFlow-extension': 'example' } : {}),
+              ...(includeExtensions ? { 'x-oauthClientCredentialsFlow-extension': extension } : {}),
               refreshUrl: 'str',
               tokenUrl: 'str',
               scopes: {
@@ -292,7 +290,7 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
           },
         },
         openIdConnect: {
-          ...(includeExtensions ? { 'x-openIdConnectSecurityScheme-extension': 'example' } : {}),
+          ...(includeExtensions ? { 'x-openIdConnectSecurityScheme-extension': extension } : {}),
           type: 'openIdConnect',
           description: 'str',
           openIdConnectUrl: 'str',
@@ -302,14 +300,14 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
       requestBodies: OPEN_API_REQUEST_BODIES,
     },
     paths: {
-      ...(includeExtensions ? { 'x-paths-extension': 'example' } : {}),
+      ...(includeExtensions ? { 'x-paths-extension': extension } : {}),
       something: {
-        ...(includeExtensions ? { 'x-pathItem-extension': 'example' } : {}),
+        ...(includeExtensions ? { 'x-pathItem-extension': extension } : {}),
         description: 'str',
         parameters: [OPEN_API_PARAMETER],
-        servers: [OPEN_API_SERVER], // was missing???
+        servers: [OPEN_API_SERVER],
         get: {
-          ...(includeExtensions ? { 'x-operation-extension': 'example' } : {}),
+          ...(includeExtensions ? { 'x-operation-extension': extension } : {}),
           description: 'str',
           parameters: [OPEN_API_PARAMETER],
           deprecated: true,
@@ -329,12 +327,17 @@ function createFullyCycledOpenApi(includeExtensions: boolean): Record<PropertyKe
 
 describe('remove OAS extensions', () => {
   it('removes OAS extensions', () => {
-    const normalizedSchema = normalize(openapiWithExtensions, DEFAULT_OPTIONS)
-    expect(normalizedSchema).toEqual(openapiWithoutExtensions)
+    const normalizedSchema = normalize(createFullyCycledOpenApi(true), DEFAULT_OPTIONS)
+    expect(normalizedSchema).toEqual(createFullyCycledOpenApi(false))
   })
 
-  it('removes OAS extensions - take 2', () => {
-    const normalizedSchema = normalize(createFullyCycledOpenApi(true), DEFAULT_OPTIONS)
+  it('removes array OAS extensions', () => {
+    const normalizedSchema = normalize(createFullyCycledOpenApi(true, ['extension1', 'extension2', 'extension3']), DEFAULT_OPTIONS)
+    expect(normalizedSchema).toEqual(createFullyCycledOpenApi(false))
+  })
+
+  it('removes object OAS extensions', () => {
+    const normalizedSchema = normalize(createFullyCycledOpenApi(true, { 'x-extension': { 'x-extension': 'example' } }), DEFAULT_OPTIONS)
     expect(normalizedSchema).toEqual(createFullyCycledOpenApi(false))
   })
 })

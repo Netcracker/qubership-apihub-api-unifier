@@ -14,7 +14,7 @@ import { validate } from './validate'
 import { merge } from './merge'
 import { cleanUpSynthetic, deCleanUpSynthetic, deUnify, unify } from './unify'
 import { deHash, hash } from './hash'
-import { removeOasExtensions } from './removeOasExtensions'
+import { removeOasExtensions } from './remove-oas-extensions'
 
 export const normalize = (value: unknown, options: NormalizeOptions = {}) => {
   const optionsWithDefaults = createOptionsWithDefaults(options)

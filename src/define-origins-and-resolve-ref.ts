@@ -173,7 +173,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           return { done: true }
         }
         if (!options.richRefAllowed && Reflect.ownKeys(sibling).length !== 0) {
-          options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+          options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
           sibling = {}
         }
         const reference = parseRef($ref)

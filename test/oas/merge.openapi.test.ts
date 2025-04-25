@@ -171,19 +171,19 @@ describe('merge allof in openapi schema', function () {
     expect(result).toEqual(expected)
     expect(errors).toEqual([
       {
-        message: ErrorMessage.richRefObjectNotAllowed(),
+        message: ErrorMessage.richRefObjectNotAllowed('#/components/schemas/Human'),
         path: ['paths', 'humans', 'get', 'responses', '200', 'content', 'application/json', 'schema', 'items'],
         ref: '#/components/schemas/Human',
         errorType: RefErrorTypes.RICH_REF_NOT_ALLOWED
       },
       {
-        message: ErrorMessage.richRefObjectNotAllowed(),
+        message: ErrorMessage.richRefObjectNotAllowed('#/components/schemas/Location'),
         path: ['paths', 'humans', 'get', 'responses', '200', 'content', 'application/json', 'schema', 'items', 'properties', 'location'],
         ref: '#/components/schemas/Location',
         errorType: RefErrorTypes.RICH_REF_NOT_ALLOWED
       },
       {
-        message: ErrorMessage.richRefObjectNotAllowed(),
+        message: ErrorMessage.richRefObjectNotAllowed('#/components/schemas/Human'),
         path: ['paths', 'humans', 'get', 'responses', '200', 'content', 'application/json', 'schema', 'items', 'properties', 'location', 'allOf', 0, 'properties', 'ownedBy'],
         ref: '#/components/schemas/Human',
         errorType: RefErrorTypes.RICH_REF_NOT_ALLOWED

@@ -89,7 +89,7 @@ function createFullyCycledOpenApi(includeExtensions: (extensionKey?: OpenApiExte
       ...(includeExtensions() ? { 'x-mediaType-extension': extension } : {}),
       examples: OPEN_API_EXAMPLES,
       example: 'str',
-      schema: OPEN_API_JSON_SCHEMA_FULLY_CYCLED,
+      schema: { ...OPEN_API_JSON_SCHEMA_FULLY_CYCLED },
       encoding: {
         something: {
           ...(includeExtensions() ? { 'x-encoding-extension': extension } : {}),
@@ -110,7 +110,7 @@ function createFullyCycledOpenApi(includeExtensions: (extensionKey?: OpenApiExte
       required: true,
       example: 'str',
       deprecated: true,
-      schema: OPEN_API_JSON_SCHEMA_FULLY_CYCLED,
+      schema: { ...OPEN_API_JSON_SCHEMA_FULLY_CYCLED },
       allowEmptyValue: true,
       allowReserved: true,
       explode: true,
@@ -165,7 +165,7 @@ function createFullyCycledOpenApi(includeExtensions: (extensionKey?: OpenApiExte
     required: true,
     example: 'str',
     deprecated: true,
-    schema: OPEN_API_JSON_SCHEMA_FULLY_CYCLED,
+    schema: { ...OPEN_API_JSON_SCHEMA_FULLY_CYCLED },
     allowEmptyValue: true,
     allowReserved: true,
     explode: true,
@@ -262,7 +262,7 @@ function createFullyCycledOpenApi(includeExtensions: (extensionKey?: OpenApiExte
     components: {
       ...(includeExtensions() ? { 'x-components-extension': extension } : {}),
       schemas: {
-        something: OPEN_API_JSON_SCHEMA_FULLY_CYCLED,
+        something: { ...OPEN_API_JSON_SCHEMA_FULLY_CYCLED },
       },
       responses: {
         something: OPEN_API_RESPONSE,

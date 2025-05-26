@@ -22,7 +22,7 @@
     "build": "vite build",
     "performance:run-inspect": "vite build --sourcemap=inline -c=vite.performance.config.ts && node --inspect dist/index.es.mjs",
     "development:link": "npm link && npm link @netcracker/qubership-apihub-json-crawl --save && npm link @netcracker/qubership-apihub-graphapi --save-dev",
-    "development:unlink": "npm unlink && npm unlink @netcracker/qubership-apihub-json-crawl && npm unlink @netcracker/qubership-apihub-graphapi",
+    "development:unlink": "npm unlink @netcracker/qubership-apihub-json-crawl --no-save && npm unlink @netcracker/qubership-apihub-graphapi --no-save",
     "test": "jest --verbose --maxWorkers 3",
     "test:coverage": "jest --verbose --coverage",
     "update-lock-file": "update-lock-file @netcracker"

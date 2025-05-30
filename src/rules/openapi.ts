@@ -322,7 +322,7 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
   '/xml': {
     validate: checkType(...TYPE_JSON_ANY),
     merge: resolvers.mergeObjects,
-    ...openApiExtensionRules,
+    ...openApiExtensionRulesFunction({ validate: checkType(...TYPE_JSON_ANY) }),
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },
   '/discriminator': {

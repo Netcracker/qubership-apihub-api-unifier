@@ -286,12 +286,12 @@ const openApiServersRules: NormalizationRules = {
 const openApiSecurityRules: NormalizationRules = {
   '/security': {
     '/*': {
-      ...openApiExtensionRulesFunction({
+      '/*': {
         '/*': {
           validate: checkType(TYPE_STRING),
         },
         validate: checkType(TYPE_ARRAY),
-      }),
+      },
       validate: checkType(TYPE_OBJECT),
     },
     validate: checkType(TYPE_ARRAY),

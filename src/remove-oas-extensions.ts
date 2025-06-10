@@ -15,10 +15,6 @@ const createRemoveOasExtensionsHook: (options: InternalRemoveOasExtensionsOption
       return { value: undefined }
     }
 
-    // if (typeof key === 'symbol') {
-    //   return { done: true }
-    // }
-
     return { value }
   }
 

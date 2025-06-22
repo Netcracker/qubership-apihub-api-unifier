@@ -777,6 +777,31 @@ describe('unify', () => {
     expect(result).toEqual(expected)
   })
 
+  it('sets default style for operation parameters based on in value', () => {
+    const result = unify({
+      openapi: '3.0.0',
+      paths: {
+        '/test': {
+          get: {
+            parameters: [
+              { name: 'query', in: 'query' },
+              { name: 'path', in: 'path' },
+              { name: 'header', in: 'header' },
+              { name: 'cookie', in: 'cookie' }
+            ]
+          }
+        }
+      }
+    }, { unify: true })
+
+    expect((result as any).paths['/test'].get.parameters).toMatchObject([
+      { name: 'query', in: 'query', style: 'form' },
+      { name: 'path', in: 'path', style: 'simple' }, 
+      { name: 'header', in: 'header', style: 'simple' },
+      { name: 'cookie', in: 'cookie', style: 'form' }
+    ])
+  })
+  
   it('fix required', () => {
     const options = { unify: true, validate: true }
     const result = deUnify(unify({

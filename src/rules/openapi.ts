@@ -59,6 +59,7 @@ import {
   OPEN_API_PROPERTY_RESPONSES,
   OPEN_API_PROPERTY_SCHEMAS,
   OPEN_API_PROPERTY_SECURITY_SCHEMAS,
+  OPEN_API_PROPERTY_STYLE,
   OPEN_API_PROPERTY_TAGS,
 } from './openapi.const'
 import { pathItemsUnification } from '../unifies/openapi'
@@ -144,12 +145,28 @@ const OPEN_API_ENCODING_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_HEADERS]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const OPEN_API_PARAMETER_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const getOperationParameterStyleDefault = (parameter: Record<string, any>): string | undefined => {
+  const inValue = parameter.in
+
+  switch (inValue) {
+    case 'query':
+      return 'form'
+    case 'cookie':
+      return 'form'
+    case 'path':
+      return 'simple'
+    case 'header':
+      return 'simple'
+  }
+}
+
+const OPEN_API_PARAMETER_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_DEPRECATED]: false,
   [OPEN_API_PROPERTY_REQUIRED]: false,
   [OPEN_API_PROPERTY_ALLOW_EMPTY_VALUE]: false,
   [OPEN_API_PROPERTY_ALLOW_RESERVED]: false,
   [OPEN_API_PROPERTY_EXAMPLES]: EMPTY_MARKER,
+  [OPEN_API_PROPERTY_STYLE]: getOperationParameterStyleDefault,
 }
 
 const OPEN_API_PARAMETER_REPLACES: Record<string, ReplaceMapping> = {

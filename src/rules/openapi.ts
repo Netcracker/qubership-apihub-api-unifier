@@ -1,4 +1,4 @@
-import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, UnifyFunction } from '../types'
+import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, UnifyFunction, UnifyContext, InternalUnifyOptions } from '../types'
 import {
   OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
@@ -40,7 +40,7 @@ import {
   TYPE_OBJECT,
   TYPE_STRING,
 } from '../validate/checker'
-import { DefaultValueMapping, valueDefaults } from '../unifies/defaults'
+import { DefaultValueMapping, JsonPrimitiveValue, valueDefaults } from '../unifies/defaults'
 import { jsonSchemaTypeInfer, jsonSchemaTypeInferWithRestriction } from '../unifies/type'
 import { deepEqualsMatcher, ReplaceMapping, valueReplaces } from '../unifies/replaces'
 import {
@@ -61,7 +61,11 @@ import {
   OPEN_API_PROPERTY_SECURITY_SCHEMAS,
   OPEN_API_PROPERTY_STYLE,
   OPEN_API_PROPERTY_TAGS,
+  OPEN_API_PROPERTY_WRAPPED,
+  OPEN_API_PROPERTY_XML,
+  OPEN_API_PROPERTY_ATTRIBUTE,
 } from './openapi.const'
+
 import { pathItemsUnification } from '../unifies/openapi'
 import {
   calculateHeaderName,
@@ -101,6 +105,7 @@ const OPEN_API_30_JSON_SCHEMA_DEFAULTS: DefaultValueMapping = {
   [JSON_SCHEMA_PROPERTY_WRITE_ONLY]: false,
   [JSON_SCHEMA_PROPERTY_DEPRECATED]: false,
   [JSON_SCHEMA_PROPERTY_ITEMS]: EMPTY_MARKER,
+  [OPEN_API_PROPERTY_XML]: EMPTY_MARKER,
 }
 delete OPEN_API_30_JSON_SCHEMA_DEFAULTS[JSON_SCHEMA_PROPERTY_PATTERN_PROPERTIES]
 
@@ -114,6 +119,7 @@ const OPEN_API_30_JSON_SCHEMA_REPLACES: Record<string, ReplaceMapping> = {
       }],
     ]),
   },
+  [OPEN_API_PROPERTY_XML]: TO_EMPTY_OBJECT_MAPPING,
 }
 
 delete OPEN_API_30_JSON_SCHEMA_REPLACES[JSON_SCHEMA_PROPERTY_PATTERN_PROPERTIES]
@@ -161,6 +167,13 @@ const getOperationParameterStyleDefault = (parameter: Record<string, any>): stri
   }
 }
 
+const getXmlWrappedDefault = (jso: Record<string, any>, ctx: UnifyContext<InternalUnifyOptions>): JsonPrimitiveValue | undefined => {
+  if (ctx.parentValue && typeof ctx.parentValue === 'object' && (ctx.parentValue as any).type === JSON_SCHEMA_NODE_TYPE_ARRAY) {
+    return false
+  }
+  return undefined
+}
+
 const OPEN_API_PARAMETER_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_DEPRECATED]: false,
   [OPEN_API_PROPERTY_REQUIRED]: false,
@@ -194,6 +207,11 @@ const OPEN_API_MEDIA_TYPE_REPLACES: Record<string, ReplaceMapping> = {
 
 const OPEN_API_REQUEST_BODY_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_REQUIRED]: false,
+}
+
+const OPEN_API_XML_DEFAULTS: DefaultValueMapping = {
+  [OPEN_API_PROPERTY_WRAPPED]: getXmlWrappedDefault,
+  [OPEN_API_PROPERTY_ATTRIBUTE]: false,
 }
 
 const OPEN_API_ROOT_DEFAULTS: DefaultValueMapping = {
@@ -344,6 +362,9 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
   '/xml': {
     validate: checkType(...TYPE_JSON_ANY),
     merge: resolvers.mergeObjects,
+    unify: [
+      valueDefaults(OPEN_API_XML_DEFAULTS),
+    ],
     ...openApiExtensionRulesFunction({ validate: checkType(...TYPE_JSON_ANY) }),
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },

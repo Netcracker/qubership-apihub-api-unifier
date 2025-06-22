@@ -40,7 +40,7 @@ import {
   TYPE_OBJECT,
   TYPE_STRING,
 } from '../validate/checker'
-import { JsonPrimitiveValue, valueDefaults } from '../unifies/defaults'
+import { DefaultValueMapping, valueDefaults } from '../unifies/defaults'
 import { jsonSchemaTypeInfer, jsonSchemaTypeInferWithRestriction } from '../unifies/type'
 import { deepEqualsMatcher, ReplaceMapping, valueReplaces } from '../unifies/replaces'
 import {
@@ -93,7 +93,7 @@ const TO_EMPTY_ARRAY_MAPPING: ReplaceMapping = {
   }]]),
 }
 
-const OPEN_API_30_JSON_SCHEMA_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_30_JSON_SCHEMA_DEFAULTS: DefaultValueMapping = {
   ...JSON_SCHEMA_DEFAULTS[SPEC_TYPE_JSON_SCHEMA_04],
   [JSON_SCHEMA_PROPERTY_NULLABLE]: false,
   [JSON_SCHEMA_PROPERTY_READ_ONLY]: false,
@@ -117,7 +117,7 @@ const OPEN_API_30_JSON_SCHEMA_REPLACES: Record<string, ReplaceMapping> = {
 
 delete OPEN_API_30_JSON_SCHEMA_REPLACES[JSON_SCHEMA_PROPERTY_PATTERN_PROPERTIES]
 
-const OPEN_API_OPERATION_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_OPERATION_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_PARAMETERS]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_TAGS]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_DEPRECATED]: false,
@@ -128,7 +128,7 @@ const OPEN_API_OPERATION_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_TAGS]: TO_EMPTY_ARRAY_MAPPING,
 }
 
-const OPEN_API_RESPONSE_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_RESPONSE_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_HEADERS]: EMPTY_MARKER,
 }
 
@@ -136,7 +136,7 @@ const OPEN_API_RESPONSE_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_HEADERS]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const OPEN_API_ENCODING_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_ENCODING_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_HEADERS]: EMPTY_MARKER,
 }
 
@@ -156,7 +156,7 @@ const OPEN_API_PARAMETER_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_EXAMPLES]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const OPEN_API_HEADER_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_HEADER_DEFAULTS: DefaultValueMapping = {
   ...OPEN_API_PARAMETER_DEFAULTS,
 }
 
@@ -164,7 +164,7 @@ const OPEN_API_HEADER_REPLACES: Record<string, ReplaceMapping> = {
   ...OPEN_API_PARAMETER_REPLACES,
 }
 
-const OPEN_API_MEDIA_TYPE_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_MEDIA_TYPE_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_EXAMPLES]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_ENCODING]: EMPTY_MARKER,
 }
@@ -174,7 +174,7 @@ const OPEN_API_MEDIA_TYPE_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_ENCODING]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const OPEN_API_ROOT_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_ROOT_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_PATHS]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_COMPONENTS]: EMPTY_MARKER,
 }
@@ -184,7 +184,7 @@ const OPEN_API_ROOT_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_COMPONENTS]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const OPEN_API_COMPONENTS_DEFAULTS: Record<string, JsonPrimitiveValue> = {
+const OPEN_API_COMPONENTS_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_SECURITY_SCHEMAS]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_LINKS]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_SCHEMAS]: EMPTY_MARKER,

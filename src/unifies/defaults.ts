@@ -10,9 +10,22 @@ export type JsonPrimitiveValue =
   | boolean /*Primitive JSO value only*/
   | symbol /*for connection with replace*/;
 
+export type DefaultValueFunction = (jso: Record<string, any>) => JsonPrimitiveValue | undefined;
+
+export type DefaultValueMapping = Record<string, JsonPrimitiveValue | DefaultValueFunction>;
+
 const PLACE_HOLDER_JSO: Record<PropertyKey, unknown> = {}
 
-export const valueDefaults: (map: Record<string, JsonPrimitiveValue>) => UnifyFunction = (map) => {
+const resolveDefaultValue = (
+  defaultValueOrFunction: JsonPrimitiveValue | DefaultValueFunction,
+  jso: Record<string, any>
+): JsonPrimitiveValue | undefined => {
+  return typeof defaultValueOrFunction === 'function' 
+    ? defaultValueOrFunction(jso)
+    : defaultValueOrFunction
+}
+
+export const valueDefaults: (map: DefaultValueMapping) => UnifyFunction = (map) => {
   return {
     forward: (jso, { options, origins }) => {
       if (!isObject(jso) || isArray(jso)) {
@@ -30,7 +43,15 @@ export const valueDefaults: (map: Record<string, JsonPrimitiveValue>) => UnifyFu
       let hasDefaults = false
       const originsForDefaults = options.originsFlag ? options.createOriginsForDefaults(origins) : undefined
       Object.entries(map)
-        .forEach(([propertyKey, defaultValue]) => {
+        .forEach(([propertyKey, defaultValueOrFunction]) => {
+          // Calculate the default value - either static or dynamic
+          const defaultValue = resolveDefaultValue(defaultValueOrFunction, jso as Record<string, any>)
+          
+          // Skip if dynamic function returns undefined (no default for this case)
+          if (defaultValue === undefined) {
+            return
+          }
+          
           if (!(propertyKey in jso)) {
             if (shallowJso === PLACE_HOLDER_JSO) {
               shallowJso = { ...jso }
@@ -84,8 +105,22 @@ export const valueDefaults: (map: Record<string, JsonPrimitiveValue>) => UnifyFu
         delete jso[options.defaultsFlag]
       }
       const candidates = Object.entries(map)
-        .flatMap(([key, def]) => key in jso ? [{ value: jso[key], key, def }] : [])
-        .filter(({ def, value }) => def === value)
+        .flatMap(([key, defaultValueOrFunction]) => {
+          if (!(key in jso)) {
+            return []
+          }
+          
+          // Calculate the default value - either static or dynamic
+          const defaultValue = resolveDefaultValue(defaultValueOrFunction, jso as Record<string, any>)
+          
+          // Skip if dynamic function returns undefined (no default for this case)
+          if (defaultValue === undefined) {
+            return []
+          }
+          
+          return [{ value: jso[key], key, defaultValue }]
+        })
+        .filter(({ defaultValue, value }) => defaultValue === value)
         .filter(({ key, value }) => !options.skip || (!options.skip(value, [...path, key])))
       candidates
         .reverse()

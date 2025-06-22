@@ -1,4 +1,4 @@
-import { DEFAULT_TYPE_FLAG_PURE, DEFAULT_TYPE_FLAG_SYNTHETIC, DefaultMetaRecord, UnifyFunction } from '../types'
+import { DEFAULT_TYPE_FLAG_PURE, DEFAULT_TYPE_FLAG_SYNTHETIC, DefaultMetaRecord, InternalUnifyOptions, UnifyContext, UnifyFunction } from '../types'
 import { isArray, isObject } from '@netcracker/qubership-apihub-json-crawl'
 import { isBroken, isPureCombiner } from './type'
 import { setJsoProperty } from '../utils'
@@ -10,7 +10,7 @@ export type JsonPrimitiveValue =
   | boolean /*Primitive JSO value only*/
   | symbol /*for connection with replace*/;
 
-export type DefaultValueFunction = (jso: Record<string, any>) => JsonPrimitiveValue | undefined;
+export type DefaultValueFunction = (jso: Record<string, any>, ctx: UnifyContext<InternalUnifyOptions>) => JsonPrimitiveValue | undefined;
 
 export type DefaultValueMapping = Record<string, JsonPrimitiveValue | DefaultValueFunction>;
 
@@ -18,16 +18,18 @@ const PLACE_HOLDER_JSO: Record<PropertyKey, unknown> = {}
 
 const resolveDefaultValue = (
   defaultValueOrFunction: JsonPrimitiveValue | DefaultValueFunction,
-  jso: Record<string, any>
+  jso: Record<string, any>,
+  ctx: UnifyContext<InternalUnifyOptions>
 ): JsonPrimitiveValue | undefined => {
   return typeof defaultValueOrFunction === 'function' 
-    ? defaultValueOrFunction(jso)
+    ? defaultValueOrFunction(jso, ctx)
     : defaultValueOrFunction
 }
 
 export const valueDefaults: (map: DefaultValueMapping) => UnifyFunction = (map) => {
   return {
-    forward: (jso, { options, origins }) => {
+    forward: (jso, ctx) => {
+      const { options, origins } = ctx
       if (!isObject(jso) || isArray(jso)) {
         return jso
       }
@@ -45,7 +47,7 @@ export const valueDefaults: (map: DefaultValueMapping) => UnifyFunction = (map) 
       Object.entries(map)
         .forEach(([propertyKey, defaultValueOrFunction]) => {
           // Calculate the default value - either static or dynamic
-          const defaultValue = resolveDefaultValue(defaultValueOrFunction, jso as Record<string, any>)
+          const defaultValue = resolveDefaultValue(defaultValueOrFunction, jso as Record<string, any>, ctx)
           
           // Skip if dynamic function returns undefined (no default for this case)
           if (defaultValue === undefined) {
@@ -94,7 +96,8 @@ export const valueDefaults: (map: DefaultValueMapping) => UnifyFunction = (map) 
       }
       return shallowJso
     },
-    backward: (jso, { path, options }) => {
+    backward: (jso, ctx) => {
+      const { path, options } = ctx
       if (!isObject(jso) || isArray(jso)) {
         return
       }
@@ -111,7 +114,7 @@ export const valueDefaults: (map: DefaultValueMapping) => UnifyFunction = (map) 
           }
           
           // Calculate the default value - either static or dynamic
-          const defaultValue = resolveDefaultValue(defaultValueOrFunction, jso as Record<string, any>)
+          const defaultValue = resolveDefaultValue(defaultValueOrFunction, jso as Record<string, any>, ctx)
           
           // Skip if dynamic function returns undefined (no default for this case)
           if (defaultValue === undefined) {

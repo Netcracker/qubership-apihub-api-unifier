@@ -142,6 +142,8 @@ export interface UnifyContext<Options> {
   readonly origins: OriginLeafs | undefined
   readonly path: JsonPath
   readonly options: Options
+  readonly parentKey: PropertyKey | undefined
+  readonly parentValue: unknown
 }
 
 export type TransformFunction = (value: unknown, ctx: UnifyContext<InternalUnifyOptions>) => unknown

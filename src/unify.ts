@@ -31,6 +31,7 @@ import {
 } from './unifies/meta-types'
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
+import { resolveValueByPath, resolveParentKeyByPath } from './utils'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward
@@ -40,7 +41,7 @@ function toBackwardMutationFunction(value: UnifyFunction): MutationFunction | un
   return typeof value === 'function' ? undefined : value.backward
 }
 
-const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (options, mandatoryOnly) => {
+const createUnifyHook: (rootJso: unknown, options: InternalUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (rootJso, options, mandatoryOnly) => {
   const unifyHook: UnifySyncCloneHook = ({ key, path, value, rules, state }) => {
     const safeKey = key ?? JSON_ROOT_KEY
     if (state.ignoreTreeUnderSymbols) {
@@ -62,10 +63,16 @@ const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) =
       return { value }
     }
     try {
+      const parentValue = path.length > 0 
+        ? resolveValueByPath(rootJso, path.slice(0, -1))
+        : undefined
+      const parentKey = resolveParentKeyByPath(path)
       const context: UnifyContext<InternalUnifyOptions> = {
         origins: state.selfOriginResolver(key),
         options,
         path,
+        parentValue,
+        parentKey,
       }
       const unifiedValue = unifiesFunctionsArray.reduce((v, f) => f(v, context), value)
       return { value: unifiedValue }
@@ -77,7 +84,7 @@ const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) =
   return unifyHook
 }
 
-const createDeUnifyHook: (options: InternalDeUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (options, mandatoryOnly) => {
+const createDeUnifyHook: (rootJso: unknown, options: InternalDeUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (rootJso, options, mandatoryOnly) => {
   const deUnifyHook: UnifySyncCloneHook = ({ key, path, value, rules, state }) => {
     if (state.ignoreTreeUnderSymbols) {
       return { value }
@@ -107,10 +114,16 @@ const createDeUnifyHook: (options: InternalDeUnifyOptions, mandatoryOnly: boolea
       value: value,
       exitHook: () => {
         try {
+          const parentValue = path.length > 0 
+            ? resolveValueByPath(rootJso, path.slice(0, -1))
+            : undefined
+          const parentKey = resolveParentKeyByPath(path)
           const context: UnifyContext<InternalDeUnifyOptions> = {
             origins: state.selfOriginResolver(key),
             options,
             path,
+            parentValue,
+            parentKey,
           }
           const copiedValue = state.node[safeKey]
           deUnifiesFunctionsArray.forEach(f => f(copiedValue, context))
@@ -157,7 +170,7 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
   const cycledJsoHandlerHook = createCycledJsoHandlerHook<UnifyState, NormalizationRule>()
   return syncClone(value, [
     cycledJsoHandlerHook,
-    createUnifyHook(internalOptions, mandatoryOnly),
+    createUnifyHook(value, internalOptions, mandatoryOnly),
     cycledJsoHandlerHook,
     createSelfOriginsCloneHook(internalOptions.originsFlag),
   ],
@@ -205,7 +218,7 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
   const cycledJsoHandlerHook = createCycledJsoHandlerHook<UnifyState, NormalizationRule>()
   return syncClone(value, [
     cycledJsoHandlerHook,
-    createDeUnifyHook(internalOptions, mandatoryOnly),
+    createDeUnifyHook(value, internalOptions, mandatoryOnly),
     cycledJsoHandlerHook,
     createSelfOriginsCloneHook(internalOptions.originsFlag),
   ],

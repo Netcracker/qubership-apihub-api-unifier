@@ -801,6 +801,91 @@ describe('unify', () => {
       { name: 'cookie', in: 'cookie', style: 'form' }
     ])
   })
+
+  it('sets default allowReserved to false for request body parameter encoding', () => {
+    const result = unify({
+      openapi: '3.0.0',
+      info: {
+        title: 'test',
+        version: '0.1.0'
+      },
+      paths: {
+        '/pets': {
+          post: {
+            requestBody: {
+              content: {
+                'multipart/form-data': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      historyMetadata: {
+                        type: 'object',
+                        properties: {}
+                      }
+                    }
+                  },
+                  encoding: {
+                    historyMetadata: {
+                      contentType: 'application/xml; charset=utf-8'
+                    }
+                  }
+                }
+              }
+            },
+            responses: {
+              '201': {
+                description: 'OK'
+              }
+            }
+          }
+        }
+      }
+    }, { unify: true })
+
+    expect(result).toHaveProperty(['paths', '/pets', 'post', 'requestBody', 'content', 'multipart/form-data', 'encoding', 'historyMetadata', 'allowReserved'], false)
+  })
+  
+  it('sets default allowReserved to false for response body parameter encoding', () => {
+    const result = unify({
+      openapi: '3.0.0',
+      info: {
+        title: 'test',
+        version: '0.1.0'
+      },
+      paths: {
+        '/pets': {
+          get: {
+            responses: {
+              '200': {
+                description: 'some value',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        historyMetadata: {
+                          type: 'object',
+                          properties: {}
+                        }
+                      }
+                    },
+                    encoding: {
+                      historyMetadata: {
+                        contentType: 'application/xml; charset=utf-8'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }, { unify: true })
+
+    expect(result).toHaveProperty(['paths', '/pets', 'get', 'responses', '200', 'content', 'application/json', 'encoding', 'historyMetadata', 'allowReserved'], false)
+  })
+
   
   it('fix required', () => {
     const options = { unify: true, validate: true }

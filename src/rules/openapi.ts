@@ -139,6 +139,7 @@ const OPEN_API_RESPONSE_REPLACES: Record<string, ReplaceMapping> = {
 
 const OPEN_API_ENCODING_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_HEADERS]: EMPTY_MARKER,
+  [OPEN_API_PROPERTY_ALLOW_RESERVED]: false,
 }
 
 const OPEN_API_ENCODING_REPLACES: Record<string, ReplaceMapping> = {

@@ -191,6 +191,10 @@ const OPEN_API_MEDIA_TYPE_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_ENCODING]: TO_EMPTY_OBJECT_MAPPING,
 }
 
+const OPEN_API_REQUEST_BODY_DEFAULTS: DefaultValueMapping = {
+  [OPEN_API_PROPERTY_REQUIRED]: false,
+}
+
 const OPEN_API_ROOT_DEFAULTS: DefaultValueMapping = {
   [OPEN_API_PROPERTY_PATHS]: EMPTY_MARKER,
   [OPEN_API_PROPERTY_COMPONENTS]: EMPTY_MARKER,
@@ -573,6 +577,9 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
   ...openApiExtensionRules,
+  unify: [
+    valueDefaults(OPEN_API_REQUEST_BODY_DEFAULTS),
+  ],
   validate: checkType(TYPE_OBJECT),
   deprecation: {
     inlineDescriptionSuffixCalculator: () => 'in request body',

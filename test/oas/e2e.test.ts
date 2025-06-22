@@ -844,6 +844,13 @@ describe('e2e', () => {
             parameters: [
               { name: 'parameter', in: 'path' },
             ],
+            requestBody: {
+              content: {
+                'application/json': {
+                  schema: {}
+                }
+              }
+            },
             responses: {
               200: {
                 description: '',
@@ -867,6 +874,7 @@ describe('e2e', () => {
     expect(result).toHaveProperty(['paths', 'test', 'get', 'parameters', 0, 'allowEmptyValue'], false)
     expect(result).toHaveProperty(['paths', 'test', 'get', 'parameters', 0, 'allowReserved'], false)
     expect(result).toHaveProperty(['paths', 'test', 'get', 'tags'], [])
+    expect(result).toHaveProperty(['paths', 'test', 'get', 'requestBody', 'required'], false)
     expect(result).toHaveProperty(['paths', 'test', 'get', 'responses', 200, 'headers', 'hhh', 'deprecated'], false)
     expect(result).toHaveProperty(['paths', 'test', 'get', 'responses', 200, 'headers', 'hhh', 'required'], false)
     expect(result).toHaveProperty(['paths', 'test', 'get', 'responses', 200, 'headers', 'hhh', 'allowEmptyValue'], false)

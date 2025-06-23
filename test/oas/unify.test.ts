@@ -886,6 +886,38 @@ describe('unify', () => {
 
     expect(result).toHaveProperty(['paths', '/pets', 'get', 'parameters', 0, 'schema', 'xml', 'wrapped'], false)
   })
+
+  it('does not set default xml wrapped for non-array parameter schema', () => {
+    const result = unify({
+      openapi: '3.0.0',
+      info: {
+        title: 'test',
+        version: '0.1.0'
+      },
+      paths: {
+        '/pets': {
+          get: {
+            parameters: [
+              {
+                name: 'p1',
+                in: 'query',
+                schema: {
+                  type: 'string'
+                },
+              }
+            ],
+            responses: {
+              '200': {
+                description: 'OK'
+              }
+            }
+          }
+        }
+      }
+    }, { unify: true })
+
+    expect(result).not.toHaveProperty(['paths', '/pets', 'get', 'parameters', 0, 'schema', 'xml', 'wrapped'])
+  })
   
   it('sets default xml attribute to false for parameter schema', () => {
     const result = unify({

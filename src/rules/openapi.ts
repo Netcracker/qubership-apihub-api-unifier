@@ -168,7 +168,7 @@ const getOperationParameterStyleDefault = (parameter: Record<string, any>): stri
 }
 
 const getXmlWrappedDefault = (jso: Record<string, any>, ctx: UnifyContext<InternalUnifyOptions>): JsonPrimitiveValue | undefined => {
-  if (ctx.parentValue && typeof ctx.parentValue === 'object' && (ctx.parentValue as any).type === JSON_SCHEMA_NODE_TYPE_ARRAY) {
+  if (ctx.parentValue && typeof ctx.parentValue === 'object' && 'type' in ctx.parentValue && ctx.parentValue.type === JSON_SCHEMA_NODE_TYPE_ARRAY) {
     return false
   }
   return undefined

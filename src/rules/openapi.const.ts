@@ -52,6 +52,9 @@ export const OPEN_API_PROPERTY_DESCRIPTION = 'description'
 export const OPEN_API_PROPERTY_CONTENT = 'content'
 export const OPEN_API_PROPERTY_ENCODING = 'encoding'
 export const OPEN_API_PROPERTY_STYLE = 'style'
-export const OPEN_API_PROPERTY_XML = 'xml'
-export const OPEN_API_PROPERTY_WRAPPED = 'wrapped'
-export const OPEN_API_PROPERTY_ATTRIBUTE = 'attribute'
+
+// OAS extensions to schema as defined  in https://spec.openapis.org/oas/v3.0.4.html#schema-object
+// TODO: move other similar constants to this file from jsonschema.const.ts
+export const OPEN_API_JSON_SCHEMA_PROPERTY_XML = 'xml'
+export const OPEN_API_JSON_SCHEMA_PROPERTY_WRAPPED = 'wrapped'
+export const OPEN_API_JSON_SCHEMA_PROPERTY_ATTRIBUTE = 'attribute'

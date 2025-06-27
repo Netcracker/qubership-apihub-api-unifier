@@ -54,10 +54,19 @@ export const createCycledJsoHandlerHook: <T extends {} = {}, R extends {} = {}>(
         return {
           value,
           exitHook: () => {
-            const valueAfterAllHooks = node[safeKey]
-            const newState: CopyStateCompleted = { type: COPY_STATE_COMPLETED, jsoInResult: valueAfterAllHooks }
-            jsoCopyStates.set(value, newState)
-            jsoCopyStates.set(valueAfterAllHooks, newState)
+            const valueAfterAllHooks = node[safeKey];
+            const originalValue = value?._target || value;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const isProxy = !!valueAfterAllHooks?._target
+
+            const newState: CopyStateCompleted = {
+              type: COPY_STATE_COMPLETED,
+              jsoInResult: isProxy ? (valueAfterAllHooks as any)?._target || valueAfterAllHooks : valueAfterAllHooks,
+            };
+
+            jsoCopyStates.set(originalValue, newState);
+            jsoCopyStates.set(valueAfterAllHooks, newState);
           },
           afterHooksHook: () => {
             const valueAfterAllHooks = node[safeKey]

@@ -341,6 +341,61 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           )
           if (refInSourceJso?.refValue !== undefined && refInSourceJso?.refValue !== null) {
             const { refValue, origin } = refInSourceJso
+
+            if (typeof sibling.description === 'string' || typeof sibling.summary === 'string') {
+              const wrapRefObjectToProxy: (refJso: any, sibling: Record<PropertyKey, unknown>, refOrigin: ChainItem | undefined) => ReturnType<DefineOriginsAndResolveRefSyncCloneHook> = (refJso, sibling, refOrigin) => {
+                const proxyJso = new Proxy(refJso, {
+                  get(target, prop, receiver) {
+                    if (prop === '_target') {
+                      return target
+                    }
+                    if (typeof prop === 'string' && ['description', 'summary'].includes(prop)) {
+                      return sibling[prop] ?? target[prop]
+                    }
+                    return Reflect.get(target, prop, receiver)
+                  },
+                })
+
+                // const proxyJso = {...refJso, ...sibling}
+
+                options.originsFlag && getOrReuseOrigin(proxyJso, originForObj, state.originCache)
+                const childrenOrigins: OriginsMetaRecord = {}
+                return {
+                  value: proxyJso,
+                  state: {
+                    ...state,
+                    originParent: refOrigin,
+                    originCollector: childrenOrigins,
+                  },
+                  afterHooksHook: () => {
+                    const node = state.node[safeKey]
+                    if (options.originsFlag && isObject(node)) {
+                      state.originCollector[safeKey] = [getOrReuseOrigin(node, originForObj, state.originCache)]
+                      state.lazySourceOriginCollector.set(node, state.lazySourceOriginCollector.get(value) ?? {})
+                    }
+                  },
+                  exitHook: () => {
+                    const node = state.node[safeKey]
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    state.node[safeKey] = {...node}
+                    options.inlineRefsFlag && isObject(node) && addRefInlineHistory(node, options.inlineRefsFlag, reference)
+                    if (options.originsFlag && isObject(node) && origin) {
+                      state.originCollector[safeKey] = [originForObj]
+                      const lazyOrigins = state.lazySourceOriginCollector.get(value) ?? {}
+                      node[options.originsFlag] = {
+                        ...(node[options.originsFlag] ?? {}),
+                        ...lazyOrigins,
+                        ...childrenOrigins,
+                      }
+                    }
+                  },
+                }
+              }
+              return wrapRefObjectToProxy(refValue, sibling, origin)
+            }
+
+            // Default: wrap in allOf (JSON Schema or not OAS 3.1)
             return wrapRefWithAllOfIfNeed(refValue, sibling, origin)
           }
           options.onRefResolveError?.(ErrorMessage.refNotFound($ref), path, $ref, RefErrorTypes.REF_NOT_FOUND)

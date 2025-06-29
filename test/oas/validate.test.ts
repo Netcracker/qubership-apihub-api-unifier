@@ -588,7 +588,7 @@ describe('OAS 3.1 Type validations: array of types', () => {
     expect(result).toHaveProperty([...schemaPath, 'type'], 'string')
   })
 
-  it('ignores non-existing null type in array of types', () => {
+  it('ignores non-valid null literal in array of types', () => {
     const data = {
       "openapi": "3.1.0",
       "paths": {
@@ -599,8 +599,6 @@ describe('OAS 3.1 Type validations: array of types', () => {
                 "description": "OK",
                 "content": {
                   "application/json": {
-                    // NOTE: This schema intentionally includes an invalid "null" type in the "type" array
-                    // for testing purposes. It's used to verify how the normalization logic handles incorrect types.
                     "schema": {
                       "type": [
                         "string",

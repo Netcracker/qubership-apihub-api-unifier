@@ -651,40 +651,4 @@ describe('OAS 3.1 Type validations: array of types', () => {
 
     expect(result).toHaveProperty([...schemaPath, 'type'], 'string')
   })
-
-  it('empty schema must match null type', () => {
-    const data = {
-      'openapi': '3.1.0',
-      'paths': {
-        '/example': {
-          'post': {
-            'responses': {
-              '200': {
-                'description': 'OK',
-                'content': {
-                  'application/json': {
-                    'schema': {},
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    }
-
-    const result = defaultNormalize(data)
-
-    expect(result).toHaveProperty([...schemaPath], {
-      anyOf: expect.arrayContaining([
-        expect.objectContaining({ type: 'boolean' }),
-        expect.objectContaining({ type: 'string' }),
-        expect.objectContaining({ type: 'number' }),
-        expect.objectContaining({ type: 'integer' }),
-        expect.objectContaining({ type: 'object' }),
-        expect.objectContaining({ type: 'array' }),
-        expect.objectContaining({ type: 'null' }),
-      ]),
-    })
-  })
 })

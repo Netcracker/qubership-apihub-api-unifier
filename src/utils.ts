@@ -73,16 +73,6 @@ export const resolveValueByPath = (obj: unknown, path: JsonPath): unknown | unde
   return value
 }
 
-export const resolveParentKeyByPath = (path: JsonPath): PropertyKey | undefined => {
-  if (path.length === 0) {
-    return undefined
-  }
-  if (path.length === 1) {
-    return JSON_ROOT_KEY
-  }
-  return path[path.length - 2]
-}
-
 export const pathMask = {
   slash: /\//g,
   tilde: /~/g,

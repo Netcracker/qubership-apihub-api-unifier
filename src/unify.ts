@@ -45,10 +45,10 @@ const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) =
   const unifyHook: UnifySyncCloneHook = ({ key, path, value, rules, state }) => {
     const safeKey = key ?? JSON_ROOT_KEY
     if (state.ignoreTreeUnderSymbols) {
-      return { value, state: { ...state, parentValue: value } }
+      return { value }
     }
     if (typeof safeKey === 'symbol') {
-      return { value, state: { ...state, ignoreTreeUnderSymbols: true, parentValue: value } } //set state to ignore next work
+      return { value } //set state to ignore next work
     }
     if (!rules) {
       return { value, state: { ...state, parentValue: value } }
@@ -83,11 +83,11 @@ const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) =
 const createDeUnifyHook: (options: InternalDeUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (options, mandatoryOnly) => {
   const deUnifyHook: UnifySyncCloneHook = ({ key, path, value, rules, state }) => {
     if (state.ignoreTreeUnderSymbols) {
-      return { value, state: { ...state, parentValue: value } }
+      return { value }
     }
     const safeKey = key ?? JSON_ROOT_KEY
     if (typeof safeKey === 'symbol' && options.ignoreSymbols.has(safeKey)) {
-      return { value, state: { ...state, ignoreTreeUnderSymbols: true, parentValue: value } } //set state to ignore next work
+      return { value, state: { ...state, ignoreTreeUnderSymbols: true } } //set state to ignore next work
     }
     if (!rules) {
       return { value, state: { ...state, parentValue: value } }

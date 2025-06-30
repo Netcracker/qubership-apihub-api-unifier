@@ -41,7 +41,7 @@ function toBackwardMutationFunction(value: UnifyFunction): MutationFunction | un
   return typeof value === 'function' ? undefined : value.backward
 }
 
-const createUnifyHook: (rootJso: unknown, options: InternalUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (rootJso, options, mandatoryOnly) => {
+const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (options, mandatoryOnly) => {
   const unifyHook: UnifySyncCloneHook = ({ key, path, value, rules, state }) => {
     const safeKey = key ?? JSON_ROOT_KEY
     if (state.ignoreTreeUnderSymbols) {
@@ -80,7 +80,7 @@ const createUnifyHook: (rootJso: unknown, options: InternalUnifyOptions, mandato
   return unifyHook
 }
 
-const createDeUnifyHook: (rootJso: unknown, options: InternalDeUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (rootJso, options, mandatoryOnly) => {
+const createDeUnifyHook: (options: InternalDeUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (options, mandatoryOnly) => {
   const deUnifyHook: UnifySyncCloneHook = ({ key, path, value, rules, state }) => {
     if (state.ignoreTreeUnderSymbols) {
       return { value, state: { ...state, parentValue: value } }
@@ -163,7 +163,7 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
   const cycledJsoHandlerHook = createCycledJsoHandlerHook<UnifyState, NormalizationRule>()
   return syncClone(value, [
     cycledJsoHandlerHook,
-    createUnifyHook(value, internalOptions, mandatoryOnly),
+    createUnifyHook(internalOptions, mandatoryOnly),
     cycledJsoHandlerHook,
     createSelfOriginsCloneHook(internalOptions.originsFlag),
   ],
@@ -212,7 +212,7 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
   const cycledJsoHandlerHook = createCycledJsoHandlerHook<UnifyState, NormalizationRule>()
   return syncClone(value, [
     cycledJsoHandlerHook,
-    createDeUnifyHook(value, internalOptions, mandatoryOnly),
+    createDeUnifyHook(internalOptions, mandatoryOnly),
     cycledJsoHandlerHook,
     createSelfOriginsCloneHook(internalOptions.originsFlag),
   ],

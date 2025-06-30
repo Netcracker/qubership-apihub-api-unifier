@@ -158,6 +158,6 @@ describe('OAS 3.1 features not supported in OAS 3.0', () => {
 
     const result = defaultNormalize(data)
 
-    expect(result).toHaveProperty([...schemaPath], ANY_MATCHER)
+    expect(result).not.toHaveProperty([...schemaPath], {anyOf: expect.arrayContaining([expect.objectContaining({ type: 'null' })])})
   })
 })

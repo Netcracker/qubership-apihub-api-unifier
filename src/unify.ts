@@ -47,7 +47,7 @@ const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) =
       return { value }
     }
     if (typeof safeKey === 'symbol') {
-      return { value } //set state to ignore next work
+      return { value, state: { ...state, ignoreTreeUnderSymbols: true } } //set state to ignore next work
     }
     if (!rules) {
       return { value, state: { ...state, parentValue: value } }

@@ -31,7 +31,6 @@ import {
 } from './unifies/meta-types'
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
-import { resolveValueByPath, resolveParentKeyByPath } from './utils'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward

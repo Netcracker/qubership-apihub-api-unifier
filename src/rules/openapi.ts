@@ -157,11 +157,9 @@ const getOperationParameterStyleDefault = (parameter: Record<string, any>): stri
 
   switch (inValue) {
     case 'query':
-      return 'form'
     case 'cookie':
       return 'form'
     case 'path':
-      return 'simple'
     case 'header':
       return 'simple'
   }

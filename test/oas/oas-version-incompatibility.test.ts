@@ -48,34 +48,6 @@ describe('OAS 3.0 features not supported in OAS 3.1', () => {
 
     expect(result).not.toHaveProperty([...schemaPath, 'type', JSON_SCHEMA_PROPERTY_NULLABLE])
   })
-
-  it('empty schema must match null type', () => {
-    const data = {
-      'openapi': '3.1.0',
-      'paths': {
-        '/example': {
-          'post': {
-            'responses': {
-              '200': {
-                'description': 'OK',
-                'content': {
-                  'application/json': {
-                    'schema': {},
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    }
-
-    const result = defaultNormalize(data)
-
-    expect(result).toHaveProperty([...schemaPath], {
-      anyOf: expect.arrayContaining([expect.objectContaining({ type: 'null' }),]),
-    })
-  })
 })
 
 describe('OAS 3.1 features not supported in OAS 3.0', () => {

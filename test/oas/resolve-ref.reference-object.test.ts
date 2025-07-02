@@ -85,7 +85,7 @@ describe('OAS 3.1 reference object', () => {
 
     const result = defineOriginsAndResolveRef(source) as any    
     expect(result.paths['/test'].get.responses['200']).not.toHaveProperty('summary')
-    // reported via onRefResolveError callback?
+    // TODO: reported via onRefResolveError callback?
   })
 
   it('second-level object are the same when overriding description for response via reference object', () => {
@@ -148,7 +148,7 @@ describe('OAS 3.1 reference object', () => {
 
     const result = defineOriginsAndResolveRef(source) as any    
     expect(result.paths['/test'].get.responses['200']).toEqual({}) // or not defined?, check with schemas
-    //reported to onRefResolveError callback?
+    //TODO: reported to onRefResolveError callback?
   })
 
   it('refernece object pointing to non-existing component is ignored for the response', () => {
@@ -169,7 +169,7 @@ describe('OAS 3.1 reference object', () => {
 
     const result = defineOriginsAndResolveRef(source) as any    
     expect(result.paths['/test'].get.responses['200']).toEqual({}) // or not defined?, check with schemas
-    //reported to onRefResolveError callback?
+    //TODO: reported to onRefResolveError callback?
   })
 
   it('could define response via reference object chain', () => {
@@ -283,7 +283,7 @@ describe('OAS 3.1 reference object', () => {
       }
     }
     const result = defineOriginsAndResolveRef(source) as any    
-    // reported via onRefResolveError callback?
+    // TODO: reported via onRefResolveError callback?
   })
 
   it('properties other than description and summary could not be overriden via reference object for response', () => {
@@ -325,5 +325,33 @@ describe('OAS 3.1 reference object', () => {
 
     const result = defineOriginsAndResolveRef(source) as any      
     expect(result.paths['/test'].get.responses['200'].content).toBe(result.components.responses.SuccessResponse.content)
+  })
+
+  it('reference object for response is ignored in OAS 3.0', () => {
+    const source = {
+      openapi: '3.0.0',
+      paths: {
+        '/test': {
+          get: {
+            responses: {
+              '200': {
+                $ref: '#/components/responses/SuccessResponse'
+              }
+            }
+          }
+        }
+      },
+      components: {
+        responses: {
+          SuccessResponse: {
+            description: 'Successful response',
+          }
+        }
+      }
+    }
+
+    const result = defineOriginsAndResolveRef(source) as any      
+    expect(result.paths['/test'].get.responses['200']).toEqual({}) // or not defined?, check with schemas
+    // TODO: reported via onRefResolveError callback?
   })
 })

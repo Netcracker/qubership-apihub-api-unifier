@@ -244,7 +244,7 @@ const OPEN_API_COMPONENTS_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_EXAMPLES]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const openApiExtensionRules = {
+const openApiSpecificationExtensionRules = {
   '/^': {
     'x-': {
       isExtension: true,
@@ -261,7 +261,7 @@ const openApiExternalDocsRules: NormalizationRules = {
     merge: resolvers.last,
     '/description': { validate: checkType(TYPE_STRING) },
     '/url': { validate: checkType(TYPE_STRING) },
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
   },
 }
 
@@ -278,7 +278,7 @@ const openApiExamplesRules: NormalizationRules = {
     merge: resolvers.last,
     '/*': {
       '/*': { validate: checkType(...TYPE_JSON_ANY) },
-      ...openApiExtensionRules,
+      ...openApiSpecificationExtensionRules,
     },
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },
@@ -300,12 +300,12 @@ const openApiServerRules: NormalizationRules = {
       },
       '/default': { validate: checkType(TYPE_STRING) },
       '/description': { validate: checkType(TYPE_STRING) },
-      ...openApiExtensionRules,
+      ...openApiSpecificationExtensionRules,
       validate: checkType(TYPE_OBJECT),
     },
     validate: checkType(TYPE_OBJECT),
   },
-  ...openApiExtensionRules,
+  ...openApiSpecificationExtensionRules,
   validate: checkType(TYPE_OBJECT),
 }
 
@@ -344,7 +344,7 @@ const openApiLinksRules: NormalizationRules = {
     },
     '/description': { validate: checkType(TYPE_STRING) },
     '/server': openApiServerRules,
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     validate: checkType(TYPE_OBJECT),
   },
   validate: checkType(TYPE_OBJECT),
@@ -358,7 +358,7 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
       valueDefaults(OPEN_API_XML_DEFAULTS),
     ],    
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
   },
   '/discriminator': {
     validate: checkType(TYPE_OBJECT),
@@ -377,7 +377,7 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
     },
   },
   ...openApiExternalDocsRules,
-  ...openApiExtensionRules,
+  ...openApiSpecificationExtensionRules,
 })
 
 const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
@@ -482,11 +482,11 @@ const openApiMediaTypesRules = (version: OpenApiSpecVersion): NormalizationRules
           valueReplaces(OPEN_API_ENCODING_REPLACES),
         ],
         validate: checkType(TYPE_OBJECT),
-        ...openApiExtensionRules,
+        ...openApiSpecificationExtensionRules,
       },
       validate: checkType(TYPE_OBJECT),
     },
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     unify: [
       valueDefaults(OPEN_API_MEDIA_TYPE_DEFAULTS),
       valueReplaces(OPEN_API_MEDIA_TYPE_REPLACES),
@@ -514,7 +514,7 @@ const openApiHeadersRules = (version: OpenApiSpecVersion): NormalizationRules =>
     ...openApiExampleRules,
     ...openApiExamplesRules,
     '/schema': openApiJsonSchemaRules(version),
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_HEADER_DEFAULTS),
@@ -574,7 +574,7 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
       ...openApiJsonSchemaRules(version),
       newDataLayer: true,
     }),
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_PARAMETER_DEFAULTS),
@@ -590,7 +590,7 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
   '/description': { validate: checkType(TYPE_STRING) },
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
-  ...openApiExtensionRules,
+  ...openApiSpecificationExtensionRules,
   unify: [
     valueDefaults(OPEN_API_REQUEST_BODY_DEFAULTS),
   ],
@@ -606,7 +606,7 @@ const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules 
     '/headers': openApiHeadersRules(version),
     '/content': openApiMediaTypesRules(version),
     '/links': openApiLinksRules,
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     unify: [
       valueDefaults(OPEN_API_RESPONSE_DEFAULTS),
       valueReplaces(OPEN_API_RESPONSE_REPLACES),
@@ -616,7 +616,7 @@ const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules 
       inlineDescriptionSuffixCalculator: ctx => `${ctx.suffix} '${ctx.key.toString()}'`,
     },
   },
-  ...openApiExtensionRules,
+  ...openApiSpecificationExtensionRules,
   deprecation: { inlineDescriptionSuffixCalculator: () => 'in response' },
   validate: checkType(TYPE_OBJECT),
 })
@@ -645,7 +645,7 @@ const openApiPathItemRules = (version: OpenApiSpecVersion): NormalizationRules =
     '/callbacks': {
       '/*': {        
         '/*': () => openApiPathItemRules(version),
-        ...openApiExtensionRules,
+        ...openApiSpecificationExtensionRules,
       },
     },
     '/deprecated': { validate: checkType(TYPE_BOOLEAN) },
@@ -654,14 +654,14 @@ const openApiPathItemRules = (version: OpenApiSpecVersion): NormalizationRules =
     '/parameters': openApiParametersRules(version),
     '/requestBody': openApiRequestRules(version),
     '/responses': openApiResponsesRules(version),
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     unify: [
       valueDefaults(OPEN_API_OPERATION_DEFAULTS),
       valueReplaces(OPEN_API_OPERATION_REPLACES),
     ],
     validate: checkType(TYPE_OBJECT),
   },
-  ...openApiExtensionRules,
+  ...openApiSpecificationExtensionRules,
   '/parameters': openApiParametersRules(version),
   validate: checkType(TYPE_OBJECT),
   unify: pathItemsUnification,
@@ -678,17 +678,17 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
       '/name': { validate: checkType(TYPE_STRING) },
       '/url': { validate: checkType(TYPE_STRING) },
       '/email': { validate: checkType(TYPE_STRING) },
-      ...openApiExtensionRules,
+      ...openApiSpecificationExtensionRules,
       validate: checkType(TYPE_OBJECT),
     },
     '/license': {
       '/name': { validate: checkType(TYPE_STRING) },
       '/url': { validate: checkType(TYPE_STRING) },
-      ...openApiExtensionRules,
+      ...openApiSpecificationExtensionRules,
       validate: checkType(TYPE_OBJECT),
     },
     '/version': { validate: checkType(TYPE_STRING) },
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     validate: checkType(TYPE_OBJECT),
   },
   ...openApiExternalDocsRules,
@@ -699,14 +699,14 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
       '/name': { validate: checkType(TYPE_STRING) },
       '/description': { validate: checkType(TYPE_STRING) },
       ...openApiExternalDocsRules,
-      ...openApiExtensionRules,
+      ...openApiSpecificationExtensionRules,
       validate: checkType(TYPE_OBJECT),
     },
     validate: checkType(TYPE_ARRAY),
   },
   '/paths': {
     '/*': openApiPathItemRules(version),
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     validate: checkType(TYPE_OBJECT),
   },
   '/components': {
@@ -723,21 +723,21 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
             '/authorizationUrl': { validate: checkType(TYPE_STRING) },
             '/refreshUrl': { validate: checkType(TYPE_STRING) },
             '/scopes': openApiOAuthScopesRules,
-            ...openApiExtensionRules,
+            ...openApiSpecificationExtensionRules,
             validate: checkType(TYPE_OBJECT),
           },
           '/password': {
             '/tokenUrl': { validate: checkType(TYPE_STRING) },
             '/refreshUrl': { validate: checkType(TYPE_STRING) },
             '/scopes': openApiOAuthScopesRules,
-            ...openApiExtensionRules,
+            ...openApiSpecificationExtensionRules,
             validate: checkType(TYPE_OBJECT),
           },
           '/clientCredentials': {
             '/tokenUrl': { validate: checkType(TYPE_STRING) },
             '/refreshUrl': { validate: checkType(TYPE_STRING) },
             '/scopes': openApiOAuthScopesRules,
-            ...openApiExtensionRules,
+            ...openApiSpecificationExtensionRules,
             validate: checkType(TYPE_OBJECT),
           },
           '/authorizationCode': {
@@ -745,15 +745,15 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
             '/tokenUrl': { validate: checkType(TYPE_STRING) },
             '/refreshUrl': { validate: checkType(TYPE_STRING) },
             '/scopes': openApiOAuthScopesRules,
-            ...openApiExtensionRules,
+            ...openApiSpecificationExtensionRules,
             validate: checkType(TYPE_OBJECT),
           },
-          ...openApiExtensionRules,
+          ...openApiSpecificationExtensionRules,
           validate: checkType(TYPE_OBJECT),
         },
         '/openIdConnectUrl': { validate: checkType(TYPE_STRING) },
         validate: checkType(TYPE_OBJECT),
-        ...openApiExtensionRules,
+        ...openApiSpecificationExtensionRules,
       },
       validate: checkType(TYPE_OBJECT),
     },
@@ -775,18 +775,18 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
     '/callbacks': {
       '/*': {
         '/*': () => openApiPathItemRules(version),
-        ...openApiExtensionRules,
+        ...openApiSpecificationExtensionRules,
       },
     },
     ...openApiExamplesRules,
-    ...openApiExtensionRules,
+    ...openApiSpecificationExtensionRules,
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_COMPONENTS_DEFAULTS),
       valueReplaces(OPEN_API_COMPONENTS_REPLACES),
     ],
   },
-  ...openApiExtensionRules,
+  ...openApiSpecificationExtensionRules,
   unify: [
     valueDefaults(OPEN_API_ROOT_DEFAULTS),
     valueReplaces(OPEN_API_ROOT_REPLACES),

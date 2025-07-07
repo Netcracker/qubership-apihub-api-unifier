@@ -49,5 +49,6 @@ export const OPEN_API_PROPERTY_LINKS = 'links'
 export const OPEN_API_PROPERTY_SECURITY_SCHEMAS = 'securitySchemes'
 
 export const OPEN_API_PROPERTY_DESCRIPTION = 'description'
+export const OPEN_API_PROPERTY_SUMMARY = 'summary'
 export const OPEN_API_PROPERTY_CONTENT = 'content'
 export const OPEN_API_PROPERTY_ENCODING = 'encoding'

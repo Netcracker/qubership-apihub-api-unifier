@@ -1,4 +1,10 @@
-import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, UnifyFunction } from '../types'
+import {
+  BEFORE_SECOND_DATA_LEVEL,
+  CURRENT_DATA_LEVEL,
+  NormalizationRules,
+  ReferenceResolver,
+  UnifyFunction,
+} from '../types'
 import {
   OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
@@ -48,6 +54,7 @@ import {
   OPEN_API_PROPERTY_ALLOW_RESERVED,
   OPEN_API_PROPERTY_COMPONENTS,
   OPEN_API_PROPERTY_DEPRECATED,
+  OPEN_API_PROPERTY_DESCRIPTION,
   OPEN_API_PROPERTY_ENCODING,
   OPEN_API_PROPERTY_EXAMPLES,
   OPEN_API_PROPERTY_HEADERS,
@@ -59,6 +66,7 @@ import {
   OPEN_API_PROPERTY_RESPONSES,
   OPEN_API_PROPERTY_SCHEMAS,
   OPEN_API_PROPERTY_SECURITY_SCHEMAS,
+  OPEN_API_PROPERTY_SUMMARY,
   OPEN_API_PROPERTY_TAGS,
 } from './openapi.const'
 import { pathItemsUnification } from '../unifies/openapi'
@@ -69,6 +77,7 @@ import {
   nonEmptyString,
 } from '../deprecated-item-description'
 import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
+import { Override, referenceObject31ReferenceResolver, schemaRefResolver } from '../resolve-ref/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
   JSON_SCHEMA_NODE_TYPE_BOOLEAN,
@@ -205,6 +214,7 @@ const OPEN_API_COMPONENTS_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_HEADERS]: TO_EMPTY_OBJECT_MAPPING,
   [OPEN_API_PROPERTY_EXAMPLES]: TO_EMPTY_OBJECT_MAPPING,
 }
+
 
 const openApiExtensionRulesFunction: (elseRules: NormalizationRules | (() => NormalizationRules)) => NormalizationRules = (elseRules) => ({
   '/*': (ctx) => {
@@ -424,6 +434,16 @@ const openApiJsonSchemaRules = (version: OpenApiSpecVersion): NormalizationRules
   }
 }
 
+const referenceObjectReferenceResolver = (
+  version: OpenApiSpecVersion,
+  ...overrides: Override[]
+): ReferenceResolver<any, any> | null => {
+  if (version === SPEC_TYPE_OPEN_API_31) {
+    return referenceObject31ReferenceResolver(...overrides)
+  }
+  return referenceObject31ReferenceResolver()
+}
+
 const openApiMediaTypesRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   '/*': {
     '/schema': openApiJsonSchemaRules(version),
@@ -480,6 +500,7 @@ const openApiHeadersRules = (version: OpenApiSpecVersion): NormalizationRules =>
     ...openApiExamplesRules,
     '/schema': openApiJsonSchemaRules(version),
     ...openApiExtensionRules,
+    referenceResolver: referenceObjectReferenceResolver(version, OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY),
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_HEADER_DEFAULTS),
@@ -573,6 +594,7 @@ const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules 
       valueDefaults(OPEN_API_RESPONSE_DEFAULTS),
       valueReplaces(OPEN_API_RESPONSE_REPLACES),
     ],
+    referenceResolver: referenceObjectReferenceResolver(version, OPEN_API_PROPERTY_DESCRIPTION),
     validate: checkType(TYPE_OBJECT),
     deprecation: {
       inlineDescriptionSuffixCalculator: ctx => `${ctx.suffix} '${ctx.key.toString()}'`,

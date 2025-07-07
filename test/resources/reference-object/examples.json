@@ -1,0 +1,49 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Swagger Petstore - OpenAPI 3.1",
+    "version": "1.0.12"
+  },
+  "paths": {
+    "/path1": {
+      "post": {
+        "summary": "Finds Pets by tags. (examples)",
+        "description": "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+        "operationId": "findPetsByTags",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "prop1": {
+                      "type": "string",
+                      "examples": [
+                        {
+                          "$ref": "#/components/examples/ex1",
+                          "summary": "example summary override",
+                          "description": "example description override"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "examples": {
+      "ex1": {
+        "summary": "summary of example from components",
+        "description": "description of example from components",
+        "value": "petpet"
+      }
+    }
+  }
+}

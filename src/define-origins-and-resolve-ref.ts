@@ -28,7 +28,7 @@ import { createCycledJsoHandlerHook } from './cycle-jso'
 import { JSON_SCHEMA_PROPERTY_ALL_OF, JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { RULES } from './rules'
 import { setOrigins } from './origins'
-import { Override } from './resolve-ref/ref-resolver'
+import { Override, ResolvedRefData } from './resolve-ref/ref-resolver'
 
 interface SyntheticAllOf {
   [JSON_SCHEMA_PROPERTY_ALL_OF]: Array<unknown>
@@ -135,7 +135,13 @@ export const deDefineOriginsAndResolvedRefSymbols = (value: unknown, options?: R
 const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: InternalResolveOptions, cycleJsoHook: SyncCloneHook<DefineOriginsAndResolveRefState>) => DefineOriginsAndResolveRefSyncCloneHook = (rootJso, options, cycleJsoHook) => {
   const cyclingGuard: Set<unknown> = new Set()
   const syntheticTitleCache: Map<string, Record<PropertyKey, unknown>> = new Map()
-  const defineOriginsAndResolveRefHook: DefineOriginsAndResolveRefSyncCloneHook = ({ key, value, state, path, rules }) => {
+  const defineOriginsAndResolveRefHook: DefineOriginsAndResolveRefSyncCloneHook = ({
+    key,
+    value,
+    state,
+    path,
+    rules,
+  }) => {
     if (state.ignoreTreeUnderSymbols) {
       return { value }
     }
@@ -172,8 +178,8 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
         /* for del start */
         let tempReferenceResolver
         if (rules) {
-          const { referenceResolver } = rules
-          tempReferenceResolver = referenceResolver
+          const { referenceHandler } = rules
+          tempReferenceResolver = referenceHandler
         }
         if (tempReferenceResolver === null) {
           options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
@@ -236,7 +242,13 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               },
             }
           }
-          const { refValue, origin, refIndex = 0, siblingIndex = 0, titleIndex = 0 } = resolvedRefWithSibling as ResolvedRefAllOf
+          const {
+            refValue,
+            origin,
+            refIndex = 0,
+            siblingIndex = 0,
+            titleIndex = 0,
+          } = resolvedRefWithSibling as ResolvedRefAllOf
           const childrenOrigins: OriginsMetaRecord = {}
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -315,7 +327,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               : undefined,
           )
           if (refInResultedJso?.refValue !== undefined && refInResultedJso?.refValue !== null) {
-            return processResolvedReference(tempReferenceResolver(options, state, rules, refInResultedJso, originForObj, sibling, syntheticTitleCache, reference))
+            return processResolvedReference(tempReferenceResolver({options, state, rules, refInResultedJso, originForObj, sibling, syntheticTitleCache, reference}))
           }
           const refInSourceJso = resolveRefNode(
             reference,
@@ -343,7 +355,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               : undefined,
           )
           if (refInSourceJso?.refValue !== undefined && refInSourceJso?.refValue !== null) {
-            return processResolvedReference(tempReferenceResolver(options, state, rules, refInSourceJso, originForObj, sibling, syntheticTitleCache, reference))
+            return processResolvedReference(tempReferenceResolver({options, state, rules, refInResultedJso: refInSourceJso, originForObj, sibling, syntheticTitleCache, reference}))
           }
           options.onRefResolveError?.(ErrorMessage.refNotFound($ref), path, $ref, RefErrorTypes.REF_NOT_FOUND)
           const brokenValueClone = { [JSON_SCHEMA_PROPERTY_REF]: $ref }
@@ -391,26 +403,25 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
 
 export type ResolvedRefWithSibling = ResolvedRefSibling | ResolvedRefAllOf
 
-export interface ResolvedRefSibling extends ResolvedRef{
+export interface ResolvedRefSibling extends ResolvedRef {
   childrenOrigins: OriginsMetaRecord
 }
 
-export interface ResolvedRefAllOf extends ResolvedRef{
+export interface ResolvedRefAllOf extends ResolvedRef {
   titleIndex: number
   refIndex: number
   siblingIndex: number
 }
 
-export const wrapRefWithAllOfIfNeed = (
-  options: InternalResolveOptions,
-  state: CloneState<DefineOriginsAndResolveRefState>,
-  rules: CrawlRules<NormalizationRule> | undefined,
-  refInResultedJso: ResolvedRef,
-  originForObj: ChainItem,
-  sibling: Record<PropertyKey, unknown>,
-  syntheticTitleCache: Map<string, Record<PropertyKey, unknown>>,
-  reference: RichReference,
-): ResolvedRefWithSibling => {
+export const wrapRefWithAllOfIfNeed = ({options,
+  state,
+  refInResultedJso,
+  originForObj,
+  sibling,
+  rules,
+  syntheticTitleCache,
+  reference
+}:  ResolvedRefData<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>): ResolvedRefWithSibling => {
   const { refValue, origin } = refInResultedJso
   const wrap: SyntheticAllOf & Record<PropertyKey, unknown> = { [JSON_SCHEMA_PROPERTY_ALL_OF]: [] }
   options.originsFlag && getOrReuseOrigin(wrap, originForObj, state.originCache)
@@ -420,7 +431,7 @@ export const wrapRefWithAllOfIfNeed = (
   let refIndex = 0
   let siblingIndex = -1
   if (options.syntheticTitleFlag && rules?.resolvedReferenceNamePropertyKey) {
-    let syntheticTitle = syntheticTitleCache.get(reference.normalized)
+    let syntheticTitle = syntheticTitleCache?.get(reference.normalized)
     if (syntheticTitle === undefined) {
       syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedReferenceNamePropertyKey)
       syntheticTitleCache.set(reference.normalized, syntheticTitle)
@@ -442,25 +453,24 @@ export const wrapRefWithAllOfIfNeed = (
     : { refValue: wrap, titleIndex, refIndex, siblingIndex, origin }
 }
 
-export const resolveReferenceObjectWithOverrides = (
-  availableSiblings: Override[],
-  options: InternalResolveOptions,
-  state: CloneState<DefineOriginsAndResolveRefState>,
-  rules: CrawlRules<NormalizationRule> | undefined,
-  refInResultedJso: ResolvedRef,
-  originForObj: ChainItem,
-  sibling: Record<PropertyKey, unknown>,
-  syntheticTitleCache: Map<string, Record<PropertyKey, unknown>>,
-  reference: RichReference,
-): ResolvedRefWithSibling => {
+export const resolveReferenceObjectWithOverrides = ({
+  options,
+  state,
+  refInResultedJso,
+  originForObj,
+  sibling,
+}: ResolvedRefData<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>, overrides?: Override[]): ResolvedRefWithSibling => {
   const { refValue, origin } = refInResultedJso
-
+  const childrenOrigins: OriginsMetaRecord = {}
+  if (!overrides || overrides?.length === 0 || !isObject(sibling)) {
+    return { refValue: refValue as Record<PropertyKey, unknown>, origin, childrenOrigins }
+  }
   let modified = false
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const newResult = { ...refValue }
-  const childrenOrigins: OriginsMetaRecord = {}
-  availableSiblings.forEach(field => {
+
+  overrides.forEach(field => {
     if (field in sibling) {
       const data = sibling[field]
       newResult[field] = data

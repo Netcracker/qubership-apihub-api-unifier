@@ -1,10 +1,11 @@
 import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, OriginLeafs, UnifyFunction } from '../types'
 import * as resolvers from '../resolvers'
 import {
-  JsonSchemaSpecVersion,
+  JsonSchemaSpecVersion, OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
   SPEC_TYPE_JSON_SCHEMA_06,
-  SPEC_TYPE_JSON_SCHEMA_07,
+  SPEC_TYPE_JSON_SCHEMA_07, SPEC_TYPE_OPEN_API_30,
+  SPEC_TYPE_OPEN_API_31,
 } from '../spec-type'
 import {
   JSON_SCHEMA_NODE_TYPE_STRING,
@@ -55,6 +56,8 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
+import { referenceObjectResolver } from '../resolve-ref/ref-resolver'
+import { OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY } from './openapi.const'
 
 const EMPTY_MARKER = Symbol('empty-items')
 
@@ -269,11 +272,13 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
 
 export const jsonSchemaRules: (
   version: JsonSchemaSpecVersion,
+  oasVersion?: OpenApiSpecVersion,
   self?: () => NormalizationRules,
 ) => NormalizationRules
   = (
   version,
-  self = () => jsonSchemaRules(version),
+  oasVersion,
+  self = () => jsonSchemaRules(version, oasVersion),
 ) => ({
   '/type': ({ value }) => ({
     ...(typeof value === 'string'
@@ -467,7 +472,18 @@ export const jsonSchemaRules: (
   '/examples': {
     validate: checkType(TYPE_ARRAY),
     merge: resolvers.last,
-    '/**': { validate: checkType(...TYPE_JSON_ANY) },
+    '/**': {
+      validate: checkType(...TYPE_JSON_ANY),
+      referenceHandler: (() => {
+        switch (oasVersion) {
+          case SPEC_TYPE_OPEN_API_31:
+            return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY] })
+          default:
+          case SPEC_TYPE_OPEN_API_30:
+            return referenceObjectResolver()
+        }
+      })(),
+    },
   },
   '/definitions': {
     '/*': self,

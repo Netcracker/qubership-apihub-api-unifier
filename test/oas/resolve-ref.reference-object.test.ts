@@ -13,13 +13,13 @@ const OPTIONS = { resolveRef: true }
 
 //todo rename jsons
 describe('OAS 3.1. Reference Object. Support of summary/description fields in ref object', () => {
-  // it('Override description and summary in properties examples', () => {
-  //   const path = [...POST_PATH, 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0]
-  //   const result = normalize(examples, OPTIONS)
-  //
-  //   expect(result).toHaveProperty([...path, 'description'], 'example description override')
-  //   expect(result).toHaveProperty([...path, 'summary'], 'example summary override')
-  // })
+  it('Override description and summary in properties examples', () => {
+    const path = [...POST_PATH, 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0]
+    const result = normalize(examples, OPTIONS)
+
+    expect(result).toHaveProperty([...path, 'description'], 'example description override')
+    expect(result).toHaveProperty([...path, 'summary'], 'example summary override')
+  })
 
   it('Override description in headers', () => {
     const result = normalize(headers, OPTIONS)
@@ -27,15 +27,15 @@ describe('OAS 3.1. Reference Object. Support of summary/description fields in re
     expect(result).toHaveProperty([...POST_PATH, 'responses', '200', 'headers', 'X-Rate-Limit', 'description'], 'header description override')
   })
 
-  // it('Override description in parameters', () => {
-  //   const result = normalize(parameters, OPTIONS)
-  //   expect(result).toHaveProperty([...POST_PATH, 'parameters', 0, 'description'], 'status parameter description override')
-  // })
+  it('Override description in parameters', () => {
+    const result = normalize(parameters, OPTIONS)
+    expect(result).toHaveProperty([...POST_PATH, 'parameters', 0, 'description'], 'status parameter description override')
+  })
 
-  // it('Override description in requestBody', () => {
-  //   const result = normalize(requestBodies, OPTIONS)
-  //   expect(result).toHaveProperty([...POST_PATH, 'requestBody', 'description'], 'rb description override')
-  // })
+  it('Override description in requestBody', () => {
+    const result = normalize(requestBodies, OPTIONS)
+    expect(result).toHaveProperty([...POST_PATH, 'requestBody', 'description'], 'rb description override')
+  })
 
   it('Override description in responses', () => {
     const result = normalize(response, OPTIONS)

@@ -1,4 +1,11 @@
-import { BEFORE_SECOND_DATA_LEVEL, ReferenceResolver,CURRENT_DATA_LEVEL, NormalizationRules, UnifyFunction, UnifyContext, InternalUnifyOptions } from '../types'
+import {
+  BEFORE_SECOND_DATA_LEVEL,
+  CURRENT_DATA_LEVEL,
+  InternalUnifyOptions,
+  NormalizationRules,
+  UnifyContext,
+  UnifyFunction,
+} from '../types'
 import {
   OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
@@ -44,6 +51,9 @@ import { DefaultValueMapping, JsonPrimitiveValue, valueDefaults } from '../unifi
 import { jsonSchemaTypeInfer, jsonSchemaTypeInferWithRestriction } from '../unifies/type'
 import { deepEqualsMatcher, ReplaceMapping, valueReplaces } from '../unifies/replaces'
 import {
+  OPEN_API_JSON_SCHEMA_PROPERTY_ATTRIBUTE,
+  OPEN_API_JSON_SCHEMA_PROPERTY_WRAPPED,
+  OPEN_API_JSON_SCHEMA_PROPERTY_XML,
   OPEN_API_PROPERTY_ALLOW_EMPTY_VALUE,
   OPEN_API_PROPERTY_ALLOW_RESERVED,
   OPEN_API_PROPERTY_COMPONENTS,
@@ -61,11 +71,7 @@ import {
   OPEN_API_PROPERTY_SCHEMAS,
   OPEN_API_PROPERTY_SECURITY_SCHEMAS,
   OPEN_API_PROPERTY_STYLE,
-  OPEN_API_PROPERTY_SUMMARY,
   OPEN_API_PROPERTY_TAGS,
-  OPEN_API_JSON_SCHEMA_PROPERTY_XML,
-  OPEN_API_JSON_SCHEMA_PROPERTY_WRAPPED,
-  OPEN_API_JSON_SCHEMA_PROPERTY_ATTRIBUTE,
 } from './openapi.const'
 
 import { pathItemsUnification } from '../unifies/openapi'
@@ -76,7 +82,7 @@ import {
   nonEmptyString,
 } from '../deprecated-item-description'
 import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
-import { Override, referenceObject31ReferenceResolver, schemaRefResolver } from '../resolve-ref/ref-resolver'
+import { referenceObjectResolver } from '../resolve-ref/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
   JSON_SCHEMA_NODE_TYPE_BOOLEAN,
@@ -280,10 +286,19 @@ const openApiExampleRules: NormalizationRules = {
   },
 }
 
-const openApiExamplesRules: NormalizationRules = {
+const openApiExamplesRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   '/examples': {
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.last,
+    referenceHandler: (() => {
+      switch (version) {
+        case SPEC_TYPE_OPEN_API_31:
+          return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] })
+        default:
+        case SPEC_TYPE_OPEN_API_30:
+          return referenceObjectResolver()
+      }
+    })(),
     '/*': {
       ...openApiExtensionRulesFunction({
         validate: checkType(...TYPE_JSON_ANY),
@@ -291,7 +306,7 @@ const openApiExamplesRules: NormalizationRules = {
     },
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },
-}
+})
 
 const openApiOAuthScopesRules: NormalizationRules = {
   '/*': { validate: checkType(TYPE_STRING) },
@@ -391,7 +406,7 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
 
 const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
   const baseJsonSchemaVersion = SPEC_TYPE_JSON_SCHEMA_04
-  const core = jsonSchemaRules(baseJsonSchemaVersion, () => customFor30JsonSchemaRules)
+  const core = jsonSchemaRules(baseJsonSchemaVersion, SPEC_TYPE_OPEN_API_30, () => customFor30JsonSchemaRules)
   const extension = openApiJsonSchemaExtensionRules()
   return ({
     ...core,
@@ -454,7 +469,7 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
 const customFor30JsonSchemaRules: NormalizationRules = customFor30JsonSchemaRulesFactory()
 
 const customFor31JsonSchemaRulesFactory = (): NormalizationRules => ({
-  ...jsonSchemaRules(SPEC_TYPE_JSON_SCHEMA_07, () => customFor31JsonSchemaRules),
+  ...jsonSchemaRules(SPEC_TYPE_JSON_SCHEMA_07, SPEC_TYPE_OPEN_API_31, () => customFor31JsonSchemaRules),
   ...openApiJsonSchemaExtensionRules(),
 })
 const customFor31JsonSchemaRules = customFor31JsonSchemaRulesFactory()
@@ -468,16 +483,6 @@ const openApiJsonSchemaRules = (version: OpenApiSpecVersion): NormalizationRules
   }
 }
 
-const referenceObjectReferenceResolver = (
-  version: OpenApiSpecVersion,
-  ...overrides: Override[]
-): ReferenceResolver<any, any> | null => {
-  if (version === SPEC_TYPE_OPEN_API_31) {
-    return referenceObject31ReferenceResolver(...overrides)
-  }
-  return referenceObject31ReferenceResolver()
-}
-
 const openApiMediaTypesRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   '/*': {
     '/schema': openApiJsonSchemaRules(version),
@@ -485,7 +490,7 @@ const openApiMediaTypesRules = (version: OpenApiSpecVersion): NormalizationRules
       inlineDescriptionSuffixCalculator: ctx => `${ctx.suffix} (${ctx.key.toString()})`,
     },
     ...openApiExampleRules,
-    ...openApiExamplesRules,
+    ...openApiExamplesRules(version),
     '/encoding': {
       '/*': {
         deprecation: {
@@ -531,10 +536,18 @@ const openApiHeadersRules = (version: OpenApiSpecVersion): NormalizationRules =>
     '/allowReserved': { validate: checkType(TYPE_BOOLEAN) },
     '/content': openApiMediaTypesRules(version),
     ...openApiExampleRules,
-    ...openApiExamplesRules,
+    ...openApiExamplesRules(version),
     '/schema': openApiJsonSchemaRules(version),
     ...openApiExtensionRules,
-    referenceResolver: referenceObjectReferenceResolver(version, OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY),
+    referenceHandler: (() => {
+      switch (version) {
+        case SPEC_TYPE_OPEN_API_31:
+          return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] })
+        default:
+        case SPEC_TYPE_OPEN_API_30:
+          return referenceObjectResolver()
+      }
+    })(),
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_HEADER_DEFAULTS),
@@ -589,12 +602,21 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
     },
     '/content': openApiMediaTypesRules(version),
     ...openApiExampleRules,
-    ...openApiExamplesRules,
+    ...openApiExamplesRules(version),
     '/schema': () => ({
       ...openApiJsonSchemaRules(version),
       newDataLayer: true,
     }),
     ...openApiExtensionRules,
+    referenceHandler: (() => {
+      switch (version) {
+        case SPEC_TYPE_OPEN_API_31:
+          return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] })
+        default:
+        case SPEC_TYPE_OPEN_API_30:
+          return referenceObjectResolver()
+      }
+    })(),
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_PARAMETER_DEFAULTS),
@@ -611,6 +633,15 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
   ...openApiExtensionRules,
+  referenceHandler: (() => {
+    switch (version) {
+      case SPEC_TYPE_OPEN_API_31:
+        return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] })
+      default:
+      case SPEC_TYPE_OPEN_API_30:
+        return referenceObjectResolver()
+    }
+  })(),
   unify: [
     valueDefaults(OPEN_API_REQUEST_BODY_DEFAULTS),
   ],
@@ -631,7 +662,54 @@ const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules 
       valueDefaults(OPEN_API_RESPONSE_DEFAULTS),
       valueReplaces(OPEN_API_RESPONSE_REPLACES),
     ],
-    referenceResolver: referenceObjectReferenceResolver(version, OPEN_API_PROPERTY_DESCRIPTION),
+
+    // // Deny reference resolver
+    // referenceHandler: notAllowedReferenceHandler,
+    //
+    // // Json schema
+    // referenceHandler: jsonSchemaReferenceResolver,
+    //
+    // // Reference object resolver only as 3.0
+    // referenceHandler: referenceObjectResolver,
+
+    // Reference object resolver for 3.0 and 3.1. Override Description
+    referenceHandler: (() => {
+      switch (version) {
+        case SPEC_TYPE_OPEN_API_31:
+          return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] })
+        case SPEC_TYPE_OPEN_API_30:
+          return referenceObjectResolver()
+        default:
+          return notAllowedReferenceHandler
+      }
+    })(),
+
+    // // Reference object resolver for 3.0 and 3.1. Override Summary
+    // referenceHandler: (() => {
+    //   switch (version) {
+    //     case SPEC_TYPE_OPEN_API_31:
+    //       return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_SUMMARY] })
+    //     case SPEC_TYPE_OPEN_API_30:
+    //       return referenceObjectResolver()
+    //     default:
+    //       return notAllowedReferenceHandler
+    //   }
+    // })(),
+    //
+    // // Reference object resolver for 3.0 and 3.1. Override Summary and Description
+    // referenceHandler: (() => {
+    //   switch (version) {
+    //     case SPEC_TYPE_OPEN_API_31:
+    //       return referenceObjectResolver({
+    //         allowOverrides: [OPEN_API_PROPERTY_SUMMARY, OPEN_API_PROPERTY_DESCRIPTION],
+    //       })
+    //     case SPEC_TYPE_OPEN_API_30:
+    //       return referenceObjectResolver()
+    //     default:
+    //       return notAllowedReferenceHandler
+    //   }
+    // })(),
+
     validate: checkType(TYPE_OBJECT),
     deprecation: {
       inlineDescriptionSuffixCalculator: ctx => `${ctx.suffix} '${ctx.key.toString()}'`,
@@ -794,7 +872,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
         ...openApiExtensionRulesFunction(() => openApiPathItemRules(version)),
       },
     },
-    ...openApiExamplesRules,
+    ...openApiExamplesRules(version),
     ...openApiExtensionRules,
     validate: checkType(TYPE_OBJECT),
     unify: [

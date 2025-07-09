@@ -135,13 +135,7 @@ export const deDefineOriginsAndResolvedRefSymbols = (value: unknown, options?: R
 const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: InternalResolveOptions, cycleJsoHook: SyncCloneHook<DefineOriginsAndResolveRefState>) => DefineOriginsAndResolveRefSyncCloneHook = (rootJso, options, cycleJsoHook) => {
   const cyclingGuard: Set<unknown> = new Set()
   const syntheticTitleCache: Map<string, Record<PropertyKey, unknown>> = new Map()
-  const defineOriginsAndResolveRefHook: DefineOriginsAndResolveRefSyncCloneHook = ({
-    key,
-    value,
-    state,
-    path,
-    rules,
-  }) => {
+  const defineOriginsAndResolveRefHook: DefineOriginsAndResolveRefSyncCloneHook = ({ key, value, state, path, rules, }) => {
     if (state.ignoreTreeUnderSymbols) {
       return { value }
     }
@@ -210,7 +204,6 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
         const reference = parseRef($ref)
 
         const processResolvedReference: (resolvedRefWithSibling: ResolvedRefWithSibling) => ReturnType<DefineOriginsAndResolveRefSyncCloneHook> = (resolvedRefWithSibling) => {
-
           if ((resolvedRefWithSibling as ResolvedRefSibling)?.childrenOrigins) {
             const { refValue, origin, childrenOrigins } = resolvedRefWithSibling as ResolvedRefSibling
             return {
@@ -413,15 +406,7 @@ export interface ResolvedRefAllOf extends ResolvedRef {
   siblingIndex: number
 }
 
-export const wrapRefWithAllOfIfNeed = ({options,
-  state,
-  refInResultedJso,
-  originForObj,
-  sibling,
-  rules,
-  syntheticTitleCache,
-  reference
-}:  ResolvedRefData<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>): ResolvedRefWithSibling => {
+export const wrapRefWithAllOfIfNeed = ({ options, state, refInResultedJso, originForObj, sibling, rules, syntheticTitleCache, reference, }: ResolvedRefData): ResolvedRefWithSibling => {
   const { refValue, origin } = refInResultedJso
   const wrap: SyntheticAllOf & Record<PropertyKey, unknown> = { [JSON_SCHEMA_PROPERTY_ALL_OF]: [] }
   options.originsFlag && getOrReuseOrigin(wrap, originForObj, state.originCache)
@@ -453,13 +438,10 @@ export const wrapRefWithAllOfIfNeed = ({options,
     : { refValue: wrap, titleIndex, refIndex, siblingIndex, origin }
 }
 
-export const resolveReferenceObjectWithOverrides = ({
-  options,
-  state,
-  refInResultedJso,
-  originForObj,
-  sibling,
-}: ResolvedRefData<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>, overrides?: Override[]): ResolvedRefWithSibling => {
+export const resolveReferenceObjectWithOverrides = (
+  { options, state, refInResultedJso, originForObj, sibling }: ResolvedRefData,
+  overrides?: Override[]
+): ResolvedRefWithSibling => {
   const { refValue, origin } = refInResultedJso
   const childrenOrigins: OriginsMetaRecord = {}
   if (!overrides || overrides?.length === 0 || !isObject(sibling)) {

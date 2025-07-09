@@ -82,7 +82,7 @@ import {
   nonEmptyString,
 } from '../deprecated-item-description'
 import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
-import { referenceObjectResolver } from '../resolve-ref/ref-resolver'
+import { notAllowedReferenceHandler, referenceObjectResolver } from '../resolve-ref/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
   JSON_SCHEMA_NODE_TYPE_BOOLEAN,

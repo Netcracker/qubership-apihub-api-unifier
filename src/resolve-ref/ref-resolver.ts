@@ -4,6 +4,7 @@ import {
   InternalResolveOptions,
   NormalizationRule,
   ReferenceHandler,
+  RefErrorTypes,
   RichReference,
 } from '../types'
 import { CloneState, CrawlRules } from '@netcracker/qubership-apihub-json-crawl'
@@ -14,6 +15,7 @@ import {
   resolveReferenceObjectWithOverrides,
   wrapRefWithAllOfIfNeed,
 } from '../define-origins-and-resolve-ref'
+import { ErrorMessage } from '../errors'
 
 export type Override =
   | typeof OPEN_API_PROPERTY_DESCRIPTION
@@ -21,23 +23,27 @@ export type Override =
 
 
 export const jsonSchemaReferenceResolver: ReferenceHandler<CloneState<DefineOriginsAndResolveRefState>,CrawlRules<NormalizationRule>> = args => wrapRefWithAllOfIfNeed(args)
-export const notAllowedReferenceHandler: ReferenceHandler<CloneState<DefineOriginsAndResolveRefState>,CrawlRules<NormalizationRule>> = args => {
-  return null
+export const notAllowedReferenceHandler: ReferenceHandler<CloneState<DefineOriginsAndResolveRefState>,CrawlRules<NormalizationRule>> = args => aaa(args)
+
+export const aaa = ({ options, state,  }: ResolvedRefData): ResolvedRefWithSibling => {
+  options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+  state.node[safeKey] = value
+  return { done: true }
 }
 
 export function referenceObjectResolver<T extends  CloneState<DefineOriginsAndResolveRefState>, R extends CrawlRules<NormalizationRule>>(overrides?: {allowOverrides: Override[]}): ReferenceHandler<T, R> {
-  return (data: ResolvedRefData<T,R>): ResolvedRefWithSibling => {
+  return (data: ResolvedRefData): ResolvedRefWithSibling => {
     return resolveReferenceObjectWithOverrides(data, overrides?.allowOverrides ?? [])
   }
 }
 
-export interface ResolvedRefData<T, R extends {}> {
+export interface ResolvedRefData {
   options: InternalResolveOptions,
-  state: T,
+  state: CloneState<DefineOriginsAndResolveRefState>,
   refInResultedJso: ResolvedRef,
   originForObj: ChainItem,
   sibling: Record<PropertyKey, unknown>,
-  rules: CrawlRules<R> | undefined,
+  rules: CrawlRules<NormalizationRule> | undefined,
   syntheticTitleCache: Map<string, Record<PropertyKey, unknown>>,
   reference: RichReference,
 }

@@ -161,29 +161,13 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
       const { $ref, ...otherSibling } = value
       let sibling = otherSibling
       if ($ref) {
-        //todo replace this after fix resolve rules
-        // const { referenceResolver } = rules || {}
-        //  if (!referenceResolver) {
-        //      options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
-        //      state.node[safeKey] = value
-        //      return { done: true }
-        // }
 
-        /* for del start */
-        let tempReferenceResolver
-        if (rules) {
-          const { referenceHandler } = rules
-          tempReferenceResolver = referenceHandler
-        }
-        if (tempReferenceResolver === null) {
+        const { referenceHandler } = rules || {}
+        if (!referenceHandler) {
           options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
           state.node[safeKey] = value
           return { done: true }
         }
-        if (!tempReferenceResolver) {
-          tempReferenceResolver = wrapRefWithAllOfIfNeed
-        }
-        /* for del stop */
 
         const originForRef = getOrReuseOrigin(originForObj, {
           parent: originForObj,
@@ -320,7 +304,16 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               : undefined,
           )
           if (refInResultedJso?.refValue !== undefined && refInResultedJso?.refValue !== null) {
-            return processResolvedReference(tempReferenceResolver({options, state, rules, refInResultedJso, originForObj, sibling, syntheticTitleCache, reference}))
+            return processResolvedReference(referenceHandler({
+              options,
+              state,
+              rules,
+              refInResultedJso,
+              originForObj,
+              sibling,
+              syntheticTitleCache,
+              reference,
+            }))
           }
           const refInSourceJso = resolveRefNode(
             reference,
@@ -348,7 +341,16 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               : undefined,
           )
           if (refInSourceJso?.refValue !== undefined && refInSourceJso?.refValue !== null) {
-            return processResolvedReference(tempReferenceResolver({options, state, rules, refInResultedJso: refInSourceJso, originForObj, sibling, syntheticTitleCache, reference}))
+            return processResolvedReference(referenceHandler({
+              options,
+              state,
+              rules,
+              refInResultedJso: refInSourceJso,
+              originForObj,
+              sibling,
+              syntheticTitleCache,
+              reference,
+            }))
           }
           options.onRefResolveError?.(ErrorMessage.refNotFound($ref), path, $ref, RefErrorTypes.REF_NOT_FOUND)
           const brokenValueClone = { [JSON_SCHEMA_PROPERTY_REF]: $ref }
@@ -406,7 +408,16 @@ export interface ResolvedRefAllOf extends ResolvedRef {
   siblingIndex: number
 }
 
-export const wrapRefWithAllOfIfNeed = ({ options, state, refInResultedJso, originForObj, sibling, rules, syntheticTitleCache, reference, }: ResolvedRefData): ResolvedRefWithSibling => {
+export const wrapRefWithAllOfIfNeed = ({
+  options,
+  state,
+  refInResultedJso,
+  originForObj,
+  sibling,
+  rules,
+  syntheticTitleCache,
+  reference,
+}: ResolvedRefData): ResolvedRefWithSibling => {
   const { refValue, origin } = refInResultedJso
   const wrap: SyntheticAllOf & Record<PropertyKey, unknown> = { [JSON_SCHEMA_PROPERTY_ALL_OF]: [] }
   options.originsFlag && getOrReuseOrigin(wrap, originForObj, state.originCache)
@@ -440,7 +451,7 @@ export const wrapRefWithAllOfIfNeed = ({ options, state, refInResultedJso, origi
 
 export const resolveReferenceObjectWithOverrides = (
   { options, state, refInResultedJso, originForObj, sibling }: ResolvedRefData,
-  overrides?: Override[]
+  overrides?: Override[],
 ): ResolvedRefWithSibling => {
   const { refValue, origin } = refInResultedJso
   const childrenOrigins: OriginsMetaRecord = {}

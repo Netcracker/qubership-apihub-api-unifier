@@ -10,7 +10,7 @@ import {
   TYPE_BOOLEAN,
   TYPE_JSON_ANY,
   TYPE_OBJECT,
-  TYPE_STRING
+  TYPE_STRING,
 } from '../validate/checker'
 import {
   GRAPH_API_DIRECTIVE_LOCATIONS,
@@ -25,7 +25,7 @@ import {
   GRAPH_API_NODE_KIND_OBJECT,
   GRAPH_API_NODE_KIND_SCALAR,
   GRAPH_API_NODE_KIND_STRING,
-  GRAPH_API_NODE_KIND_UNION
+  GRAPH_API_NODE_KIND_UNION,
 } from '@netcracker/qubership-apihub-graphapi'
 import { resolveValueByPath } from '../utils'
 import {
@@ -50,9 +50,10 @@ import {
   GRAPH_API_PROPERTY_SUBSCRIPTIONS,
   GRAPH_API_PROPERTY_TYPE,
   GRAPH_API_PROPERTY_UNIONS,
-  GRAPH_API_PROPERTY_VALUES
+  GRAPH_API_PROPERTY_VALUES,
 } from './graphapi.const'
 import { GRAPH_API_DEPRECATION_PREDICATE } from './graphapi.deprecated'
+import { jsonSchemaReferenceResolver } from '../resolve-ref/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
 
@@ -197,9 +198,11 @@ const directivesUsagesRules: NormalizationRules = {
         valueReplaces(DIRECTIVE_USAGE_REPLACES),
         directiveMetaUnification,
       ],
+      validate: checkType(TYPE_OBJECT),
     },
     validate: checkType(TYPE_OBJECT),
   },
+  validate: checkType(TYPE_OBJECT),
   unify: [
     valueDefaults(DIRECTIVE_HOLDER_DEFAULTS),
     valueReplaces(DIRECTIVE_HOLDER_REPLACES)
@@ -218,6 +221,9 @@ const selfNamedBaseRules: NormalizationRules = {
   '/title': {
     validate: checkType(TYPE_STRING)
   },
+  '/**': {
+    referenceHandler: jsonSchemaReferenceResolver,
+  },
 }
 
 const directiveDefinitionRules: NormalizationRules = {
@@ -232,6 +238,7 @@ const directiveDefinitionRules: NormalizationRules = {
     validate: checkType(TYPE_ARRAY),
   },
   validate: checkType(TYPE_OBJECT),
+  referenceHandler: jsonSchemaReferenceResolver,
   unify: [
     valueDefaults(DIRECTIVE_DEFINITION_DEFAULTS),
     valueReplaces(DIRECTIVE_DEFINITION_REPLACES)
@@ -260,7 +267,7 @@ const typeDefinitionRules: (ctx: CrawlRulesContext) => NormalizationRules = ({ v
     case GRAPH_API_NODE_KIND_LIST:
       return listDefinitionRules
     default:
-      return { validate: () => false }
+      return { validate: () => false, referenceHandler: jsonSchemaReferenceResolver }
   }
 }
 
@@ -452,6 +459,7 @@ export const graphApiRules: () => NormalizationRules = () => ({
       valueReplaces(COMPONENTS_REPLACES)
     ],
   },
+  validate: checkType(TYPE_OBJECT),
   unify: [
     valueDefaults(GRAPH_API_DEFAULTS),
     valueReplaces(GRAPH_API_REPLACES)

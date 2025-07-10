@@ -1,11 +1,12 @@
 import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, OriginLeafs, UnifyFunction } from '../types'
 import * as resolvers from '../resolvers'
 import {
-  JsonSchemaSpecVersion, OpenApiSpecVersion,
+  JsonSchemaSpecVersion,
+  OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
   SPEC_TYPE_JSON_SCHEMA_06,
-  SPEC_TYPE_JSON_SCHEMA_07, SPEC_TYPE_OPEN_API_30,
-  SPEC_TYPE_OPEN_API_31,
+  SPEC_TYPE_JSON_SCHEMA_07,
+  SPEC_TYPE_OPEN_API_30,
 } from '../spec-type'
 import {
   JSON_SCHEMA_NODE_TYPE_STRING,
@@ -56,7 +57,7 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
-import { referenceObjectResolver } from '../resolve-ref/ref-resolver'
+import { jsonSchemaReferenceResolver, referenceObjectRuleFunction } from '../resolve-ref/ref-resolver'
 import { OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY } from './openapi.const'
 
 const EMPTY_MARKER = Symbol('empty-items')
@@ -474,15 +475,8 @@ export const jsonSchemaRules: (
     merge: resolvers.last,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      referenceHandler: (() => {
-        switch (oasVersion) {
-          case SPEC_TYPE_OPEN_API_31:
-            return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY] })
-          default:
-          case SPEC_TYPE_OPEN_API_30:
-            return referenceObjectResolver()
-        }
-      })(),
+      //todo REF: oasVersion version??
+      referenceHandler: referenceObjectRuleFunction({version: oasVersion ?? SPEC_TYPE_OPEN_API_30, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY] }),
     },
   },
   '/definitions': {
@@ -505,6 +499,8 @@ export const jsonSchemaRules: (
     //why anyOf?
     hashStrategy: BEFORE_SECOND_DATA_LEVEL,
   },
+  //todo fix?
+  '/**': () => ({  referenceHandler: jsonSchemaReferenceResolver}),
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested
   // The boolean schema values "true" and "false" are trivial schemas that always produce themselves as assertion results, regardless of the instance value. They never produce annotation results.
   //
@@ -516,6 +512,7 @@ export const jsonSchemaRules: (
   // Always fails validation, as if the schema { "not": {} }
   // While the empty schema object is unambiguous, there are many possible equivalents to the "false" schema. Using the boolean values ensures that the intent is clear to both human readers and implementations.
   validate: checkType(TYPE_OBJECT),
+  referenceHandler: jsonSchemaReferenceResolver,
   merge: resolvers.jsonSchemaMergeResolver,
   canLiftCombiners: true,
   resolvedReferenceNamePropertyKey: JSON_SCHEMA_PROPERTY_TITLE,

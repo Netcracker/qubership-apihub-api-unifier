@@ -176,7 +176,7 @@ export interface MergeContext {
 }
 
 export type MergeResolver<T> = (args: ValueWithOrigins<T>[], ctx: MergeContext) => ValueWithOrigins<T> | undefined
-export type ReferenceHandler<T, R extends {}> = (args: ResolvedRefData<T, R>) => ResolvedRefWithSibling
+export type ReferenceHandler<T, R extends {}> = (args: ResolvedRefData) => ResolvedRefWithSibling
 
 export interface HasIgnoreTreeUnderSymbols {
   ignoreTreeUnderSymbols: boolean

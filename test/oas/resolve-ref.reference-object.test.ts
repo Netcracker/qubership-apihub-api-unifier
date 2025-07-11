@@ -535,6 +535,194 @@ describe('OAS 3.1 reference object', () => {
       })
     })
 
+    describe('examples', () => {
+      it('could define examples via reference object', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "prop1": {
+                              "type": "string",
+                              "examples": [
+                                {
+                                  "$ref": "#/components/examples/ex1",
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "examples": {
+              "ex1": {
+                'description': 'examples description from components',
+              }
+            }
+          }
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0]).toBe(result.components.examples.ex1)
+      })
+
+      it('could override description and summary for examples via reference object', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "prop1": {
+                              "type": "string",
+                              "examples": [
+                                {
+                                  "$ref": "#/components/examples/ex1",
+                                  description: 'Overriden description',
+                                  summary: 'Overriden summary',
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "examples": {
+              "ex1": {
+                'description': 'examples description from components',
+                summary: "example summary from components",
+              }
+            }
+          }
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].description).toBe('Overriden description')
+        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toBe('Overriden summary')
+        expect(result.components.examples.ex1.description).toBe('examples description from components')
+        expect(result.components.examples.ex1.summary).toBe('example summary from components')
+      })
+
+      it('properties other than description and summary could not be overriden via reference object for examples', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "prop1": {
+                              "type": "string",
+                              "examples": [
+                                {
+                                  "$ref": "#/components/examples/ex1",
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "examples": {
+              "ex1": {
+                'description': 'examples description from components',
+                summary: "example summary from components",
+                'schema': {
+                  'type': 'integer',
+                  'format': 'int32',
+                },
+              }
+            }
+          }
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].schema).toBe(result.components.examples.ex1.schema)
+      })
+
+      it('could not override description and summary for responses via examples object in OAS 3.0', () => {
+        const source = {
+          "openapi": "3.0.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "prop1": {
+                              "type": "string",
+                              "examples": [
+                                {
+                                  "$ref": "#/components/examples/ex1",
+                                  description: 'Overriden description',
+                                  summary: 'Overriden summary',
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "examples": {
+              "ex1": {
+                'description': 'examples description from components',
+                summary: "example summary from components",
+              }
+            }
+          }
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].description).toEqual('examples description from components')
+        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toEqual('example summary from components')
+      })
+    })
   })
 })
 

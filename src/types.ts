@@ -1,8 +1,8 @@
-import { CloneState, CrawlRules, JsonPath, SyncCloneHook } from '@netcracker/qubership-apihub-json-crawl'
+import { CrawlRules, JsonPath, SyncCloneHook } from '@netcracker/qubership-apihub-json-crawl'
 import { EvaluationCacheService, PropertySpreadWithCacheService } from './cache'
 import { HasSelfMetaResolver } from './utils'
-import { ResolvedRef, ResolvedRefWithSibling } from './define-origins-and-resolve-ref'
-import { ResolvedRefData } from './resolve-ref/ref-resolver'
+import { ResolvedRefWithSibling } from './define-origins-and-resolve-ref'
+import { ResolvedRefData } from './references/ref-resolver'
 
 export type RawJsonSchema = Record<PropertyKey, unknown> | boolean
 export type JsonSchema = Record<PropertyKey, unknown>

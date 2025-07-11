@@ -57,7 +57,7 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
-import { jsonSchemaReferenceResolver, referenceObjectRuleFunction } from '../resolve-ref/ref-resolver'
+import { jsonSchemaReferenceResolver, referenceObjectRuleFunction } from '../references/ref-resolver'
 import { OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY } from './openapi.const'
 
 const EMPTY_MARKER = Symbol('empty-items')

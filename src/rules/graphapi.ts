@@ -53,7 +53,7 @@ import {
   GRAPH_API_PROPERTY_VALUES,
 } from './graphapi.const'
 import { GRAPH_API_DEPRECATION_PREDICATE } from './graphapi.deprecated'
-import { jsonSchemaReferenceResolver } from '../resolve-ref/ref-resolver'
+import { jsonSchemaReferenceResolver } from '../references/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
 

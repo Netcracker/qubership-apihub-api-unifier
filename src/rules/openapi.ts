@@ -86,7 +86,7 @@ import {
   jsonSchemaReferenceResolver,
   referenceObjectResolver,
   referenceObjectRuleFunction,
-} from '../resolve-ref/ref-resolver'
+} from '../references/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
   JSON_SCHEMA_NODE_TYPE_BOOLEAN,

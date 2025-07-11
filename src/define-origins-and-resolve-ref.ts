@@ -28,7 +28,7 @@ import { createCycledJsoHandlerHook } from './cycle-jso'
 import { JSON_SCHEMA_PROPERTY_ALL_OF, JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { RULES } from './rules'
 import { setOrigins } from './origins'
-import { Override, ResolvedRefData } from './resolve-ref/ref-resolver'
+import { Override, ResolvedRefData } from './references/ref-resolver'
 
 interface SyntheticAllOf {
   [JSON_SCHEMA_PROPERTY_ALL_OF]: Array<unknown>
@@ -408,7 +408,7 @@ export interface ResolvedRefAllOf extends ResolvedRef {
   siblingIndex: number
 }
 
-export const wrapRefWithAllOfIfNeed = ({
+export const resolveJsonSchemaReferenceWithAllOf = ({
   options,
   state,
   refInResultedJso,

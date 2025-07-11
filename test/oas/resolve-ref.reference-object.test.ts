@@ -3,40 +3,15 @@ import 'jest-extended'
 import { defineOriginsAndResolveRef } from '../../src/define-origins-and-resolve-ref'
 import { JsonPath } from '@netcracker/qubership-apihub-json-crawl'
 import { TEST_ORIGINS_FLAG } from '../helpers'
+import defineResponseViaReferenceObjectChain from '../resources/reference-object/define-response-via-reference-object-chain.json'
+import secondLevelObjectSameWhenOverridingDescriptionForResponse from '../resources/reference-object/second-level-object-are-the-same-when-overriding-for-response.json'
+import notHangUpWhenProcessingCycledChainOfForResponse from '../resources/reference-object/not-hang-up-when-processing-cycled-chain-for-response.json'
+import notHangUpWhenProcessingResponseWhichPointsToItself from '../resources/reference-object/not-hang-up-when-processing-for-response-which-points-to-itself.json'
 
 describe('OAS 3.1 reference object', () => {
   it('second-level object are the same when overriding description for response via reference object', () => {
-    const source = {
-      openapi: '3.1.0',
-      paths: {
-        '/test': {
-          get: {
-            responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
-                description: 'Overriden description',
-              },
-            },
-          },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            description: 'Successful response',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-        },
-      },
-    }
 
-    const result = defineOriginsAndResolveRef(source) as any
+    const result = defineOriginsAndResolveRef(secondLevelObjectSameWhenOverridingDescriptionForResponse) as any
     expect(result.paths['/test'].get.responses['200'].content).toBe(result.components.responses.SuccessResponse.content)
   })
 
@@ -67,32 +42,7 @@ describe('OAS 3.1 reference object', () => {
   })
 
   it('could define response via reference object chain', () => {
-    const source = {
-      openapi: '3.1.0',
-      paths: {
-        '/test': {
-          get: {
-            responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
-              },
-            },
-          },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            $ref: '#/components/responses/SuccessResponse2',
-          },
-          SuccessResponse2: {
-            description: 'Some request',
-          },
-        },
-      },
-    }
-
-    const result = defineOriginsAndResolveRef(couldDefineResponseViaReferenceObjectChain) as any
+    const result = defineOriginsAndResolveRef(defineResponseViaReferenceObjectChain) as any
     expect(result.paths['/test'].get.responses['200']).toBe(result.components.responses.SuccessResponse2)
   })
 
@@ -102,59 +52,14 @@ describe('OAS 3.1 reference object', () => {
       expect(errorType).toBe(RefErrorTypes.REF_NOT_FOUND)
       done()
     }
-    const source = {
-      openapi: '3.1.0',
-      paths: {
-        '/test': {
-          get: {
-            responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
-              },
-            },
-          },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            $ref: '#/components/responses/SuccessResponse',
-          },
-        },
-      },
-    }
 
-    const result = defineOriginsAndResolveRef(source, { onRefResolveError }) as any
+    const result = defineOriginsAndResolveRef(notHangUpWhenProcessingResponseWhichPointsToItself, { onRefResolveError }) as any
     expect(result.paths['/test'].get.responses['200'].$ref).toBe('#/components/responses/SuccessResponse')
   })
 
   it('should not hang up when processing cycled chain of reference objects for response', () => {
-    const source = {
-      openapi: '3.1.0',
-      paths: {
-        '/test': {
-          get: {
-            responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
-              },
-            },
-          },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            $ref: '#/components/responses/SuccessResponse2',
-          },
-          SuccessResponse2: {
-            $ref: '#/components/responses/SuccessResponse',
-          },
-        },
-      },
-    }
     let errorCount = 0
-    const result = defineOriginsAndResolveRef(source, { onRefResolveError: () => errorCount++ }) as any
+    const result = defineOriginsAndResolveRef(notHangUpWhenProcessingCycledChainOfForResponse, { onRefResolveError: () => errorCount++ }) as any
     expect(errorCount).toBe(2)
     expect(result.paths['/test'].get.responses['200'].$ref).toBe('#/components/responses/SuccessResponse')
   })

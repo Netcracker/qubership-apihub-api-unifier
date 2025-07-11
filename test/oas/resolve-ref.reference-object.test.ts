@@ -1,12 +1,16 @@
-import { RefErrorType, RefErrorTypes } from '../../src'
+import { normalize, RefErrorType, RefErrorTypes } from '../../src'
 import 'jest-extended'
 import { defineOriginsAndResolveRef } from '../../src/define-origins-and-resolve-ref'
 import { JsonPath } from '@netcracker/qubership-apihub-json-crawl'
 import { TEST_ORIGINS_FLAG } from '../helpers'
-import defineResponseViaReferenceObjectChain from '../resources/reference-object/define-response-via-reference-object-chain.json'
-import secondLevelObjectSameWhenOverridingDescriptionForResponse from '../resources/reference-object/second-level-object-are-the-same-when-overriding-for-response.json'
-import notHangUpWhenProcessingCycledChainOfForResponse from '../resources/reference-object/not-hang-up-when-processing-cycled-chain-for-response.json'
-import notHangUpWhenProcessingResponseWhichPointsToItself from '../resources/reference-object/not-hang-up-when-processing-for-response-which-points-to-itself.json'
+import defineResponseViaReferenceObjectChain
+  from '../resources/reference-object/define-response-via-reference-object-chain.json'
+import secondLevelObjectSameWhenOverridingDescriptionForResponse
+  from '../resources/reference-object/second-level-object-are-the-same-when-overriding-for-response.json'
+import notHangUpWhenProcessingCycledChainOfForResponse
+  from '../resources/reference-object/not-hang-up-when-processing-cycled-chain-for-response.json'
+import notHangUpWhenProcessingResponseWhichPointsToItself
+  from '../resources/reference-object/not-hang-up-when-processing-for-response-which-points-to-itself.json'
 
 describe('OAS 3.1 reference object', () => {
   it('second-level object are the same when overriding description for response via reference object', () => {
@@ -64,104 +68,119 @@ describe('OAS 3.1 reference object', () => {
     expect(result.paths['/test'].get.responses['200'].$ref).toBe('#/components/responses/SuccessResponse')
   })
 
-  describe('generalize', ()=> {
-    it('could define response via reference object', () => {
-      const source = {
-        openapi: '3.1.0',
-        paths: {
-          '/test': {
-            get: {
-              responses: {
-                '200': {
-                  $ref: '#/components/responses/SuccessResponse',
+  describe('generalize', () => {
+    describe('response', () => {
+      it('could define response via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              get: {
+                responses: {
+                  '200': {
+                    $ref: '#/components/responses/SuccessResponse',
+                  },
                 },
               },
             },
           },
-        },
-        components: {
-          responses: {
-            SuccessResponse: {
-              description: 'Successful response',
-            },
-          },
-        },
-      }
-
-      const result = defineOriginsAndResolveRef(source) as any
-      expect(result.paths['/test'].get.responses['200']).toBe(result.components.responses.SuccessResponse)
-    })
-  })
-
-  it('could override description for response via reference object', () => {
-    const source = {
-      openapi: '3.1.0',
-      paths: {
-        '/test': {
-          get: {
+          components: {
             responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
-                description: 'Overriden description',
+              SuccessResponse: {
+                description: 'Successful response',
               },
             },
           },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            description: 'Successful response',
-          },
-        },
-      },
-    }
+        }
 
-    const result = defineOriginsAndResolveRef(source) as any
-    expect(result.paths['/test'].get.responses['200'].description).toBe('Overriden description')
-    expect(result.components.responses.SuccessResponse.description).toBe('Successful response')
-  })
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].get.responses['200']).toBe(result.components.responses.SuccessResponse)
+      })
 
-  it('could not override summary for the response via reference object', () => {
-      const source = {
-        openapi: '3.1.0',
-        paths: {
-          '/test': {
-            get: {
-              responses: {
-                '200': {
-                  $ref: '#/components/responses/SuccessResponse',
-                  summary: 'Overriden summary',
+      it('could override description for response via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              get: {
+                responses: {
+                  '200': {
+                    $ref: '#/components/responses/SuccessResponse',
+                    description: 'Overriden description',
+                  },
                 },
               },
             },
           },
-        },
-        components: {
-          responses: {
-            SuccessResponse: {
-              description: 'Successful response',
+          components: {
+            responses: {
+              SuccessResponse: {
+                description: 'Successful response',
+              },
             },
           },
-        },
-      }
+        }
 
-      const result = defineOriginsAndResolveRef(source) as any
-      expect(result.paths['/test'].get.responses['200']).not.toHaveProperty('summary')
-      // TODO: reported via onRefResolveError callback?
-    })
-
-  it('properties other than description and summary could not be overriden via reference object for response', () => {
-    const source = {
-      openapi: '3.1.0',
-      paths: {
-        '/test': {
-          get: {
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].get.responses['200'].description).toBe('Overriden description')
+        expect(result.components.responses.SuccessResponse.description).toBe('Successful response')
+      })
+      it('could not override summary for the response via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              get: {
+                responses: {
+                  '200': {
+                    $ref: '#/components/responses/SuccessResponse',
+                    summary: 'Overriden summary',
+                  },
+                },
+              },
+            },
+          },
+          components: {
             responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
+              SuccessResponse: {
+                description: 'Successful response',
+              },
+            },
+          },
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].get.responses['200']).not.toHaveProperty('summary')
+        // TODO: reported via onRefResolveError callback?
+      })
+
+      it('properties other than description and summary could not be overriden via reference object for response', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              get: {
+                responses: {
+                  '200': {
+                    $ref: '#/components/responses/SuccessResponse',
+                    content: {
+                      'application/json': {
+                        schema: {
+                          type: 'object',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          components: {
+            responses: {
+              SuccessResponse: {
+                description: 'Successful response',
                 content: {
-                  'application/json': {
+                  'application/xml': {
                     schema: {
                       type: 'object',
                     },
@@ -170,54 +189,352 @@ describe('OAS 3.1 reference object', () => {
               },
             },
           },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            description: 'Successful response',
-            content: {
-              'application/xml': {
-                schema: {
-                  type: 'object',
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].get.responses['200'].content).toBe(result.components.responses.SuccessResponse.content)
+      })
+
+      it('could not override description for responses via reference object in OAS 3.0', () => {
+        const source = {
+          openapi: '3.0.0',
+          paths: {
+            '/test': {
+              get: {
+                responses: {
+                  '200': {
+                    $ref: '#/components/responses/SuccessResponse',
+                    description: 'Overriden description',
+                  },
                 },
               },
             },
           },
-        },
-      },
-    }
-
-    const result = defineOriginsAndResolveRef(source) as any
-    expect(result.paths['/test'].get.responses['200'].content).toBe(result.components.responses.SuccessResponse.content)
-  })
-
-  it('could not override description for responses via reference object in OAS 3.0', () => {
-    const source = {
-      openapi: '3.0.0',
-      paths: {
-        '/test': {
-          get: {
+          components: {
             responses: {
-              '200': {
-                $ref: '#/components/responses/SuccessResponse',
-                description: 'Overriden description',
+              SuccessResponse: {
+                description: 'Successful response',
               },
             },
           },
-        },
-      },
-      components: {
-        responses: {
-          SuccessResponse: {
-            description: 'Successful response',
-          },
-        },
-      },
-    }
+        }
 
-    const result = defineOriginsAndResolveRef(source) as any
-    expect(result.paths['/test'].get.responses['200'].description).toEqual('Successful response')
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].get.responses['200'].description).toEqual('Successful response')
+      })
+    })
+    describe('requestBody', () => {
+      it('could define requestBody via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'requestBody': {
+                  '$ref': '#/components/requestBodies/Data',
+                },
+              },
+            },
+          },
+          components: {
+            'requestBodies': {
+              'Data': {
+                'description': 'RequestBodies data',
+              },
+            },
+          },
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.requestBodies).toBe(result.components.requestBodies.request)
+      })
+
+      it('could override description for requestBody via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'requestBody': {
+                  '$ref': '#/components/requestBodies/Data',
+                  description: 'Overriden description',
+                },
+              },
+            },
+          },
+          components: {
+            'requestBodies': {
+              'Data': {
+                'description': 'RequestBodies data',
+              },
+            },
+          },
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.requestBody.description).toBe('Overriden description')
+        expect(result.components.requestBodies.Data.description).toBe('RequestBodies data')
+      })
+
+      it('could not override summary for the requestBody via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'requestBody': {
+                  '$ref': '#/components/requestBodies/Data',
+                  summary: 'Overriden summary',
+                },
+              },
+            },
+          },
+          components: {
+            'requestBodies': {
+              'Data': {
+                'description': 'RequestBodies data',
+              },
+            },
+          },
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.requestBody).not.toHaveProperty('summary')
+        // TODO: reported via onRefResolveError callback?
+      })
+
+      it('properties other than description and summary could not be overriden via reference object for requestBody', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                requestBody: {
+                  $ref: '#/components/requestBodies/Data',
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          components: {
+            'requestBodies': {
+              'Data': {
+                description: 'RequestBodies data',
+                content: {
+                  'application/xml': {
+                    schema: {
+                      type: 'object',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.requestBody.content).toBe(result.components.requestBodies.Data.content)
+      })
+
+      it('could not override description for responses via requestBody object in OAS 3.0', () => {
+        const source = {
+          openapi: '3.0.0',
+          paths: {
+            '/test': {
+              post: {
+                requestBody: {
+                  $ref: '#/components/requestBodies/Data',
+                  description: 'Overriden description',
+                },
+              },
+            },
+          },
+          components: {
+            requestBodies: {
+              Data: {
+                description: 'RequestBodies data',
+              },
+            },
+          },
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.requestBody.description).toEqual('RequestBodies data')
+      })
+    })
+
+    describe('headers', () => {
+      it('could define headers via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'responses': {
+                  '200': {
+                    'headers': {
+                      'X-Rate-Limit': {
+                        '$ref': '#/components/headers/X-Rate-Limit',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          'components': {
+            'headers': {
+              'X-Rate-Limit': {
+                'description': 'header description from components',
+              },
+            },
+          },
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit']).toBe(result.components.headers['X-Rate-Limit'])
+      })
+
+      it('could override description for headers via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'responses': {
+                  '200': {
+                    'headers': {
+                      'X-Rate-Limit': {
+                        '$ref': '#/components/headers/X-Rate-Limit',
+                        description: 'Overriden description',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          'components': {
+            'headers': {
+              'X-Rate-Limit': {
+                'description': 'header description from components',
+              },
+            },
+          },
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].description).toBe('Overriden description')
+        expect(result.components.headers['X-Rate-Limit'].description).toBe('header description from components')
+      })
+
+      it('could not override summary for the requestBody via reference object', () => {
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'responses': {
+                  '200': {
+                    'headers': {
+                      'X-Rate-Limit': {
+                        '$ref': '#/components/headers/X-Rate-Limit',
+                        summary: 'Overriden summary',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          'components': {
+            'headers': {
+              'X-Rate-Limit': {
+                'description': 'header description from components',
+              },
+            },
+          },
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit']).not.toHaveProperty('summary')
+        // TODO: reported via onRefResolveError callback?
+      })
+
+      it('properties other than description and summary could not be overriden via reference object for headers', () => {
+
+        const source = {
+          openapi: '3.1.0',
+          paths: {
+            '/test': {
+              post: {
+                'responses': {
+                  '200': {
+                    'headers': {
+                      'X-Rate-Limit': {
+                        '$ref': '#/components/headers/X-Rate-Limit',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          'components': {
+            'headers': {
+              'X-Rate-Limit': {
+                'description': 'header description from components',
+                'schema': {
+                  'type': 'integer',
+                  'format': 'int32',
+                },
+              },
+            },
+          },
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].schema).toBe(result.components.headers['X-Rate-Limit'].schema)
+      })
+
+      it('could not override description for responses via requestBody object in OAS 3.0', () => {
+        const source = {
+          openapi: '3.0.0',
+          paths: {
+            '/test': {
+              post: {
+                'responses': {
+                  '200': {
+                    'headers': {
+                      'X-Rate-Limit': {
+                        '$ref': '#/components/headers/X-Rate-Limit',
+                        description: 'Overriden description',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          'components': {
+            'headers': {
+              'X-Rate-Limit': {
+                'description': 'header description from components',
+              },
+            },
+          },
+        }
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].description).toEqual('header description from components')
+      })
+    })
+
   })
 })
 

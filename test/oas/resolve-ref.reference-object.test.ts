@@ -723,6 +723,153 @@ describe('OAS 3.1 reference object', () => {
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toEqual('example summary from components')
       })
     })
+
+    describe('parameters', () => {
+      it('could define parameters via reference object', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "parameters": [
+                  {
+                    "$ref": "#/components/parameters/status",
+                  }
+                ],
+              }
+            }
+          },
+          "components": {
+            "parameters": {
+              "status": {
+                "description": "parameters description from components",
+              }
+            }
+          }
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.parameters[0]).toBe(result.components.parameters.status)
+      })
+
+      it('could override description and summary for parameters via reference object', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "parameters": [
+                  {
+                    "$ref": "#/components/parameters/status",
+                    "description": "Overriden description",
+                  }
+                ],
+              }
+            }
+          },
+          "components": {
+            "parameters": {
+              "status": {
+                "description": "parameters description from components",
+              }
+            }
+          }
+        }
+
+        const result = normalize(source, { resolveRef: true }) as any
+        expect(result.paths['/test'].post.parameters[0].description).toBe('Overriden description')
+        expect(result.components.parameters.status.description).toBe('parameters description from components')
+      })
+
+      it('properties other than description could not be overriden via reference object for parameters', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "parameters": [
+                  {
+                    "$ref": "#/components/parameters/status",
+                  }
+                ],
+              }
+            }
+          },
+          "components": {
+            "parameters": {
+              "status": {
+                "description": "parameters description from components",
+                "schema": {
+                  "type": "string",
+                }
+              }
+            }
+          }
+        }
+
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.parameters[0].schema).toBe(result.components.parameters.status.schema)
+      })
+
+      it('could not override summary for the parameters via reference object', () => {
+        const source = {
+          "openapi": "3.1.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "parameters": [
+                  {
+                    "$ref": "#/components/parameters/status",
+                    summary: 'Overriden summary',
+                  }
+                ],
+              }
+            }
+          },
+          "components": {
+            "parameters": {
+              "status": {
+                "description": "parameters description from components",
+              }
+            }
+          }
+        }
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.parameters[0]).not.toHaveProperty('summary')
+        // TODO: reported via onRefResolveError callback?
+      })
+
+      it('could not override description and summary for responses via examples object in OAS 3.0', () => {
+        const source = {
+          "openapi": "3.0.0",
+          "paths": {
+            "/test": {
+              "post": {
+                "parameters": [
+                  {
+                    "$ref": "#/components/parameters/status",
+                    description: "Overriden description",
+                  }
+                ],
+              }
+            }
+          },
+          "components": {
+            "parameters": {
+              "status": {
+                "description": "parameters description from components",
+              }
+            }
+          }
+        }
+
+
+        const result = defineOriginsAndResolveRef(source) as any
+        expect(result.paths['/test'].post.parameters[0].description).toEqual('parameters description from components')
+      })
+    })
   })
 })
 

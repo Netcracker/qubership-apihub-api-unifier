@@ -242,9 +242,9 @@ describe('OAS 3.1 Reference object', () => {
             },
           },
           components: {
-            'requestBodies': {
-              'Data': {
-                'description': 'RequestBodies data',
+            requestBodies: {
+              Data: {
+                description: 'RequestBodies data',
               },
             },
           },
@@ -268,9 +268,9 @@ describe('OAS 3.1 Reference object', () => {
             },
           },
           components: {
-            'requestBodies': {
-              'Data': {
-                'description': 'RequestBodies data',
+            requestBodies: {
+              Data: {
+                description: 'RequestBodies data',
               },
             },
           },
@@ -295,9 +295,9 @@ describe('OAS 3.1 Reference object', () => {
             },
           },
           components: {
-            'requestBodies': {
-              'Data': {
-                'description': 'RequestBodies data',
+            requestBodies: {
+              Data: {
+                description: 'RequestBodies data',
               },
             },
           },
@@ -328,8 +328,8 @@ describe('OAS 3.1 Reference object', () => {
             },
           },
           components: {
-            'requestBodies': {
-              'Data': {
+            requestBodies: {
+              Data: {
                 description: 'RequestBodies data',
                 content: {
                   'application/xml': {
@@ -381,9 +381,9 @@ describe('OAS 3.1 Reference object', () => {
           paths: {
             '/test': {
               post: {
-                'responses': {
+                responses: {
                   '200': {
-                    'headers': {
+                    headers: {
                       'X-Rate-Limit': {
                         $ref: '#/components/headers/X-Rate-Limit',
                       },
@@ -393,10 +393,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'headers': {
+          components: {
+            headers: {
               'X-Rate-Limit': {
-                'description': 'header description from components',
+                description: 'header description from components',
               },
             },
           },
@@ -412,9 +412,9 @@ describe('OAS 3.1 Reference object', () => {
           paths: {
             '/test': {
               post: {
-                'responses': {
+                responses: {
                   '200': {
-                    'headers': {
+                    headers: {
                       'X-Rate-Limit': {
                         $ref: '#/components/headers/X-Rate-Limit',
                         description: 'Overriden description',
@@ -425,10 +425,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'headers': {
+          components: {
+            headers: {
               'X-Rate-Limit': {
-                'description': 'header description from components',
+                description: 'header description from components',
               },
             },
           },
@@ -445,9 +445,9 @@ describe('OAS 3.1 Reference object', () => {
           paths: {
             '/test': {
               post: {
-                'responses': {
+                responses: {
                   '200': {
-                    'headers': {
+                    headers: {
                       'X-Rate-Limit': {
                         $ref: '#/components/headers/X-Rate-Limit',
                         summary: 'Overriden summary',
@@ -458,10 +458,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'headers': {
+          components: {
+            headers: {
               'X-Rate-Limit': {
-                'description': 'header description from components',
+                description: 'header description from components',
               },
             },
           },
@@ -478,9 +478,9 @@ describe('OAS 3.1 Reference object', () => {
           paths: {
             '/test': {
               post: {
-                'responses': {
+                responses: {
                   '200': {
-                    'headers': {
+                    headers: {
                       'X-Rate-Limit': {
                         $ref: '#/components/headers/X-Rate-Limit',
                       },
@@ -490,13 +490,13 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'headers': {
+          components: {
+            headers: {
               'X-Rate-Limit': {
-                'description': 'header description from components',
-                'schema': {
-                  'type': 'integer',
-                  'format': 'int32',
+                description: 'header description from components',
+                schema: {
+                  type: 'integer',
+                  format: 'int32',
                 },
               },
             },
@@ -513,9 +513,9 @@ describe('OAS 3.1 Reference object', () => {
           paths: {
             '/test': {
               post: {
-                'responses': {
+                responses: {
                   '200': {
-                    'headers': {
+                    headers: {
                       'X-Rate-Limit': {
                         $ref: '#/components/headers/X-Rate-Limit',
                         description: 'Overriden description',
@@ -526,10 +526,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'headers': {
+          components: {
+            headers: {
               'X-Rate-Limit': {
-                'description': 'header description from components',
+                description: 'header description from components',
               },
             },
           },
@@ -542,20 +542,20 @@ describe('OAS 3.1 Reference object', () => {
     describe('Rules for examples', () => {
       it('could define examples via reference object', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'responses': {
+              post: {
+                responses: {
                   '200': {
-                    'content': {
+                    content: {
                       'application/json': {
-                        'schema': {
-                          'type': 'object',
-                          'properties': {
-                            'prop1': {
-                              'type': 'string',
-                              'examples': [
+                        schema: {
+                          type: 'object',
+                          properties: {
+                            prop1: {
+                              type: 'string',
+                              examples: [
                                 {
                                   $ref: '#/components/examples/ex1',
                                 },
@@ -570,10 +570,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'examples': {
-              'ex1': {
-                'description': 'examples description from components',
+          components: {
+            examples: {
+              ex1: {
+                description: 'examples description from components',
               },
             },
           },
@@ -585,20 +585,20 @@ describe('OAS 3.1 Reference object', () => {
 
       it('could override description and summary for examples via reference object', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'responses': {
+              post: {
+                responses: {
                   '200': {
-                    'content': {
+                    content: {
                       'application/json': {
-                        'schema': {
-                          'type': 'object',
-                          'properties': {
-                            'prop1': {
-                              'type': 'string',
-                              'examples': [
+                        schema: {
+                          type: 'object',
+                          properties: {
+                            prop1: {
+                              type: 'string',
+                              examples: [
                                 {
                                   $ref: '#/components/examples/ex1',
                                   description: 'Overriden description',
@@ -615,10 +615,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'examples': {
-              'ex1': {
-                'description': 'examples description from components',
+          components: {
+            examples: {
+              ex1: {
+                description: 'examples description from components',
                 summary: 'example summary from components',
               },
             },
@@ -634,20 +634,20 @@ describe('OAS 3.1 Reference object', () => {
 
       it('properties other than description and summary could not be overriden via reference object for examples', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'responses': {
+              post: {
+                responses: {
                   '200': {
-                    'content': {
+                    content: {
                       'application/json': {
-                        'schema': {
-                          'type': 'object',
-                          'properties': {
-                            'prop1': {
-                              'type': 'string',
-                              'examples': [
+                        schema: {
+                          type: 'object',
+                          properties: {
+                            prop1: {
+                              type: 'string',
+                              examples: [
                                 {
                                   $ref: '#/components/examples/ex1',
                                 },
@@ -662,14 +662,14 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'examples': {
-              'ex1': {
-                'description': 'examples description from components',
+          components: {
+            examples: {
+              ex1: {
+                description: 'examples description from components',
                 summary: 'example summary from components',
-                'schema': {
-                  'type': 'integer',
-                  'format': 'int32',
+                schema: {
+                  type: 'integer',
+                  format: 'int32',
                 },
               },
             },
@@ -682,20 +682,20 @@ describe('OAS 3.1 Reference object', () => {
 
       it('could not override description and summary for responses via examples object in OAS 3.0', () => {
         const source = {
-          'openapi': '3.0.0',
-          'paths': {
+          openapi: '3.0.0',
+          paths: {
             '/test': {
-              'post': {
-                'responses': {
+              post: {
+                responses: {
                   '200': {
-                    'content': {
+                    content: {
                       'application/json': {
-                        'schema': {
-                          'type': 'object',
-                          'properties': {
-                            'prop1': {
-                              'type': 'string',
-                              'examples': [
+                        schema: {
+                          type: 'object',
+                          properties: {
+                            prop1: {
+                              type: 'string',
+                              examples: [
                                 {
                                   $ref: '#/components/examples/ex1',
                                   description: 'Overriden description',
@@ -712,10 +712,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'examples': {
-              'ex1': {
-                'description': 'examples description from components',
+          components: {
+            examples: {
+              ex1: {
+                description: 'examples description from components',
                 summary: 'example summary from components',
               },
             },
@@ -731,11 +731,11 @@ describe('OAS 3.1 Reference object', () => {
     describe('Rules for parameters', () => {
       it('could define parameters via reference object', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'parameters': [
+              post: {
+                parameters: [
                   {
                     $ref: '#/components/parameters/status',
                   },
@@ -743,10 +743,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'parameters': {
-              'status': {
-                'description': 'parameters description from components',
+          components: {
+            parameters: {
+              status: {
+                description: 'parameters description from components',
               },
             },
           },
@@ -758,23 +758,23 @@ describe('OAS 3.1 Reference object', () => {
 
       it('could override description and summary for parameters via reference object', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'parameters': [
+              post: {
+                parameters: [
                   {
                     $ref: '#/components/parameters/status',
-                    'description': 'Overriden description',
+                    description: 'Overriden description',
                   },
                 ],
               },
             },
           },
-          'components': {
-            'parameters': {
-              'status': {
-                'description': 'parameters description from components',
+          components: {
+            parameters: {
+              status: {
+                description: 'parameters description from components',
               },
             },
           },
@@ -787,11 +787,11 @@ describe('OAS 3.1 Reference object', () => {
 
       it('properties other than description could not be overriden via reference object for parameters', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'parameters': [
+              post: {
+                parameters: [
                   {
                     $ref: '#/components/parameters/status',
                   },
@@ -799,12 +799,12 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'parameters': {
-              'status': {
-                'description': 'parameters description from components',
-                'schema': {
-                  'type': 'string',
+          components: {
+            parameters: {
+              status: {
+                description: 'parameters description from components',
+                schema: {
+                  type: 'string',
                 },
               },
             },
@@ -817,11 +817,11 @@ describe('OAS 3.1 Reference object', () => {
 
       it('could not override summary for the parameters via reference object', () => {
         const source = {
-          'openapi': '3.1.0',
-          'paths': {
+          openapi: '3.1.0',
+          paths: {
             '/test': {
-              'post': {
-                'parameters': [
+              post: {
+                parameters: [
                   {
                     $ref: '#/components/parameters/status',
                     summary: 'Overriden summary',
@@ -830,10 +830,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'parameters': {
-              'status': {
-                'description': 'parameters description from components',
+          components: {
+            parameters: {
+              status: {
+                description: 'parameters description from components',
               },
             },
           },
@@ -846,11 +846,11 @@ describe('OAS 3.1 Reference object', () => {
 
       it('could not override description and summary for responses via examples object in OAS 3.0', () => {
         const source = {
-          'openapi': '3.0.0',
-          'paths': {
+          openapi: '3.0.0',
+          paths: {
             '/test': {
-              'post': {
-                'parameters': [
+              post: {
+                parameters: [
                   {
                     $ref: '#/components/parameters/status',
                     description: 'Overriden description',
@@ -859,10 +859,10 @@ describe('OAS 3.1 Reference object', () => {
               },
             },
           },
-          'components': {
-            'parameters': {
-              'status': {
-                'description': 'parameters description from components',
+          components: {
+            parameters: {
+              status: {
+                description: 'parameters description from components',
               },
             },
           },

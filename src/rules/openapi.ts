@@ -598,15 +598,7 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
       newDataLayer: true,
     }),
     ...openApiExtensionRules,
-    referenceHandler: (() => {
-      switch (version) {
-        case SPEC_TYPE_OPEN_API_31:
-          return referenceObjectResolver({ allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] })
-        default:
-        case SPEC_TYPE_OPEN_API_30:
-          return referenceObjectResolver()
-      }
-    })(),
+    referenceHandler: referenceObjectRuleFunction({version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION]}),
     validate: checkType(TYPE_OBJECT),
     unify: [
       valueDefaults(OPEN_API_PARAMETER_DEFAULTS),

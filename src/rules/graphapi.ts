@@ -221,9 +221,6 @@ const selfNamedBaseRules: NormalizationRules = {
   '/title': {
     validate: checkType(TYPE_STRING)
   },
-  '/**': {
-    referenceHandler: jsonSchemaReferenceResolver,
-  },
 }
 
 const directiveDefinitionRules: NormalizationRules = {
@@ -238,7 +235,6 @@ const directiveDefinitionRules: NormalizationRules = {
     validate: checkType(TYPE_ARRAY),
   },
   validate: checkType(TYPE_OBJECT),
-  referenceHandler: jsonSchemaReferenceResolver,
   unify: [
     valueDefaults(DIRECTIVE_DEFINITION_DEFAULTS),
     valueReplaces(DIRECTIVE_DEFINITION_REPLACES)
@@ -267,7 +263,7 @@ const typeDefinitionRules: (ctx: CrawlRulesContext) => NormalizationRules = ({ v
     case GRAPH_API_NODE_KIND_LIST:
       return listDefinitionRules
     default:
-      return { validate: () => false, referenceHandler: jsonSchemaReferenceResolver }
+      return { validate: () => false }
   }
 }
 
@@ -459,6 +455,7 @@ export const graphApiRules: () => NormalizationRules = () => ({
       valueReplaces(COMPONENTS_REPLACES)
     ],
   },
+  '/**': { referenceHandler: jsonSchemaReferenceResolver },
   validate: checkType(TYPE_OBJECT),
   unify: [
     valueDefaults(GRAPH_API_DEFAULTS),

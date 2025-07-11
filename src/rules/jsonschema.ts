@@ -499,8 +499,7 @@ export const jsonSchemaRules: (
     //why anyOf?
     hashStrategy: BEFORE_SECOND_DATA_LEVEL,
   },
-  //todo fix?
-  '/**': () => ({  referenceHandler: jsonSchemaReferenceResolver}),
+  '/**': {  referenceHandler: jsonSchemaReferenceResolver},
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested
   // The boolean schema values "true" and "false" are trivial schemas that always produce themselves as assertion results, regardless of the instance value. They never produce annotation results.
   //

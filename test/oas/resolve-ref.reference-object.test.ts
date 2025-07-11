@@ -12,6 +12,8 @@ import notHangUpWhenProcessingCycledChainOfForResponse
 import notHangUpWhenProcessingResponseWhichPointsToItself
   from '../resources/reference-object/not-hang-up-when-processing-for-response-which-points-to-itself.json'
 
+const OPTIONS = { resolveRef: true }
+
 describe('OAS 3.1 Reference object', () => {
 
   describe('Reference object general behaviour', () => {
@@ -96,7 +98,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].get.responses['200']).toBe(result.components.responses.SuccessResponse)
       })
 
@@ -124,7 +126,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].get.responses['200'].description).toBe('Overriden description')
         expect(result.components.responses.SuccessResponse.description).toBe('Successful response')
       })
@@ -155,7 +157,6 @@ describe('OAS 3.1 Reference object', () => {
 
         const result = defineOriginsAndResolveRef(source) as any
         expect(result.paths['/test'].get.responses['200']).not.toHaveProperty('summary')
-        // TODO: reported via onRefResolveError callback?
       })
 
       it('properties other than description and summary could not be overriden via reference object for response', () => {
@@ -195,7 +196,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].get.responses['200'].content).toBe(result.components.responses.SuccessResponse.content)
       })
 
@@ -223,7 +224,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].get.responses['200'].description).toEqual('Successful response')
       })
     })
@@ -250,7 +251,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.requestBodies).toBe(result.components.requestBodies.request)
       })
 
@@ -276,7 +277,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.requestBody.description).toBe('Overriden description')
         expect(result.components.requestBodies.Data.description).toBe('RequestBodies data')
       })
@@ -303,7 +304,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.requestBody).not.toHaveProperty('summary')
         // TODO: reported via onRefResolveError callback?
       })
@@ -343,7 +344,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.requestBody.content).toBe(result.components.requestBodies.Data.content)
       })
 
@@ -369,7 +370,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.requestBody.description).toEqual('RequestBodies data')
       })
     })
@@ -402,7 +403,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit']).toBe(result.components.headers['X-Rate-Limit'])
       })
 
@@ -434,7 +435,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].description).toBe('Overriden description')
         expect(result.components.headers['X-Rate-Limit'].description).toBe('header description from components')
       })
@@ -467,7 +468,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit']).not.toHaveProperty('summary')
         // TODO: reported via onRefResolveError callback?
       })
@@ -503,7 +504,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].schema).toBe(result.components.headers['X-Rate-Limit'].schema)
       })
 
@@ -534,7 +535,7 @@ describe('OAS 3.1 Reference object', () => {
             },
           },
         }
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].description).toEqual('header description from components')
       })
     })
@@ -579,7 +580,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0]).toBe(result.components.examples.ex1)
       })
 
@@ -625,7 +626,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].description).toBe('Overriden description')
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toBe('Overriden summary')
         expect(result.components.examples.ex1.description).toBe('examples description from components')
@@ -676,7 +677,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].schema).toBe(result.components.examples.ex1.schema)
       })
 
@@ -722,7 +723,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].description).toEqual('examples description from components')
         expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toEqual('example summary from components')
       })
@@ -752,7 +753,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.parameters[0]).toBe(result.components.parameters.status)
       })
 
@@ -780,7 +781,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = normalize(source, { resolveRef: true }) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.parameters[0].description).toBe('Overriden description')
         expect(result.components.parameters.status.description).toBe('parameters description from components')
       })
@@ -811,7 +812,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.parameters[0].schema).toBe(result.components.parameters.status.schema)
       })
 
@@ -839,7 +840,7 @@ describe('OAS 3.1 Reference object', () => {
           },
         }
 
-        const result = defineOriginsAndResolveRef(source) as any
+        const result = normalize(source, OPTIONS) as any
         expect(result.paths['/test'].post.parameters[0]).not.toHaveProperty('summary')
         // TODO: reported via onRefResolveError callback?
       })

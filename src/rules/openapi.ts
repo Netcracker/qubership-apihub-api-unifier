@@ -250,6 +250,7 @@ const openApiSpecificationExtensionRules = {
       isExtension: true,
       validate: checkType(...TYPE_JSON_ANY),
       merge: resolvers.last,
+      '/*': { validate: checkType(...TYPE_JSON_ANY) },
       '/**': { validate: checkType(...TYPE_JSON_ANY) },
     },
   },  

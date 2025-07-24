@@ -357,7 +357,8 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
     merge: resolvers.mergeObjects,
     unify: [
       valueDefaults(OPEN_API_XML_DEFAULTS),
-    ],    
+    ],
+    '/*': { validate: checkType(...TYPE_JSON_ANY) },    
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
     ...openApiSpecificationExtensionRules,
   },

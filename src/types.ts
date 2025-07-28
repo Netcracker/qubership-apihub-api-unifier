@@ -175,7 +175,7 @@ export interface MergeContext {
 }
 
 export type MergeResolver<T> = (args: ValueWithOrigins<T>[], ctx: MergeContext) => ValueWithOrigins<T> | undefined
-export type ReferenceHandler<T, R extends {}> = (args: ReferenceResolverContextWithDefaultResolver) => ReferenceResolverResponse
+export type ReferenceHandler = (args: ReferenceResolverContextWithDefaultResolver) => ReferenceResolverResponse
 
 export interface HasIgnoreTreeUnderSymbols {
   ignoreTreeUnderSymbols: boolean
@@ -233,7 +233,7 @@ export interface NormalizationRule {
   readonly newDataLayer?: boolean
   readonly deprecation?: DeprecationPolicy
   readonly isExtension?: boolean
-  readonly referenceHandler?: ReferenceHandler<any, any>
+  readonly referenceHandler?: ReferenceHandler
 }
 
 export type MergeAndLiftCombinersSyncCloneHook = SyncCloneHook<MergeAndLiftCombinersState, NormalizationRule>

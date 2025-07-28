@@ -30,7 +30,7 @@ import { RULES } from './rules'
 import { setOrigins } from './origins'
 import {
   ReferenceResolverResponse,
-  ReferenceHandler2,
+  ReferenceResolverHandler,
   ReferenceResolverContext,
   ResolvedRefAllOf,
   ResolvedRefSibling,
@@ -171,12 +171,12 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
       if ($ref) {
         const { referenceHandler } = rules || {}
         if (!referenceHandler) {
-          options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+          options.onRefResolveError?.(ErrorMessage.referenceNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
           state.node[safeKey] = value
           return { done: true }
         }
 
-        const resolveDefaultReference = (data: ReferenceResolverContext, referenceHandler: ReferenceHandler2): ReferenceResolverResponse => {
+        const resolveDefaultReference = (data: ReferenceResolverContext, referenceHandler: ReferenceResolverHandler): ReferenceResolverResponse => {
           const { state, ref: $ref, safeKey, options, path, } = data
           const originForRef = getOrReuseOrigin(originForObj, {
             parent: originForObj,

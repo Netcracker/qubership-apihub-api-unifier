@@ -27,7 +27,7 @@ export type ReferenceObjectResolverOverrideField =
 
 export type ReferenceResolverResponse = void | CrawlHookResponse<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>
 export type ResolvedRefWithSibling = ResolvedRefSibling | ResolvedRefAllOf
-export type ReferenceHandler2 = (data: ResolvedRefData) => ResolvedRefWithSibling
+export type ReferenceResolverHandler = (data: ResolvedRefData) => ResolvedRefWithSibling
 
 export interface ReferenceObjectRuleData {
   version: OpenApiSpecVersion,
@@ -44,7 +44,7 @@ export interface ReferenceResolverContext {
 }
 
 export interface ReferenceResolverContextWithDefaultResolver extends ReferenceResolverContext {
-  resolveDefaultReference: (referenceResolverContext: ReferenceResolverContext, referenceHandler: ReferenceHandler2) => ReferenceResolverResponse,
+  resolveDefaultReference: (referenceResolverContext: ReferenceResolverContext, referenceHandler: ReferenceResolverHandler) => ReferenceResolverResponse,
 }
 
 export interface ResolvedRefSibling extends ResolvedRef {
@@ -68,8 +68,8 @@ export interface ResolvedRefData {
   reference: RichReference,
 }
 
-export const notAllowedReferenceHandler: ReferenceHandler<CloneState<DefineOriginsAndResolveRefState>, CrawlRules<NormalizationRule>> = args => forbidReferenceResolver(args)
-export const jsonSchemaReferenceResolver: ReferenceHandler<CloneState<DefineOriginsAndResolveRefState>, CrawlRules<NormalizationRule>> = args => resolveJsonSchemaReferenceWithAllOf(args)
+export const notAllowedReferenceHandler: ReferenceHandler = args => forbidReferenceResolver(args)
+export const jsonSchemaReferenceResolver: ReferenceHandler = args => resolveJsonSchemaReferenceWithAllOf(args)
 
 export function referenceObjectRuleFunction({ version, allowOverrides }: ReferenceObjectRuleData) {
   switch (version) {
@@ -88,7 +88,7 @@ export function forbidReferenceResolver({ options, state, safeKey, ref, path, va
   return { done: true }
 }
 
-export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverrideField[]): ReferenceHandler<CloneState<DefineOriginsAndResolveRefState>, CrawlRules<NormalizationRule>> {
+export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverrideField[]): ReferenceHandler {
   return (data: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse => {
     const overrideFieldsWithSiblings = ({
       options,

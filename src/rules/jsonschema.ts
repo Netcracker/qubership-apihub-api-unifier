@@ -1,12 +1,17 @@
-import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, OriginLeafs, UnifyFunction } from '../types'
+import {
+  BEFORE_SECOND_DATA_LEVEL,
+  CURRENT_DATA_LEVEL,
+  NormalizationRules,
+  OriginLeafs,
+  ReferenceHandler,
+  UnifyFunction,
+} from '../types'
 import * as resolvers from '../resolvers'
 import {
   JsonSchemaSpecVersion,
-  OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
   SPEC_TYPE_JSON_SCHEMA_06,
   SPEC_TYPE_JSON_SCHEMA_07,
-  SPEC_TYPE_OPEN_API_30,
 } from '../spec-type'
 import {
   JSON_SCHEMA_NODE_TYPE_STRING,
@@ -57,7 +62,11 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
-import { jsonSchemaReferenceResolver, referenceObjectRuleFunction } from '../references/ref-resolver'
+import {
+  jsonSchemaReferenceResolver,
+  notAllowedReferenceHandler,
+  referenceObjectResolver,
+} from '../references/ref-resolver'
 import { OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY } from './openapi.const'
 
 const EMPTY_MARKER = Symbol('empty-items')
@@ -196,6 +205,7 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
       merge: resolvers.equal,
       '/**': { validate: checkType(...TYPE_JSON_ANY) },
       hashStrategy: CURRENT_DATA_LEVEL,
+      referenceHandler: notAllowedReferenceHandler,
     },
     '/propertyNames': () => {
       const common = self()
@@ -271,15 +281,22 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
   }),
 }
 
+const referenceResolver = (version: JsonSchemaSpecVersion): ReferenceHandler => {
+  switch (version) {
+    case SPEC_TYPE_JSON_SCHEMA_07:
+      return referenceObjectResolver([OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY])
+    default:
+      return jsonSchemaReferenceResolver
+  }
+}
+
 export const jsonSchemaRules: (
   version: JsonSchemaSpecVersion,
-  oasVersion?: OpenApiSpecVersion,
   self?: () => NormalizationRules,
 ) => NormalizationRules
   = (
   version,
-  oasVersion,
-  self = () => jsonSchemaRules(version, oasVersion),
+  self = () => jsonSchemaRules(version),
 ) => ({
   '/type': ({ value }) => ({
     ...(typeof value === 'string'
@@ -303,12 +320,14 @@ export const jsonSchemaRules: (
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
     hashStrategy: CURRENT_DATA_LEVEL,
+    referenceHandler: notAllowedReferenceHandler,
   },
   '/default': {
     validate: checkType(...TYPE_JSON_ANY),
     merge: resolvers.last,
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
     hashStrategy: CURRENT_DATA_LEVEL,
+    referenceHandler: notAllowedReferenceHandler,
   },
   '/multipleOf': {
     validate: checkType(TYPE_NUMBER),
@@ -424,6 +443,7 @@ export const jsonSchemaRules: (
       validate: checkType(...TYPE_JSON_ANY),
       hashStrategy: CURRENT_DATA_LEVEL,
     },
+    referenceHandler: notAllowedReferenceHandler,
     hashStrategy: CURRENT_DATA_LEVEL,
   },
   '/properties': {
@@ -475,8 +495,7 @@ export const jsonSchemaRules: (
     merge: resolvers.last,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      //todo REF: oasVersion version??
-      referenceHandler: referenceObjectRuleFunction({version: oasVersion ?? SPEC_TYPE_OPEN_API_30, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY] }),
+      referenceHandler: referenceResolver(version),
     },
   },
   '/definitions': {
@@ -499,7 +518,14 @@ export const jsonSchemaRules: (
     //why anyOf?
     hashStrategy: BEFORE_SECOND_DATA_LEVEL,
   },
-  '/**': {  referenceHandler: jsonSchemaReferenceResolver},
+  '/paths': {
+    '/*': self,
+  },
+  '/schema': {
+    '/*': self,
+  },
+  '/*': { referenceHandler: jsonSchemaReferenceResolver },
+  '/**': { referenceHandler: notAllowedReferenceHandler },
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested
   // The boolean schema values "true" and "false" are trivial schemas that always produce themselves as assertion results, regardless of the instance value. They never produce annotation results.
   //

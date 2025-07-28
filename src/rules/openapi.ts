@@ -406,7 +406,7 @@ const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
 
 const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
   const baseJsonSchemaVersion = SPEC_TYPE_JSON_SCHEMA_04
-  const core = jsonSchemaRules(baseJsonSchemaVersion, SPEC_TYPE_OPEN_API_30, () => customFor30JsonSchemaRules)
+  const core = jsonSchemaRules(baseJsonSchemaVersion, () => customFor30JsonSchemaRules)
   const extension = openApiJsonSchemaExtensionRules()
   return ({
     ...core,
@@ -420,8 +420,7 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
       ...customFor30JsonSchemaRules,
       merge: resolvers.itemsMergeResolver,
       hashStrategy: CURRENT_DATA_LEVEL,
-      newDataLayer: true,
-      referenceHandler: jsonSchemaReferenceResolver,
+      newDataLayer: true
     }),
     '/additionalItems': {
       validate: () => false,
@@ -470,7 +469,7 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
 const customFor30JsonSchemaRules: NormalizationRules = customFor30JsonSchemaRulesFactory()
 
 const customFor31JsonSchemaRulesFactory = (): NormalizationRules => ({
-  ...jsonSchemaRules(SPEC_TYPE_JSON_SCHEMA_07, SPEC_TYPE_OPEN_API_31, () => customFor31JsonSchemaRules),
+  ...jsonSchemaRules(SPEC_TYPE_JSON_SCHEMA_07, () => customFor31JsonSchemaRules),
   ...openApiJsonSchemaExtensionRules(),
 })
 const customFor31JsonSchemaRules = customFor31JsonSchemaRulesFactory()
@@ -786,7 +785,6 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
     '/schemas': {
       '/*': openApiJsonSchemaRules(version),
       validate: checkType(TYPE_OBJECT),
-      referenceHandler: jsonSchemaReferenceResolver,
     },
     '/responses': openApiResponsesRules(version),
     '/parameters': {

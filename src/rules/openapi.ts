@@ -353,7 +353,7 @@ const openApiSecurityRules: NormalizationRules = {
   },
 }
 
-const openApiLinksRules: NormalizationRules = {
+const openApiLinksRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   '/*': {
     '/operationId': { validate: checkType(TYPE_STRING) },
     '/operationRef': { validate: checkType(TYPE_STRING) },
@@ -369,10 +369,10 @@ const openApiLinksRules: NormalizationRules = {
     '/server': openApiServerRules,
     ...openApiExtensionRules,
     validate: checkType(TYPE_OBJECT),
-    referenceHandler: jsonSchemaReferenceResolver,
+    referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
   },
   validate: checkType(TYPE_OBJECT),
-}
+})
 
 const openApiJsonSchemaExtensionRules = (): NormalizationRules => ({
   '/xml': {
@@ -632,7 +632,7 @@ const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules 
     '/description': { validate: checkType(TYPE_STRING) },
     '/headers': openApiHeadersRules(version),
     '/content': openApiMediaTypesRules(version),
-    '/links': openApiLinksRules,
+    '/links': openApiLinksRules(version),
     ...openApiExtensionRules,
     unify: [
       valueDefaults(OPEN_API_RESPONSE_DEFAULTS),
@@ -781,7 +781,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
       },
       validate: checkType(TYPE_OBJECT),
     },
-    '/links': openApiLinksRules,
+    '/links': openApiLinksRules(version),
     '/schemas': {
       '/*': openApiJsonSchemaRules(version),
       validate: checkType(TYPE_OBJECT),

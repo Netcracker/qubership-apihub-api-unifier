@@ -117,43 +117,45 @@ describe('OAS 3.1 Reference object', () => {
       return base
     }
 
+    const postPath = ['paths', '/somePath', 'post']
+    const responsesPath = [...postPath, 'responses', '200']
     const referenceObjectRulesData = [
       {
         title: 'responses',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION],
-        path: ['paths', '/somePath', 'get', 'responses', '200'],
+        path: responsesPath,
         components: ['components', 'responses', 'someResponse'],
       },
       {
         title: 'parameters',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION],
-        path: ['paths', '/somePath', 'post', 'parameters', 0],
+        path: [...postPath, 'parameters', 0],
         components: ['components', 'parameters', 'status'],
       },
       {
         title: 'examples',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
-        path: ['paths', '/somePath', 'post', 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0],
+        path: [...responsesPath, 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0],
         components: ['components', 'examples', 'ex1'],
       },
       {
         title: 'requestBodies',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION],
-        path: ['paths', '/somePath', 'post', 'requestBody'],
+        path: [...postPath, 'requestBody'],
         components: ['components', 'requestBody', 'someRequestBody'],
       },
       {
         title: 'headers',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION],
-        path: ['paths', '/somePath', 'post', 'responses', '200', 'headers', 'X-Rate-Limit'],
+        path: [...responsesPath, 'headers', 'X-Rate-Limit'],
         components: ['components', 'headers', 'X-Rate-Limit'],
       },
       {
-        title: 'securitySchemes',
+        title: 'links',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION],
-        path: ['paths', '/somePath', 'post', 'responses', '200', 'headers', 'X-Rate-Limit'],
-        components: ['components', 'headers', 'X-Rate-Limit'],
-      },
+        path: [...responsesPath, 'links', 'someLink'],
+        components: ['components', 'links', 'someLink'],
+      }
     ]
 
     referenceObjectRulesData.forEach(({ title, overrides, path, components }) => {

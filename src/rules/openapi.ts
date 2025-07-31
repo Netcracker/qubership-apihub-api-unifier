@@ -70,7 +70,7 @@ import {
   OPEN_API_PROPERTY_RESPONSES,
   OPEN_API_PROPERTY_SCHEMAS,
   OPEN_API_PROPERTY_SECURITY_SCHEMAS,
-  OPEN_API_PROPERTY_STYLE,
+  OPEN_API_PROPERTY_STYLE, OPEN_API_PROPERTY_SUMMARY,
   OPEN_API_PROPERTY_TAGS,
 } from './openapi.const'
 
@@ -297,13 +297,13 @@ const openApiExamplesRules = (version: OpenApiSpecVersion): NormalizationRules =
   '/examples': {
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.last,
-    referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
     '/*': {
       ...openApiExtensionRulesFunction({
         validate: checkType(...TYPE_JSON_ANY),
       }),
+      referenceHandler: referenceObjectRuleFunction({version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY]}),
     },
-    '/**': { validate: checkType(...TYPE_JSON_ANY), referenceHandler: jsonSchemaReferenceResolver },
+    '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },
 })
 

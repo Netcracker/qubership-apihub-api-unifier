@@ -133,16 +133,16 @@ describe('OAS 3.1 Reference object', () => {
         components: ['components', 'parameters', 'status'],
       },
       {
-        title: 'examples',
+        title: 'schema examples',
         overrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
         path: [...responsesPath, 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0],
         components: ['components', 'examples', 'ex1'],
       },
       {
-        title: 'requestBodies',
-        overrides: [OPEN_API_PROPERTY_DESCRIPTION],
-        path: [...postPath, 'requestBody'],
-        components: ['components', 'requestBody', 'someRequestBody'],
+        title: 'media examples',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
+        path: [...postPath, 'requestBody', 'content', 'application/json', 'examples', 'ex1'],
+        components: ['components', 'examples', 'ex1'],
       },
       {
         title: 'headers',

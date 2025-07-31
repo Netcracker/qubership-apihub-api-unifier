@@ -1,4 +1,10 @@
-import { normalize, RefErrorType, RefErrorTypes } from '../../src'
+import {
+  normalize,
+  OPEN_API_PROPERTY_DESCRIPTION,
+  OPEN_API_PROPERTY_SUMMARY,
+  RefErrorType,
+  RefErrorTypes,
+} from '../../src'
 import 'jest-extended'
 import { defineOriginsAndResolveRef } from '../../src/define-origins-and-resolve-ref'
 import { JsonPath } from '@netcracker/qubership-apihub-json-crawl'
@@ -74,803 +80,160 @@ describe('OAS 3.1 Reference object', () => {
   })
 
   describe('Reference object rules', () => {
-    describe('Rules for response', () => {
-      it('could define response via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              get: {
-                responses: {
-                  '200': {
-                    $ref: '#/components/responses/SuccessResponse',
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            responses: {
-              SuccessResponse: {
-                description: 'Successful response',
-              },
-            },
-          },
+    const DESCRIPTION_OVERRIDEN = 'overriden description'
+    const SUMMARY_OVERRIDEN = 'overriden summary'
+    const DESCRIPTION_BASE = 'base description'
+    const SUMMARY_BASE = 'base summary'
+
+    function clone(obj: any): any {
+      return JSON.parse(JSON.stringify(obj))
+    }
+
+    function setValueAtPath(obj: any, path: JsonPath, value: any): void {
+      if (path.length === 0) {return}
+
+      let current = obj
+      for (let i = 0; i < path.length - 1; i++) {
+        const key = path[i]
+        const nextKey = path[i + 1]
+        if (!(key in current)) {
+          current[key] = typeof nextKey === 'number' ? [] : {}
         }
+        current = current[key]
+      }
+      if (value !== undefined) {
+        current[path[path.length - 1]] = value
+      }
+    }
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].get.responses['200']).toBe(result.components.responses.SuccessResponse)
-      })
+    const getValueByPatch = (value: any, path: (string | number)[]) => {
+      return path.reduce((data, key) => data[key], value)
+    }
 
-      it('could override description for response via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              get: {
-                responses: {
-                  '200': {
-                    $ref: '#/components/responses/SuccessResponse',
-                    description: 'Overriden description',
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            responses: {
-              SuccessResponse: {
-                description: 'Successful response',
-              },
-            },
-          },
-        }
+    const createBase = (version: string, path: (string | number)[], components: (string | number)[]) => {
+      const ref = `#/${components.join('/')}`
+      const base = { openapi: version }
+      setValueAtPath(base, path, { $ref: ref })
+      return base
+    }
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].get.responses['200'].description).toBe('Overriden description')
-        expect(result.components.responses.SuccessResponse.description).toBe('Successful response')
-      })
+    const referenceObjectRulesData = [
+      {
+        title: 'responses',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION],
+        path: ['paths', '/somePath', 'get', 'responses', '200'],
+        components: ['components', 'responses', 'someResponse'],
+      },
+      {
+        title: 'parameters',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION],
+        path: ['paths', '/somePath', 'post', 'parameters', 0],
+        components: ['components', 'parameters', 'status'],
+      },
+      {
+        title: 'examples',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
+        path: ['paths', '/somePath', 'post', 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0],
+        components: ['components', 'examples', 'ex1'],
+      },
+      {
+        title: 'requestBodies',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION],
+        path: ['paths', '/somePath', 'post', 'requestBody'],
+        components: ['components', 'requestBody', 'someRequestBody'],
+      },
+      {
+        title: 'headers',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION],
+        path: ['paths', '/somePath', 'post', 'responses', '200', 'headers', 'X-Rate-Limit'],
+        components: ['components', 'headers', 'X-Rate-Limit'],
+      },
+      {
+        title: 'securitySchemes',
+        overrides: [OPEN_API_PROPERTY_DESCRIPTION],
+        path: ['paths', '/somePath', 'post', 'responses', '200', 'headers', 'X-Rate-Limit'],
+        components: ['components', 'headers', 'X-Rate-Limit'],
+      },
+    ]
 
-      it('could not override summary for the response via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              get: {
-                responses: {
-                  '200': {
-                    $ref: '#/components/responses/SuccessResponse',
-                    summary: 'Overriden summary',
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            responses: {
-              SuccessResponse: {
-                description: 'Successful response',
-              },
-            },
-          },
-        }
+    referenceObjectRulesData.forEach(({ title, overrides, path, components }) => {
+      describe(`Rules for ${title}`, () => {
+        const base30 = createBase('3.0.0', path, components)
+        const base31 = createBase('3.1.0', path, components)
 
-        const result = defineOriginsAndResolveRef(source) as any
-        expect(result.paths['/test'].get.responses['200']).not.toHaveProperty('summary')
-      })
+        const descriptionOverride = overrides.includes(OPEN_API_PROPERTY_DESCRIPTION)
+        const summaryOverride = overrides.includes(OPEN_API_PROPERTY_SUMMARY)
 
-      it('properties other than description and summary could not be overriden via reference object for response', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              get: {
-                responses: {
-                  '200': {
-                    $ref: '#/components/responses/SuccessResponse',
-                    content: {
-                      'application/json': {
-                        schema: {
-                          type: 'object',
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            responses: {
-              SuccessResponse: {
-                description: 'Successful response',
-                content: {
-                  'application/xml': {
-                    schema: {
-                      type: 'object',
-                    },
-                  },
-                },
-              },
-            },
-          },
-        }
+        it(`could define ${title} via reference object`, () => {
+          const source = clone(base31)
+          setValueAtPath(source, [...components, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].get.responses['200'].content).toBe(result.components.responses.SuccessResponse.content)
-      })
+          const result = normalize(source, OPTIONS) as any
 
-      it('could not override description for responses via reference object in OAS 3.0', () => {
-        const source = {
-          openapi: '3.0.0',
-          paths: {
-            '/test': {
-              get: {
-                responses: {
-                  '200': {
-                    $ref: '#/components/responses/SuccessResponse',
-                    description: 'Overriden description',
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            responses: {
-              SuccessResponse: {
-                description: 'Successful response',
-              },
-            },
-          },
-        }
+          const pathContent = getValueByPatch(result, path)
+          const componentsContent = getValueByPatch(result, components)
+          expect(pathContent).toBe(componentsContent)
+        })
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].get.responses['200'].description).toEqual('Successful response')
-      })
-    })
+        it(`could (not) override description for ${title} via reference object`, () => {
+          const source = clone(base31)
+          setValueAtPath(source, [...components, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+          setValueAtPath(source, [...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
 
-    describe('Rules for requestBody', () => {
-      it('could define requestBody via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                requestBody: {
-                  $ref: '#/components/requestBodies/Data',
-                },
-              },
-            },
-          },
-          components: {
-            requestBodies: {
-              Data: {
-                description: 'RequestBodies data',
-              },
-            },
-          },
-        }
+          const result = normalize(source, OPTIONS) as any
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.requestBodies).toBe(result.components.requestBodies.request)
-      })
+          const expectation = expect(result);
+          (descriptionOverride ? expectation : expectation.not).toHaveProperty([...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+          expectation.toHaveProperty([...components, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+        })
 
-      it('could override description for requestBody via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                requestBody: {
-                  $ref: '#/components/requestBodies/Data',
-                  description: 'Overriden description',
-                },
-              },
-            },
-          },
-          components: {
-            requestBodies: {
-              Data: {
-                description: 'RequestBodies data',
-              },
-            },
-          },
-        }
+        it(`could (not) override summary for the ${title} via reference object`, () => {
+          const source = clone(base31)
+          setValueAtPath(source, [...path, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
+          setValueAtPath(source, components, {})
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.requestBody.description).toBe('Overriden description')
-        expect(result.components.requestBodies.Data.description).toBe('RequestBodies data')
-      })
+          const result = normalize(source, OPTIONS) as any
 
-      it('could not override summary for the requestBody via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                requestBody: {
-                  $ref: '#/components/requestBodies/Data',
-                  summary: 'Overriden summary',
-                },
-              },
-            },
-          },
-          components: {
-            requestBodies: {
-              Data: {
-                description: 'RequestBodies data',
-              },
-            },
-          },
-        }
+          const expectation = expect(result);
+          (summaryOverride ? expectation : expectation.not).toHaveProperty([...path, OPEN_API_PROPERTY_SUMMARY])
+        })
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.requestBody).not.toHaveProperty('summary')
-        // TODO: reported via onRefResolveError callback?
-      })
+        it(`properties other than description and summary could not be overriden via reference object for ${title}`, () => {
+          const source = clone(base31)
+          const content = {
+            schema: {
+              type: 'object',
+            },
+          }
 
-      it('properties other than description and summary could not be overriden via reference object for requestBody', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                requestBody: {
-                  $ref: '#/components/requestBodies/Data',
-                  content: {
-                    'application/json': {
-                      schema: {
-                        type: 'object',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            requestBodies: {
-              Data: {
-                description: 'RequestBodies data',
-                content: {
-                  'application/xml': {
-                    schema: {
-                      type: 'object',
-                    },
-                  },
-                },
-              },
-            },
-          },
-        }
+          setValueAtPath(source, [...components, 'content'], {
+            'application/xml': content
+          })
+          setValueAtPath(source, [...path, 'content'], {
+            'application/json': content
+          })
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.requestBody.content).toBe(result.components.requestBodies.Data.content)
-      })
+          setValueAtPath(source, [...path, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
+          setValueAtPath(source, [...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
 
-      it('could not override description for responses via requestBody object in OAS 3.0', () => {
-        const source = {
-          openapi: '3.0.0',
-          paths: {
-            '/test': {
-              post: {
-                requestBody: {
-                  $ref: '#/components/requestBodies/Data',
-                  description: 'Overriden description',
-                },
-              },
-            },
-          },
-          components: {
-            requestBodies: {
-              Data: {
-                description: 'RequestBodies data',
-              },
-            },
-          },
-        }
+          const result = normalize(source, OPTIONS) as any
+          const pathContent = getValueByPatch(result, [...path, 'content'])
+          const componentsContent = getValueByPatch(result, [...components, 'content'])
+          expect(pathContent).toBe(componentsContent)
+        })
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.requestBody.description).toEqual('RequestBodies data')
-      })
-    })
+        it(`could not override description or summary for ${title} via reference object in OAS 3.0`, () => {
+          const source = clone(base30)
 
-    describe('Rules for headers', () => {
-      it('could define headers via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    headers: {
-                      'X-Rate-Limit': {
-                        $ref: '#/components/headers/X-Rate-Limit',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            headers: {
-              'X-Rate-Limit': {
-                description: 'header description from components',
-              },
-            },
-          },
-        }
+          setValueAtPath(source, [...components, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+          setValueAtPath(source, [...components, OPEN_API_PROPERTY_SUMMARY], SUMMARY_BASE)
+          setValueAtPath(source, [...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+          setValueAtPath(source, [...path, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
 
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit']).toBe(result.components.headers['X-Rate-Limit'])
-      })
-
-      it('could override description for headers via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    headers: {
-                      'X-Rate-Limit': {
-                        $ref: '#/components/headers/X-Rate-Limit',
-                        description: 'Overriden description',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            headers: {
-              'X-Rate-Limit': {
-                description: 'header description from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].description).toBe('Overriden description')
-        expect(result.components.headers['X-Rate-Limit'].description).toBe('header description from components')
-      })
-
-      it('could not override summary for the requestBody via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    headers: {
-                      'X-Rate-Limit': {
-                        $ref: '#/components/headers/X-Rate-Limit',
-                        summary: 'Overriden summary',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            headers: {
-              'X-Rate-Limit': {
-                description: 'header description from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit']).not.toHaveProperty('summary')
-        // TODO: reported via onRefResolveError callback?
-      })
-
-      it('properties other than description and summary could not be overriden via reference object for headers', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    headers: {
-                      'X-Rate-Limit': {
-                        $ref: '#/components/headers/X-Rate-Limit',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            headers: {
-              'X-Rate-Limit': {
-                description: 'header description from components',
-                schema: {
-                  type: 'integer',
-                  format: 'int32',
-                },
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].schema).toBe(result.components.headers['X-Rate-Limit'].schema)
-      })
-
-      it('could not override description for responses via requestBody object in OAS 3.0', () => {
-        const source = {
-          openapi: '3.0.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    headers: {
-                      'X-Rate-Limit': {
-                        $ref: '#/components/headers/X-Rate-Limit',
-                        description: 'Overriden description',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            headers: {
-              'X-Rate-Limit': {
-                description: 'header description from components',
-              },
-            },
-          },
-        }
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].headers['X-Rate-Limit'].description).toEqual('header description from components')
-      })
-    })
-
-    describe('Rules for examples', () => {
-      it('could define examples via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    content: {
-                      'application/json': {
-                        schema: {
-                          type: 'object',
-                          properties: {
-                            prop1: {
-                              type: 'string',
-                              examples: [
-                                {
-                                  $ref: '#/components/examples/ex1',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            examples: {
-              ex1: {
-                description: 'examples description from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0]).toBe(result.components.examples.ex1)
-      })
-
-      it('could override description and summary for examples via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    content: {
-                      'application/json': {
-                        schema: {
-                          type: 'object',
-                          properties: {
-                            prop1: {
-                              type: 'string',
-                              examples: [
-                                {
-                                  $ref: '#/components/examples/ex1',
-                                  description: 'Overriden description',
-                                  summary: 'Overriden summary',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            examples: {
-              ex1: {
-                description: 'examples description from components',
-                summary: 'example summary from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].description).toBe('Overriden description')
-        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toBe('Overriden summary')
-        expect(result.components.examples.ex1.description).toBe('examples description from components')
-        expect(result.components.examples.ex1.summary).toBe('example summary from components')
-      })
-
-      it('properties other than description and summary could not be overriden via reference object for examples', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    content: {
-                      'application/json': {
-                        schema: {
-                          type: 'object',
-                          properties: {
-                            prop1: {
-                              type: 'string',
-                              examples: [
-                                {
-                                  $ref: '#/components/examples/ex1',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            examples: {
-              ex1: {
-                description: 'examples description from components',
-                summary: 'example summary from components',
-                schema: {
-                  type: 'integer',
-                  format: 'int32',
-                },
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].schema).toBe(result.components.examples.ex1.schema)
-      })
-
-      it('could not override description and summary for responses via examples object in OAS 3.0', () => {
-        const source = {
-          openapi: '3.0.0',
-          paths: {
-            '/test': {
-              post: {
-                responses: {
-                  '200': {
-                    content: {
-                      'application/json': {
-                        schema: {
-                          type: 'object',
-                          properties: {
-                            prop1: {
-                              type: 'string',
-                              examples: [
-                                {
-                                  $ref: '#/components/examples/ex1',
-                                  description: 'Overriden description',
-                                  summary: 'Overriden summary',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          components: {
-            examples: {
-              ex1: {
-                description: 'examples description from components',
-                summary: 'example summary from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].description).toEqual('examples description from components')
-        expect(result.paths['/test'].post.responses['200'].content['application/json'].schema.properties.prop1.examples[0].summary).toEqual('example summary from components')
-      })
-    })
-
-    describe('Rules for parameters', () => {
-      it('could define parameters via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                parameters: [
-                  {
-                    $ref: '#/components/parameters/status',
-                  },
-                ],
-              },
-            },
-          },
-          components: {
-            parameters: {
-              status: {
-                description: 'parameters description from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.parameters[0]).toBe(result.components.parameters.status)
-      })
-
-      it('could override description and summary for parameters via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                parameters: [
-                  {
-                    $ref: '#/components/parameters/status',
-                    description: 'Overriden description',
-                  },
-                ],
-              },
-            },
-          },
-          components: {
-            parameters: {
-              status: {
-                description: 'parameters description from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.parameters[0].description).toBe('Overriden description')
-        expect(result.components.parameters.status.description).toBe('parameters description from components')
-      })
-
-      it('properties other than description could not be overriden via reference object for parameters', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                parameters: [
-                  {
-                    $ref: '#/components/parameters/status',
-                  },
-                ],
-              },
-            },
-          },
-          components: {
-            parameters: {
-              status: {
-                description: 'parameters description from components',
-                schema: {
-                  type: 'string',
-                },
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.parameters[0].schema).toBe(result.components.parameters.status.schema)
-      })
-
-      it('could not override summary for the parameters via reference object', () => {
-        const source = {
-          openapi: '3.1.0',
-          paths: {
-            '/test': {
-              post: {
-                parameters: [
-                  {
-                    $ref: '#/components/parameters/status',
-                    summary: 'Overriden summary',
-                  },
-                ],
-              },
-            },
-          },
-          components: {
-            parameters: {
-              status: {
-                description: 'parameters description from components',
-              },
-            },
-          },
-        }
-
-        const result = normalize(source, OPTIONS) as any
-        expect(result.paths['/test'].post.parameters[0]).not.toHaveProperty('summary')
-        // TODO: reported via onRefResolveError callback?
-      })
-
-      it('could not override description and summary for responses via examples object in OAS 3.0', () => {
-        const source = {
-          openapi: '3.0.0',
-          paths: {
-            '/test': {
-              post: {
-                parameters: [
-                  {
-                    $ref: '#/components/parameters/status',
-                    description: 'Overriden description',
-                  },
-                ],
-              },
-            },
-          },
-          components: {
-            parameters: {
-              status: {
-                description: 'parameters description from components',
-              },
-            },
-          },
-        }
-
-        const result = defineOriginsAndResolveRef(source) as any
-        expect(result.paths['/test'].post.parameters[0].description).toEqual('parameters description from components')
+          const result = normalize(source, OPTIONS) as any
+          expect(result).toHaveProperty([...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+          expect(result).toHaveProperty([...path, OPEN_API_PROPERTY_SUMMARY], SUMMARY_BASE)
+        })
       })
     })
   })

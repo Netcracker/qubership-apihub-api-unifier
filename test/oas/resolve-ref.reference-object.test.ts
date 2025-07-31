@@ -106,11 +106,11 @@ describe('OAS 3.1 Reference object', () => {
       }
     }
 
-    const getValueByPatch = (value: any, path: (string | number)[]) => {
+    const getValueByPatch = (value: any, path: JsonPath) => {
       return path.reduce((data, key) => data[key], value)
     }
 
-    const createBase = (version: string, path: (string | number)[], components: (string | number)[]) => {
+    const createBase = (version: string, path: JsonPath, components: JsonPath) => {
       const ref = `#/${components.join('/')}`
       const base = { openapi: version }
       setValueAtPath(base, path, { $ref: ref })
@@ -177,7 +177,7 @@ describe('OAS 3.1 Reference object', () => {
           expect(pathContent).toBe(componentsContent)
         })
 
-        it(`could (not) override description for ${title} via reference object`, () => {
+        it(`could ${descriptionOverride ? '' : 'not '}override description for ${title} via reference object`, () => {
           const source = clone(base31)
           setValueAtPath(source, [...components, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
           setValueAtPath(source, [...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
@@ -185,11 +185,16 @@ describe('OAS 3.1 Reference object', () => {
           const result = normalize(source, OPTIONS) as any
 
           const expectation = expect(result);
-          (descriptionOverride ? expectation : expectation.not).toHaveProperty([...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
           expectation.toHaveProperty([...components, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+
+          if (descriptionOverride) {
+            expectation.toHaveProperty([...path, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+          } else {
+            expectation.not.toHaveProperty([...path, OPEN_API_PROPERTY_DESCRIPTION]);
+          }
         })
 
-        it(`could (not) override summary for the ${title} via reference object`, () => {
+        it(`could ${summaryOverride ? '' : 'not '}override summary for the ${title} via reference object`, () => {
           const source = clone(base31)
           setValueAtPath(source, [...path, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
           setValueAtPath(source, components, {})
@@ -197,7 +202,11 @@ describe('OAS 3.1 Reference object', () => {
           const result = normalize(source, OPTIONS) as any
 
           const expectation = expect(result);
-          (summaryOverride ? expectation : expectation.not).toHaveProperty([...path, OPEN_API_PROPERTY_SUMMARY])
+          if (summaryOverride) {
+            expectation.toHaveProperty([...path, OPEN_API_PROPERTY_SUMMARY])
+          } else {
+            expectation.not.toHaveProperty([...path, OPEN_API_PROPERTY_SUMMARY])
+          }
         })
 
         it(`properties other than description and summary could not be overriden via reference object for ${title}`, () => {

@@ -70,7 +70,8 @@ import {
   OPEN_API_PROPERTY_RESPONSES,
   OPEN_API_PROPERTY_SCHEMAS,
   OPEN_API_PROPERTY_SECURITY_SCHEMAS,
-  OPEN_API_PROPERTY_STYLE, OPEN_API_PROPERTY_SUMMARY,
+  OPEN_API_PROPERTY_STYLE,
+  OPEN_API_PROPERTY_SUMMARY,
   OPEN_API_PROPERTY_TAGS,
 } from './openapi.const'
 
@@ -271,10 +272,7 @@ const openApiExtensionRulesFunction: (elseRules: NormalizationRules | (() => Nor
   },
 })
 
-const openApiExtensionRules: NormalizationRules = openApiExtensionRulesFunction({
-  validate: () => false,
-  referenceHandler: jsonSchemaReferenceResolver,
-})
+const openApiExtensionRules: NormalizationRules = openApiExtensionRulesFunction({ validate: () => false })
 
 const openApiExternalDocsRules: NormalizationRules = {
   '/externalDocs': {
@@ -301,7 +299,10 @@ const openApiExamplesRules = (version: OpenApiSpecVersion): NormalizationRules =
       ...openApiExtensionRulesFunction({
         validate: checkType(...TYPE_JSON_ANY),
       }),
-      referenceHandler: referenceObjectRuleFunction({version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY]}),
+      referenceHandler: referenceObjectRuleFunction({
+        version,
+        allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
+      }),
     },
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },
@@ -616,6 +617,7 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
   '/description': { validate: checkType(TYPE_STRING) },
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
+  '/schema': { referenceHandler: jsonSchemaReferenceResolver },
   ...openApiExtensionRules,
   referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
   unify: [

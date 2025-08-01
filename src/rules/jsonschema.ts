@@ -205,7 +205,6 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
       merge: resolvers.equal,
       '/**': { validate: checkType(...TYPE_JSON_ANY) },
       hashStrategy: CURRENT_DATA_LEVEL,
-      referenceHandler: notAllowedReferenceHandler,
     },
     '/propertyNames': () => {
       const common = self()
@@ -290,6 +289,26 @@ const referenceResolver = (version: JsonSchemaSpecVersion): ReferenceHandler => 
   }
 }
 
+const jsonSchemaItemsRule = (value: any, self: () => NormalizationRules): NormalizationRules => ({
+  ...(Array.isArray(value)
+      ? {
+        validate: [checkType(TYPE_ARRAY)],
+        '/*': {
+          ...self(),
+          referenceHandler: jsonSchemaReferenceResolver,
+          hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+          newDataLayer: true,
+        },
+      }
+      : {
+        ...self(),
+        newDataLayer: true,
+      }
+  ),
+  merge: resolvers.itemsMergeResolver,
+  hashStrategy: CURRENT_DATA_LEVEL,
+})
+
 export const jsonSchemaRules: (
   version: JsonSchemaSpecVersion,
   self?: () => NormalizationRules,
@@ -320,14 +339,12 @@ export const jsonSchemaRules: (
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
     hashStrategy: CURRENT_DATA_LEVEL,
-    referenceHandler: notAllowedReferenceHandler,
   },
   '/default': {
     validate: checkType(...TYPE_JSON_ANY),
     merge: resolvers.last,
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
     hashStrategy: CURRENT_DATA_LEVEL,
-    referenceHandler: notAllowedReferenceHandler,
   },
   '/multipleOf': {
     validate: checkType(TYPE_NUMBER),
@@ -394,24 +411,7 @@ export const jsonSchemaRules: (
     merge: resolvers.maxValue,
     hashStrategy: CURRENT_DATA_LEVEL,
   },
-  '/items': ({ value }) => ({
-    ...(Array.isArray(value)
-        ? {
-          validate: [checkType(TYPE_ARRAY)],
-          '/*': {
-            ...self(),
-            hashStrategy: BEFORE_SECOND_DATA_LEVEL,
-            newDataLayer: true,
-          },
-        }
-        : {
-          ...self(),
-          newDataLayer: true,
-        }
-    ),
-    merge: resolvers.itemsMergeResolver,
-    hashStrategy: CURRENT_DATA_LEVEL,
-  }),
+  '/items': ({ value }) => jsonSchemaItemsRule(value, self),
   deprecation: {
     deprecationResolver: ctx => JSON_SCHEMA_DEPRECATION_RESOLVER(ctx),
     descriptionCalculator: ctx => `[Deprecated] schema ${calculateSchemaName(ctx)}`
@@ -443,10 +443,10 @@ export const jsonSchemaRules: (
       validate: checkType(...TYPE_JSON_ANY),
       hashStrategy: CURRENT_DATA_LEVEL,
     },
-    referenceHandler: notAllowedReferenceHandler,
     hashStrategy: CURRENT_DATA_LEVEL,
   },
   '/properties': {
+    '/items': ({ value }) => jsonSchemaItemsRule(value, self),
     '/*': () => ({
       ...self(),
       newDataLayer: true,
@@ -524,7 +524,6 @@ export const jsonSchemaRules: (
   '/schema': {
     '/*': self,
   },
-  '/*': { referenceHandler: jsonSchemaReferenceResolver },
   '/**': { referenceHandler: notAllowedReferenceHandler },
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested
   // The boolean schema values "true" and "false" are trivial schemas that always produce themselves as assertion results, regardless of the instance value. They never produce annotation results.

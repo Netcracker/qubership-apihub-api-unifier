@@ -84,7 +84,7 @@ import {
 } from '../deprecated-item-description'
 import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
 import {
-  jsonSchemaReferenceResolver,
+  jsonSchemaReferenceResolverHandler,
   notAllowedReferenceHandler,
   referenceObjectRuleFunction,
 } from '../references/ref-resolver'
@@ -617,7 +617,7 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
   '/description': { validate: checkType(TYPE_STRING) },
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
-  '/schema': { referenceHandler: jsonSchemaReferenceResolver },
+  '/schema': { referenceHandler: jsonSchemaReferenceResolverHandler },
   ...openApiExtensionRules,
   referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
   unify: [

@@ -63,7 +63,7 @@ import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
 import {
-  jsonSchemaReferenceResolver,
+  jsonSchemaReferenceResolverHandler,
   notAllowedReferenceHandler,
   referenceObjectResolver,
 } from '../references/ref-resolver'
@@ -285,7 +285,7 @@ const referenceResolver = (version: JsonSchemaSpecVersion): ReferenceHandler => 
     case SPEC_TYPE_JSON_SCHEMA_07:
       return referenceObjectResolver([OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY])
     default:
-      return jsonSchemaReferenceResolver
+      return jsonSchemaReferenceResolverHandler
   }
 }
 
@@ -295,7 +295,7 @@ const jsonSchemaItemsRule = (value: any, self: () => NormalizationRules): Normal
         validate: [checkType(TYPE_ARRAY)],
         '/*': {
           ...self(),
-          referenceHandler: jsonSchemaReferenceResolver,
+          referenceHandler: jsonSchemaReferenceResolverHandler,
           hashStrategy: BEFORE_SECOND_DATA_LEVEL,
           newDataLayer: true,
         },
@@ -536,7 +536,7 @@ export const jsonSchemaRules: (
   // Always fails validation, as if the schema { "not": {} }
   // While the empty schema object is unambiguous, there are many possible equivalents to the "false" schema. Using the boolean values ensures that the intent is clear to both human readers and implementations.
   validate: checkType(TYPE_OBJECT),
-  referenceHandler: jsonSchemaReferenceResolver,
+  referenceHandler: jsonSchemaReferenceResolverHandler,
   merge: resolvers.jsonSchemaMergeResolver,
   canLiftCombiners: true,
   resolvedReferenceNamePropertyKey: JSON_SCHEMA_PROPERTY_TITLE,

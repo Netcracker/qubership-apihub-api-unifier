@@ -53,7 +53,7 @@ import {
   GRAPH_API_PROPERTY_VALUES,
 } from './graphapi.const'
 import { GRAPH_API_DEPRECATION_PREDICATE } from './graphapi.deprecated'
-import { jsonSchemaReferenceResolver, notAllowedReferenceHandler } from '../references/ref-resolver'
+import { notAllowedReferenceHandler, referenceObjectResolverHandler } from '../references/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
 
@@ -239,7 +239,7 @@ const directiveDefinitionRules: NormalizationRules = {
     valueDefaults(DIRECTIVE_DEFINITION_DEFAULTS),
     valueReplaces(DIRECTIVE_DEFINITION_REPLACES),
   ],
-  referenceHandler: jsonSchemaReferenceResolver,
+  referenceHandler: referenceObjectResolverHandler,
 }
 
 const typeDefinitionRules: (ctx: CrawlRulesContext) => NormalizationRules = ({ value }) => {
@@ -266,8 +266,8 @@ const typeDefinitionRules: (ctx: CrawlRulesContext) => NormalizationRules = ({ v
     default:
       return {
         validate: () => false,
-        '/**': { referenceHandler: jsonSchemaReferenceResolver },
-        referenceHandler: jsonSchemaReferenceResolver,
+        '/**': { referenceHandler: referenceObjectResolverHandler },
+        referenceHandler: referenceObjectResolverHandler,
       }
   }
 }

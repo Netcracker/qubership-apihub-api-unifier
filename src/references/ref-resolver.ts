@@ -25,7 +25,9 @@ export type ReferenceObjectResolverOverrideField =
   | typeof OPEN_API_PROPERTY_DESCRIPTION
   | typeof OPEN_API_PROPERTY_SUMMARY
 
-export type ReferenceResolverResponse = void | CrawlHookResponse<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>
+export type ReferenceResolverResponse =
+  void
+  | CrawlHookResponse<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>
 export type ResolvedRefWithSibling = ResolvedRefSibling | ResolvedRefAllOf
 export type ReferenceResolverHandler = (data: ResolvedRefData) => ResolvedRefWithSibling
 
@@ -69,9 +71,10 @@ export interface ResolvedRefData {
 }
 
 export const notAllowedReferenceHandler: ReferenceHandler = args => forbidReferenceResolver(args)
-export const jsonSchemaReferenceResolver: ReferenceHandler = args => resolveJsonSchemaReferenceWithAllOf(args)
+export const jsonSchemaReferenceResolverHandler: ReferenceHandler = args => resolveJsonSchemaReferenceWithAllOf(args)
+export const referenceObjectResolverHandler: ReferenceHandler = referenceObjectResolver()
 
-export function referenceObjectRuleFunction({ version, allowOverrides }: ReferenceObjectRuleData) {
+export function referenceObjectRuleFunction({ version, allowOverrides }: ReferenceObjectRuleData): ReferenceHandler {
   switch (version) {
     case SPEC_TYPE_OPEN_API_31:
       return referenceObjectResolver(allowOverrides)
@@ -82,7 +85,14 @@ export function referenceObjectRuleFunction({ version, allowOverrides }: Referen
   }
 }
 
-export function forbidReferenceResolver({ options, state, safeKey, ref, path, value }: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse {
+export function forbidReferenceResolver({
+  options,
+  state,
+  safeKey,
+  ref,
+  path,
+  value,
+}: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse {
   options.onRefResolveError?.(ErrorMessage.referenceNotAllowed(ref), path, ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
   state.node[safeKey] = value
   return { done: true }

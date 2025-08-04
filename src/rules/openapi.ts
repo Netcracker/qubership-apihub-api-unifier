@@ -690,6 +690,7 @@ const openApiPathItemRules = (version: OpenApiSpecVersion): NormalizationRules =
     validate: checkType(TYPE_OBJECT),
   }),
   '/parameters': openApiParametersRules(version),
+  referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_SUMMARY, OPEN_API_PROPERTY_DESCRIPTION] }),
   validate: checkType(TYPE_OBJECT),
   unify: pathItemsUnification,
 })

@@ -90,19 +90,52 @@ describe('OAS 3.1 Reference object', () => {
     const parametersPath: JsonPath = [...postPath, 'parameters', 0]
     const headersPath: JsonPath = [...responsesPath, 'headers', 'X-Rate-Limit']
 
-    const referenceObjectWithDescriptionOverride: JsonPath[] = [
-      responsesPath,
-      parametersPath,
-      headersPath,
-      [...responsesPath, 'links', 'someLink'],
+    const referenceObjectWithDescriptionOverride: JsonPath[][] = [
+      [
+        responsesPath,
+        ['components', 'responses', 'data']
+      ],
+      [
+        parametersPath,
+        ['components', 'parameters', 'data']
+      ],
+      [
+        headersPath,
+        ['components', 'headers', 'data']
+      ],
+      [
+        [...responsesPath, 'links', 'someLink'],
+        ['components', 'links', 'data']
+      ],
     ]
 
-    const referenceObjectWithDescriptionAndSummaryOverride: JsonPath[] = [
-      [...postPath, 'requestBody', 'content', 'application/json', 'examples', 'ex1'],
-      [...responsesPath, 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0],
-      [...parametersPath, 'examples', 'ex1'],
-      [...headersPath, 'examples', 'ex1'],
-      ['components', 'requestBodies', 'ExampleBody', 'content', 'application/json', 'examples', 'ex1'],
+    const componentsExamplesPath: JsonPath = ['components', 'examples', 'data']
+    const referenceObjectWithDescriptionAndSummaryOverride: JsonPath[][] = [
+      [
+        [...postPath, 'requestBody', 'content', 'application/json', 'examples', 'ex1'],
+        componentsExamplesPath,
+      ],
+      [
+        [...responsesPath, 'content', 'application/json', 'schema', 'properties', 'prop1', 'examples', 0],
+        componentsExamplesPath,
+      ],
+      [
+        [...parametersPath, 'examples', 'ex1'],
+        componentsExamplesPath,
+      ],
+      [
+        [...headersPath, 'examples', 'ex1'],
+        componentsExamplesPath,
+      ],
+      [
+        ['components', 'requestBodies', 'ExampleBody', 'content', 'application/json', 'examples', 'ex1'],
+        componentsExamplesPath
+      ],
+      [
+        // pathItems
+        ['paths', '/users'],
+        ['components', 'pathItems', 'UserPath'],
+      ],
     ]
 
     const clone = (obj: any): any => JSON.parse(JSON.stringify(obj))
@@ -133,13 +166,16 @@ describe('OAS 3.1 Reference object', () => {
       return base
     }
 
-    const runReferenceObjectRulesTests = (paths: JsonPath[], overrides: string[] = []): void => {
-      paths.forEach((refPath: JsonPath) => {
-        const title = refPath.at(-2) as string
+    const runReferenceObjectRulesTests = (paths: JsonPath[][], overrides: string[] = []): void => {
+      paths.forEach((paths: JsonPath[]) => {
         const allowDescriptionOverride = overrides.includes(OPEN_API_PROPERTY_DESCRIPTION)
         const allowSummaryOverride = overrides.includes(OPEN_API_PROPERTY_SUMMARY)
+
+        const refPath = paths[0]
+        const componentsPath = paths[1]
+
+        const title = refPath.at(-2) as string
         const pathDescription = refPath.length > 0 ? refPath.join('.') : '[]'
-        const componentsPath = ['components', title, 'data']
 
         describe(`Rules for ${title}`, () => {
           describe(`Path: ${pathDescription}`, () => {

@@ -79,7 +79,7 @@ export function referenceObjectRuleFunction({ version, allowOverrides }: Referen
     case SPEC_TYPE_OPEN_API_31:
       return referenceObjectResolver(allowOverrides)
     case SPEC_TYPE_OPEN_API_30:
-      return referenceObjectResolver()
+      return referenceObjectResolverHandler
     default:
       return notAllowedReferenceHandler
   }

@@ -780,6 +780,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
         },
         '/openIdConnectUrl': { validate: checkType(TYPE_STRING) },
         validate: checkType(TYPE_OBJECT),
+        referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
         ...openApiExtensionRules,
       },
       validate: checkType(TYPE_OBJECT),

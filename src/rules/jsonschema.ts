@@ -280,15 +280,6 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
   }),
 }
 
-const referenceResolver = (version: JsonSchemaSpecVersion): ReferenceHandler => {
-  switch (version) {
-    case SPEC_TYPE_JSON_SCHEMA_07:
-      return referenceObjectResolver([OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY])
-    default:
-      return jsonSchemaReferenceResolverHandler
-  }
-}
-
 const jsonSchemaItemsRule = (value: any, self: () => NormalizationRules): NormalizationRules => ({
   ...(Array.isArray(value)
       ? {
@@ -446,7 +437,7 @@ export const jsonSchemaRules: (
     hashStrategy: CURRENT_DATA_LEVEL,
   },
   '/properties': {
-    '/items': ({ value }) => jsonSchemaItemsRule(value, self),
+
     '/*': () => ({
       ...self(),
       newDataLayer: true,
@@ -495,7 +486,7 @@ export const jsonSchemaRules: (
     merge: resolvers.last,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      referenceHandler: referenceResolver(version),
+      referenceHandler: jsonSchemaReferenceResolverHandler,
     },
   },
   '/definitions': {
@@ -517,12 +508,6 @@ export const jsonSchemaRules: (
     merge: resolvers.concatString,
     //why anyOf?
     hashStrategy: BEFORE_SECOND_DATA_LEVEL,
-  },
-  '/paths': {
-    '/*': self,
-  },
-  '/schema': {
-    '/*': self,
   },
   '/**': { referenceHandler: notAllowedReferenceHandler },
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested

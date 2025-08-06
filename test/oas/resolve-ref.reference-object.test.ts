@@ -275,11 +275,10 @@ describe('OAS 3.1 Reference object', () => {
             })
 
             it(`could ${allowSummaryOverride ? '' : 'not '}override summary via reference object`, () => {
-              const source = clone(base31)
-              setValueAtPath(source, [...refPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
-              setValueAtPath(source, componentsPath, {})
+              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
+              setValueAtPath(base31, componentsPath, {})
 
-              const result = normalize(source, OPTIONS) as any
+              const result = normalize(base31, OPTIONS) as any
 
               const expectation = expect(result)
               allowSummaryOverride

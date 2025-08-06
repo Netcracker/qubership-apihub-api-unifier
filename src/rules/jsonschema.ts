@@ -280,26 +280,6 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
   }),
 }
 
-const jsonSchemaItemsRule = (value: any, self: () => NormalizationRules): NormalizationRules => ({
-  ...(Array.isArray(value)
-      ? {
-        validate: [checkType(TYPE_ARRAY)],
-        '/*': {
-          ...self(),
-          referenceHandler: jsonSchemaReferenceResolverHandler,
-          hashStrategy: BEFORE_SECOND_DATA_LEVEL,
-          newDataLayer: true,
-        },
-      }
-      : {
-        ...self(),
-        newDataLayer: true,
-      }
-  ),
-  merge: resolvers.itemsMergeResolver,
-  hashStrategy: CURRENT_DATA_LEVEL,
-})
-
 export const jsonSchemaRules: (
   version: JsonSchemaSpecVersion,
   self?: () => NormalizationRules,
@@ -402,7 +382,24 @@ export const jsonSchemaRules: (
     merge: resolvers.maxValue,
     hashStrategy: CURRENT_DATA_LEVEL,
   },
-  '/items': ({ value }) => jsonSchemaItemsRule(value, self),
+  '/items': ({ value }) => ({
+    ...(Array.isArray(value)
+        ? {
+          validate: [checkType(TYPE_ARRAY)],
+          '/*': {
+            ...self(),
+            hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+            newDataLayer: true,
+          },
+        }
+        : {
+          ...self(),
+          newDataLayer: true,
+        }
+    ),
+    merge: resolvers.itemsMergeResolver,
+    hashStrategy: CURRENT_DATA_LEVEL,
+  }),
   deprecation: {
     deprecationResolver: ctx => JSON_SCHEMA_DEPRECATION_RESOLVER(ctx),
     descriptionCalculator: ctx => `[Deprecated] schema ${calculateSchemaName(ctx)}`

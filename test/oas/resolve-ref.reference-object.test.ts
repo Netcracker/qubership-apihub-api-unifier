@@ -286,6 +286,24 @@ describe('OAS 3.1 Reference object', () => {
                 : expectation.not.toHaveProperty([...refPath, OPEN_API_PROPERTY_SUMMARY])
             })
 
+            // it(`1 s`, () => {
+            //   const newArr = [...componentsPath.slice(0, componentsPath.length - 1), 'someRef'];
+            //   const ref2 = `#/${newArr.join('/')}`
+            //   setValueAtPath(base31, componentsPath, { $ref: ref2 })
+            //   setValueAtPath(base31, [...newArr, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+            //   // setValueAtPath(base31, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], "asasas")
+            //   setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+            //
+            //   const result = normalize(base31, OPTIONS) as any
+            //
+            //   const expectation = expect(result)
+            //
+            //   expectation.toHaveProperty([...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+            //   allowDescriptionOverride
+            //     ? expectation.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+            //     : expectation.not.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION])
+            // })
+
             it(`properties other than description and summary could not be overriden via reference object`, () => {
               const content = {
                 schema: {

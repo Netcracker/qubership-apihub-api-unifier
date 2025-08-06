@@ -83,11 +83,7 @@ import {
   nonEmptyString,
 } from '../deprecated-item-description'
 import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
-import {
-  jsonSchemaReferenceResolverHandler,
-  notAllowedReferenceHandler,
-  referenceObjectRuleFunction,
-} from '../references/ref-resolver'
+import { notAllowedReferenceHandler, referenceObjectRuleFunction } from '../references/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
   JSON_SCHEMA_NODE_TYPE_BOOLEAN,
@@ -617,7 +613,6 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
   '/description': { validate: checkType(TYPE_STRING) },
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
-  '/schema': { referenceHandler: jsonSchemaReferenceResolverHandler },
   ...openApiExtensionRules,
   referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
   unify: [

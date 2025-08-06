@@ -310,8 +310,12 @@ describe('simple origins', () => {
         path: {
           get: {
             requestBody: {
-              schema: {
-                $ref: '#/components/schemas/two',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/two',
+                  },
+                },
               },
             },
           },

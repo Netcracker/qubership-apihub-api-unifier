@@ -1,11 +1,4 @@
-import {
-  BEFORE_SECOND_DATA_LEVEL,
-  CURRENT_DATA_LEVEL,
-  NormalizationRules,
-  OriginLeafs,
-  ReferenceHandler,
-  UnifyFunction,
-} from '../types'
+import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, OriginLeafs, UnifyFunction } from '../types'
 import * as resolvers from '../resolvers'
 import {
   JsonSchemaSpecVersion,
@@ -62,12 +55,7 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
-import {
-  jsonSchemaReferenceResolverHandler,
-  notAllowedReferenceHandler,
-  referenceObjectResolver,
-} from '../references/ref-resolver'
-import { OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY } from './openapi.const'
+import { jsonSchemaReferenceResolverHandler, notAllowedReferenceHandler } from '../references/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
 
@@ -483,7 +471,6 @@ export const jsonSchemaRules: (
     merge: resolvers.last,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      referenceHandler: jsonSchemaReferenceResolverHandler,
     },
   },
   '/definitions': {

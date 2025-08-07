@@ -372,7 +372,7 @@ describe('simple origins', () => {
 
   it('synthetic title should have ref to physical reference property key', () => {
     const source = {
-      openapi: '3.0.0',
+      openapi: '3.1.0',
       components: {
         schemas: {
           Object: {

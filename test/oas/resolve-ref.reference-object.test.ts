@@ -81,122 +81,149 @@ describe('OAS 3.1 Reference object', () => {
   })
 
   describe('Reference object rules', () => {
-    const DESCRIPTION_OVERRIDEN = 'overriden description'
-    const SUMMARY_OVERRIDEN = 'overriden summary'
-    const DESCRIPTION_BASE = 'base description'
-    const SUMMARY_BASE = 'base summary'
+    const VALUE_OVERRIDEN = 'overriden value'
+    const VALUE_BASE = 'base value'
+    const VALUE_SECOND = 'second value'
 
-    interface MyData {
+    interface ReferenceObjectRules {
       refPaths: JsonPath[]
       componentsPath: JsonPath
       overridableFields: ReferenceObjectResolverOverrideField[]
+      data?: Record<string, any>
     }
 
-    const operationObjectPaths: JsonPath[] = [
-      ['paths', '/somePath', 'get'],
+    const responseObjectPaths: JsonPath[] = [
+      ['components', 'responses', 'someResponse'],
+      ['paths', '/somePath', 'get', 'responses', '200'],
     ]
 
-    const componentsObject: JsonPath[] = [['components']]
-
-    const parameterObject: MyData = {
-      refPaths: [
-        ['paths', '/somePath', 'parameters', 0],
-        ['paths', '/somePath', 'get', 'parameters', 0],
-        ...componentsObject.map(path => [...path, 'parameters', 'componentsParameter']),
-      ],
-      componentsPath: ['components', 'parameters', 'someParameter'],
-      overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
-    }
-
-    const requestBodyObject: MyData = {
-      refPaths: [
-        ...operationObjectPaths.map(path => [...path, 'requestBody']),
-        ...componentsObject.map(path => [...path, 'requestBodies', 'componentsRequestBody']),
-      ],
-      componentsPath: ['components', 'requestBodies', 'someRequestBody'],
-      overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
-    }
-
-    // Not all responses is Reference Object
-    const responseObject: JsonPath[] = [
-      ...operationObjectPaths.map(path => [...path, 'responses', '200']),
+    const requestBodyObjectPaths: JsonPath[] = [
+      ['paths', '/somePath', 'get', 'requestBody'],
+      ['components', 'requestBodies', 'someRequestBody'],
     ]
 
-    // Responses in components is Reference Object
-    const componentsResponseObject: MyData = {
-      refPaths: [
-        ...componentsObject.map(path => [...path, 'responses', 'componentsResponse']),
-      ],
-      componentsPath: ['components', 'responses', 'someResponse'],
+    const parameterObjectPaths: JsonPath[] = [
+      ['components', 'parameters', 'someParameter'],
+      ['paths', '/somePath', 'parameters', 0],
+      ['paths', '/somePath', 'get', 'parameters', 0],
+    ]
+
+    const contentEncodingHeaderSuffix = ['content', 'application/json', 'encoding', 'someProperty', 'headers', 'someHeader']
+
+    const headerObjectPaths: JsonPath[] = [
+      ['components', 'headers', 'someHeader'],
+      ['components', 'responses', 'someResponse', 'headers', 'someHeader'],
+      ['paths', '/somePath', 'get', 'responses', '200', 'headers', 'someHeader'],
+      ...parameterObjectPaths.map(path => [...path, ...contentEncodingHeaderSuffix]),
+      ...requestBodyObjectPaths.map(path => [...path, ...contentEncodingHeaderSuffix]),
+      ...responseObjectPaths.map(path => [...path, ...contentEncodingHeaderSuffix]),
+    ]
+
+    const headerObjectPathsWithRecursionFirstLevel: JsonPath[] = [
+      ...headerObjectPaths,
+      ...headerObjectPaths.map(path => [...path, ...contentEncodingHeaderSuffix]),
+    ]
+
+    const mediaTypeObjectPaths: JsonPath[] = [
+      ...parameterObjectPaths.map(path => [...path, 'content', 'application/json']),
+      ...headerObjectPathsWithRecursionFirstLevel.map(path => [...path, 'content', 'application/json']),
+      ...requestBodyObjectPaths.map(path => [...path, 'content', 'application/json']),
+      ...responseObjectPaths.map(path => [...path, 'content', 'application/json']),
+    ]
+
+    const linkObjectPaths: JsonPath[] = [
+      // Link Object unification rules
+      //['components', 'links', 'someLink'],
+      //...responseObjectPaths.map(path => [...path, 'links', 'someLink']),
+    ]
+
+    const callbackObjectPaths: JsonPath[] = [
+      // Callback Object unification rules
+      //['components', 'callbacks', 'someCallback'],
+      //...operationObjectPaths.map(path => [...path, 'callbacks', 'someCallback']),
+    ]
+
+    const pathItemObjectPaths: JsonPath[] = [
+      ['paths', '/somePath'],
+      ...callbackObjectPaths.map(path => [...path, 'someExpression']),
+      // ['components', 'pathItems', 'somePathItem'], // support path items in components for OAS 3.1
+    ]
+
+    const securitySchemeObjectPaths: JsonPath[] = [
+      ['components', 'securitySchemes', 'oauth2'],
+    ]
+
+    const exampleObjectPaths: JsonPath[] = [
+      ['components', 'examples', 'someExample'],
+      ...parameterObjectPaths.map(path => [...path, 'examples', 'someExample']),
+      ...headerObjectPathsWithRecursionFirstLevel.map(path => [...path, 'examples', 'someExample']),
+      ...mediaTypeObjectPaths.map(path => [...path, 'examples', 'someExample']),
+    ]
+
+    const parameterObject: ReferenceObjectRules = {
+      refPaths: parameterObjectPaths,
+      componentsPath: ['components', 'parameters', 'componentsParameter'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
     }
 
-    const headerObject: MyData = {
-      refPaths: [
-        ...responseObject.map(path => [...path, 'headers', 'someHeader']),
-        ...componentsResponseObject.refPaths.map(path => [...path, 'headers', 'componentsHeader']),
-      ],
-      componentsPath: ['components', 'headers', 'someHeader'],
+    const requestBodyObject: ReferenceObjectRules = {
+      refPaths: requestBodyObjectPaths,
+      componentsPath: ['components', 'requestBodies', 'componentsRequestBody'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
     }
 
-    const linkObject: MyData = {
-      refPaths: [
-        ...responseObject.map(path => [...path, 'links', 'someLink']),
-        ...componentsResponseObject.refPaths.map(path => [...path, 'links', 'someLink']),
-      ],
-      componentsPath: ['components', 'links', 'someLink'],
+    const responseObject: ReferenceObjectRules = {
+      refPaths: responseObjectPaths,
+      componentsPath: ['components', 'responses', 'componentsResponse'],
+      overridableFields: [OPEN_API_PROPERTY_DESCRIPTION]
+    }
+
+    const headerObject: ReferenceObjectRules = {
+      refPaths: headerObjectPaths,
+      componentsPath: ['components', 'headers', 'componentsHeader'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
     }
 
-    const securitySchemeObject: MyData = {
-      refPaths: [
-        ...componentsObject.map(path => [...path, 'securitySchemes', 'componentsOauth2']),
-      ],
-      componentsPath: ['components', 'securitySchemes', 'oauth2'],
+    const linkObject: ReferenceObjectRules = {
+      refPaths: linkObjectPaths,
+      componentsPath: ['components', 'links', 'componentsLink'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
     }
 
-    const callbackObject: MyData = {
-      refPaths: [
-        ...operationObjectPaths.map(path => [...path, 'callbacks', 'someCallback']),
-        ...componentsObject.map(path => [...path, 'callbacks', 'componentsCallback']),
-      ],
-      componentsPath: ['components', 'callbacks', 'someCallback'],
+    const securitySchemeObject: ReferenceObjectRules = {
+      refPaths: securitySchemeObjectPaths,
+      componentsPath: ['components', 'securitySchemes', 'componentsOauth2'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
     }
 
-    const pathItemObject: MyData = {
-      refPaths: [
-        ['paths', '/somePath'],
-        ...callbackObject.refPaths.map(path => [...path, 'someExpression']),
-      ],
-      componentsPath: ['components', 'pathItems', 'somePathItem'],
+    const callbackObject: ReferenceObjectRules = {
+      refPaths: callbackObjectPaths,
+      componentsPath: ['components', 'callbacks', 'componentsCallback'],
+      overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+    }
+
+    const pathItemObject: ReferenceObjectRules = {
+      refPaths: pathItemObjectPaths,
+      componentsPath: ['components', 'pathItems', 'componentsPathItem'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
     }
 
     const mediaTypeObject: JsonPath[] = [
-      ...responseObject.map(path => [...path, 'content', 'application/json']),
-      ...componentsResponseObject.refPaths.map(path => [...path, 'content', 'application/json']),
+      ...responseObject.refPaths.map(path => [...path, 'content', 'application/json']),
       ...parameterObject.refPaths.map(path => [...path, 'content', 'application/json']),
       ...requestBodyObject.refPaths.map(path => [...path, 'content', 'application/json']),
       ...headerObject.refPaths.map(path => [...path, 'content', 'application/json']),
     ]
 
-    const exampleObject: MyData = {
-      refPaths: [
-        ...parameterObject.refPaths.map(path => [...path, 'examples', 'someExample']),
-        ...mediaTypeObject.map(path => [...path, 'examples', 'someExample']),
-        ...componentsObject.map(path => [...path, 'examples', 'componentsExample']),
-      ],
-      componentsPath: ['components', 'examples', 'someExample'],
+    const exampleObject: ReferenceObjectRules = {
+      refPaths: exampleObjectPaths,
+      componentsPath: ['components', 'examples', 'componentsExample'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
     }
 
-    const referenceObjectPaths: MyData[] = [
+    const referenceObjectPaths: ReferenceObjectRules[] = [
       parameterObject,
       requestBodyObject,
-      componentsResponseObject,
       headerObject,
       linkObject,
       securitySchemeObject,
@@ -204,8 +231,6 @@ describe('OAS 3.1 Reference object', () => {
       // pathItemObject,
       exampleObject,
     ]
-
-    const clone = (obj: any): any => JSON.parse(JSON.stringify(obj))
 
     function setValueAtPath(obj: any, path: JsonPath, value: any): void {
       if (path.length === 0) {return}
@@ -226,11 +251,35 @@ describe('OAS 3.1 Reference object', () => {
 
     const getValueByPath = (value: any, path: JsonPath) => path.reduce((data, key) => data[key], value)
 
+    const createRef = (path: JsonPath) => `#/${path.join('/')}`
+
     const createBase = (version: string, path: JsonPath, components: JsonPath) => {
-      const ref = `#/${components.join('/')}`
       const base = { openapi: version }
-      setValueAtPath(base, path, { $ref: ref })
+      setValueAtPath(base, path, { $ref: createRef(components) })
       return base
+    }
+
+    const checkCyclicReferenceObjects = (title: string, base31: any, refPath: JsonPath, componentsPath: JsonPath, value: ReferenceObjectResolverOverrideField, allowOverride: boolean) => {
+      const name = `secondLevel${title}`
+      const secondLevelRefPath = [...componentsPath.slice(0, componentsPath.length - 1), name]
+      const secondLevelRef = createRef(secondLevelRefPath)
+      setValueAtPath(base31, componentsPath, { $ref: secondLevelRef })
+      setValueAtPath(base31, [...secondLevelRefPath, value], VALUE_BASE)
+      setValueAtPath(base31, [...componentsPath, value], VALUE_SECOND)
+      setValueAtPath(base31, [...refPath, value], VALUE_OVERRIDEN)
+
+      const result = normalize(base31, OPTIONS) as any
+
+      const expectation = expect(result)
+
+      expectation.toHaveProperty([...secondLevelRefPath, value], VALUE_BASE)
+      if (allowOverride) {
+        expectation.toHaveProperty([...componentsPath, value], VALUE_SECOND)
+        expectation.toHaveProperty([...refPath, value], VALUE_OVERRIDEN)
+      } else {
+        expectation.toHaveProperty([...componentsPath, value], VALUE_BASE)
+        expectation.toHaveProperty([...refPath, value], VALUE_BASE)
+      }
     }
 
     referenceObjectPaths.forEach(({ refPaths, componentsPath, overridableFields }) => {
@@ -251,7 +300,7 @@ describe('OAS 3.1 Reference object', () => {
             })
 
             it(`could define data via reference object`, () => {
-              setValueAtPath(base31, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+              setValueAtPath(base31, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_BASE)
 
               const result = normalize(base31, OPTIONS) as any
 
@@ -261,21 +310,21 @@ describe('OAS 3.1 Reference object', () => {
             })
 
             it(`could ${allowDescriptionOverride ? '' : 'not '}override description via reference object`, () => {
-              setValueAtPath(base31, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
-              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+              setValueAtPath(base31, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_BASE)
+              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_OVERRIDEN)
 
               const result = normalize(base31, OPTIONS) as any
 
               const expectation = expect(result)
 
-              expectation.toHaveProperty([...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
+              expectation.toHaveProperty([...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_BASE)
               allowDescriptionOverride
-                ? expectation.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+                ? expectation.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_OVERRIDEN)
                 : expectation.not.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION])
             })
 
             it(`could ${allowSummaryOverride ? '' : 'not '}override summary via reference object`, () => {
-              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
+              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_SUMMARY], VALUE_OVERRIDEN)
               setValueAtPath(base31, componentsPath, {})
 
               const result = normalize(base31, OPTIONS) as any
@@ -286,23 +335,13 @@ describe('OAS 3.1 Reference object', () => {
                 : expectation.not.toHaveProperty([...refPath, OPEN_API_PROPERTY_SUMMARY])
             })
 
-            // it(`1 s`, () => {
-            //   const newArr = [...componentsPath.slice(0, componentsPath.length - 1), 'someRef'];
-            //   const ref2 = `#/${newArr.join('/')}`
-            //   setValueAtPath(base31, componentsPath, { $ref: ref2 })
-            //   setValueAtPath(base31, [...newArr, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
-            //   // setValueAtPath(base31, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], "asasas")
-            //   setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
-            //
-            //   const result = normalize(base31, OPTIONS) as any
-            //
-            //   const expectation = expect(result)
-            //
-            //   expectation.toHaveProperty([...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
-            //   allowDescriptionOverride
-            //     ? expectation.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
-            //     : expectation.not.toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION])
-            // })
+            it(`could ${allowDescriptionOverride ? '' : 'not '}override description via cyclic reference objects`, () => {
+              checkCyclicReferenceObjects(title, base31, refPath, componentsPath, OPEN_API_PROPERTY_DESCRIPTION, allowDescriptionOverride)
+            })
+
+            it(`could ${allowSummaryOverride ? '' : 'not '}override summary via cyclic reference objects`, () => {
+              checkCyclicReferenceObjects(title, base31, refPath, componentsPath, OPEN_API_PROPERTY_SUMMARY, allowSummaryOverride)
+            })
 
             it(`properties other than description and summary could not be overriden via reference object`, () => {
               const content = {
@@ -318,8 +357,8 @@ describe('OAS 3.1 Reference object', () => {
                 'application/json': content,
               })
 
-              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
-              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
+              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_SUMMARY], VALUE_OVERRIDEN)
+              setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_OVERRIDEN)
 
               const result = normalize(base31, OPTIONS) as any
 
@@ -329,14 +368,14 @@ describe('OAS 3.1 Reference object', () => {
             })
 
             it(`could not override description or summary via reference object in OAS 3.0`, () => {
-              setValueAtPath(base30, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
-              setValueAtPath(base30, [...componentsPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_BASE)
-              setValueAtPath(base30, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_OVERRIDEN)
-              setValueAtPath(base30, [...refPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_OVERRIDEN)
+              setValueAtPath(base30, [...componentsPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_BASE)
+              setValueAtPath(base30, [...componentsPath, OPEN_API_PROPERTY_SUMMARY], VALUE_BASE)
+              setValueAtPath(base30, [...refPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_OVERRIDEN)
+              setValueAtPath(base30, [...refPath, OPEN_API_PROPERTY_SUMMARY], VALUE_OVERRIDEN)
 
               const result = normalize(base30, OPTIONS) as any
-              expect(result).toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION], DESCRIPTION_BASE)
-              expect(result).toHaveProperty([...refPath, OPEN_API_PROPERTY_SUMMARY], SUMMARY_BASE)
+              expect(result).toHaveProperty([...refPath, OPEN_API_PROPERTY_DESCRIPTION], VALUE_BASE)
+              expect(result).toHaveProperty([...refPath, OPEN_API_PROPERTY_SUMMARY], VALUE_BASE)
             })
           })
         })

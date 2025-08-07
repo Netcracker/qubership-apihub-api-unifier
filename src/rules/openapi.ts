@@ -3,6 +3,7 @@ import {
   CURRENT_DATA_LEVEL,
   InternalUnifyOptions,
   NormalizationRules,
+  ReferenceHandler,
   UnifyContext,
   UnifyFunction,
 } from '../types'
@@ -83,7 +84,12 @@ import {
   nonEmptyString,
 } from '../deprecated-item-description'
 import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
-import { notAllowedReferenceHandler, referenceObjectRuleFunction } from '../references/ref-resolver'
+import {
+  notAllowedReferenceHandler,
+  referenceObjectResolver,
+  referenceObjectResolverHandler,
+  ReferenceObjectRuleData,
+} from '../references/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
   JSON_SCHEMA_NODE_TYPE_BOOLEAN,
@@ -252,6 +258,17 @@ const OPEN_API_COMPONENTS_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_REQUEST_BODIES]: TO_EMPTY_OBJECT_MAPPING,
   [OPEN_API_PROPERTY_HEADERS]: TO_EMPTY_OBJECT_MAPPING,
   [OPEN_API_PROPERTY_EXAMPLES]: TO_EMPTY_OBJECT_MAPPING,
+}
+
+export function referenceObjectRuleFunction({ version, allowOverrides }: ReferenceObjectRuleData): ReferenceHandler {
+  switch (version) {
+    case SPEC_TYPE_OPEN_API_31:
+      return referenceObjectResolver(allowOverrides)
+    case SPEC_TYPE_OPEN_API_30:
+      return referenceObjectResolverHandler
+    default:
+      return notAllowedReferenceHandler
+  }
 }
 
 const openApiExtensionRulesFunction: (elseRules: NormalizationRules | (() => NormalizationRules)) => NormalizationRules = (elseRules) => ({
@@ -779,6 +796,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
         ...openApiExtensionRules,
       },
       validate: checkType(TYPE_OBJECT),
+      referenceHandler: referenceObjectRuleFunction({ version, allowOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
     },
     '/links': openApiLinksRules(version),
     '/schemas': {

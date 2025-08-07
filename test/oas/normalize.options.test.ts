@@ -225,7 +225,7 @@ describe('normalize options', () => {
 
   it('mark synthethic allOf', () => {
     const data = {
-      openapi: '3.0.0',
+      openapi: '3.1.0',
       paths: {
         '/path': {
           post: {
@@ -271,7 +271,7 @@ describe('normalize options', () => {
       syntheticAllOfFlag: TEST_SYNTHETIC_ALL_OF_FLAG,
     })
     const expected: any = {
-      openapi: '3.0.0',
+      openapi: '3.1.0',
       paths: {
         '/path': {
           post: {

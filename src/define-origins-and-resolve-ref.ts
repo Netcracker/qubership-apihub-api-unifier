@@ -8,7 +8,7 @@ import {
   SyncCloneHook,
   syncCrawl,
 } from '@netcracker/qubership-apihub-json-crawl'
-import { isPureRefNode, parsePointer, parseRef, pathItemToFullPath, resolveValueByPath } from './utils'
+import { isPureRefNode, isRefNode, parsePointer, parseRef, pathItemToFullPath, resolveValueByPath } from './utils'
 import {
   ChainItem,
   DEFAULT_OPTION_RESOLVE_REF,
@@ -438,7 +438,7 @@ const resolveRefNode = (
   let pathChain: ChainItem | undefined = undefined
   const path = parsePointer(reference.pointer)
   let isPureRef: boolean
-  while ((isPureRef = isPureRefNode(value)) || path.length) {
+  while ((isPureRef = isRefNode(value)) || path.length) {
     const key = path[0]
     if (isPureRef) {
       //when ref go to the object that contains not yet resolved ref

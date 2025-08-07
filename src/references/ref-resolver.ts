@@ -16,7 +16,7 @@ import {
   ResolvedRef,
   SyntheticAllOf,
 } from '../define-origins-and-resolve-ref'
-import { OpenApiSpecVersion, SPEC_TYPE_OPEN_API_30, SPEC_TYPE_OPEN_API_31 } from '../spec-type'
+import { OpenApiSpecVersion } from '../spec-type'
 import { ErrorMessage } from '../errors'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from '../rules/jsonschema.const'
 import { setJsoProperty } from '../utils'
@@ -73,17 +73,6 @@ export interface ResolvedRefData {
 export const notAllowedReferenceHandler: ReferenceHandler = args => forbidReferenceResolver(args)
 export const jsonSchemaReferenceResolverHandler: ReferenceHandler = args => resolveJsonSchemaReferenceWithAllOf(args)
 export const referenceObjectResolverHandler: ReferenceHandler = referenceObjectResolver()
-
-export function referenceObjectRuleFunction({ version, allowOverrides }: ReferenceObjectRuleData): ReferenceHandler {
-  switch (version) {
-    case SPEC_TYPE_OPEN_API_31:
-      return referenceObjectResolver(allowOverrides)
-    case SPEC_TYPE_OPEN_API_30:
-      return referenceObjectResolverHandler
-    default:
-      return notAllowedReferenceHandler
-  }
-}
 
 export function forbidReferenceResolver({
   options,

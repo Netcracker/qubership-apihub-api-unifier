@@ -53,7 +53,7 @@ describe('Bugs', () => {
 
   it('extra copy when spread ', () => {
     const result = normalize({
-      "openapi": "3.0.1",
+      "openapi": "3.1.0",
       "components": {
         "schemas": {
           "Bug": {
@@ -91,7 +91,7 @@ describe('Bugs', () => {
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
     }) as any
     const expected = {
-      "openapi": "3.0.1",
+      "openapi": "3.1.0",
       "components": {
         "schemas": {
           "Bug": {
@@ -128,7 +128,7 @@ describe('Bugs', () => {
 
   it('synthetic title make copy', () => {
     const result = normalize({
-      openapi: '3.0.0',
+      openapi: '3.1.0',
       paths: {
         '/api/v1/test': {
           get: {

@@ -25,11 +25,11 @@ export type ReferenceObjectResolverOverrideField =
   | typeof OPEN_API_PROPERTY_DESCRIPTION
   | typeof OPEN_API_PROPERTY_SUMMARY
 
-export type ReferenceResolverResponse =
+export type ReferenceHandlerResponse =
   void
   | CrawlHookResponse<CloneState<DefineOriginsAndResolveRefState>, NormalizationRule>
-export type ResolvedRefWithSibling = ResolvedRefSibling | ResolvedRefAllOf
-export type ReferenceResolverHandler = (data: ResolvedRefData) => ResolvedRefWithSibling
+export type ResolvedRefWithSiblings = ResolvedRefWithChildrenOrigins | ResolvedRefWithIndex
+export type RefAndSiblingResolver = (context: ResolvedReferenceContext) => ResolvedRefWithSiblings
 
 export interface ReferenceObjectRuleData {
   version: OpenApiSpecVersion,
@@ -40,7 +40,7 @@ export interface ReferenceJsonSchemaRuleData {
   allowSiblings: boolean
 }
 
-export interface ReferenceResolverContext {
+export interface ReferenceHandlerContext {
   value: unknown,
   safeKey: PropertyKey,
   ref: any,
@@ -49,21 +49,21 @@ export interface ReferenceResolverContext {
   options: InternalResolveOptions,
 }
 
-export interface ReferenceResolverContextWithDefaultResolver extends ReferenceResolverContext {
-  resolveDefaultReference: (referenceResolverContext: ReferenceResolverContext, referenceHandler: ReferenceResolverHandler) => ReferenceResolverResponse,
+export interface ReferenceHandlerContextWithResolver extends ReferenceHandlerContext {
+  resolveDefaultReference: (resolver: RefAndSiblingResolver) => ReferenceHandlerResponse
 }
 
-export interface ResolvedRefSibling extends ResolvedRef {
+export interface ResolvedRefWithChildrenOrigins extends ResolvedRef {
   childrenOrigins: OriginsMetaRecord
 }
 
-export interface ResolvedRefAllOf extends ResolvedRef {
+export interface ResolvedRefWithIndex extends ResolvedRef {
   titleIndex: number
   refIndex: number
   siblingIndex: number
 }
 
-export interface ResolvedRefData {
+export interface ResolvedReferenceContext {
   options: InternalResolveOptions
   state: CloneState<DefineOriginsAndResolveRefState>
   resolvedRef: ResolvedRef
@@ -81,21 +81,21 @@ export function notAllowedReferenceHandler({
   ref,
   path,
   value,
-}: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse {
-  options.onRefResolveError?.(ErrorMessage.referenceNotAllowed(ref), path, ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+}: ReferenceHandlerContextWithResolver): ReferenceHandlerResponse {
+  options.onRefResolveError?.(ErrorMessage.referenceNotAllowed(ref), path, ref, RefErrorTypes.REF_NOT_ALLOWED)
   state.node[safeKey] = value
   return { done: true }
 }
 
 export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverrideField[]): ReferenceHandler {
-  return (data: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse => {
+  return ({ resolveDefaultReference }): ReferenceHandlerResponse => {
     const overrideFieldsWithSiblings = ({
       options,
       state,
       resolvedRef,
       originForObj,
       sibling,
-    }: ResolvedRefData): ResolvedRefWithSibling => {
+    }: ResolvedReferenceContext): ResolvedRefWithSiblings => {
       const { refValue, origin } = resolvedRef
       const referenceValue = refValue as Record<PropertyKey, unknown>
 
@@ -119,14 +119,13 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
       const finalRef = modifiedReferenceValue ? newResult : referenceValue
       return { refValue: finalRef, origin, childrenOrigins }
     }
-    const { resolveDefaultReference, ...referenceData } = data
-    return resolveDefaultReference(referenceData, overrideFieldsWithSiblings)
+    return resolveDefaultReference(overrideFieldsWithSiblings)
   }
 }
 
 export function resolveJsonSchemaReferenceWithAllOf(referenceJsonSchemaRuleData: ReferenceJsonSchemaRuleData): ReferenceHandler {
   const { allowSiblings } = referenceJsonSchemaRuleData
-  return (data: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse => {
+  return ({resolveDefaultReference, ref, path}): ReferenceHandlerResponse => {
     const wrapRefWithAllOfIfNeed = ({
       options,
       state,
@@ -136,11 +135,11 @@ export function resolveJsonSchemaReferenceWithAllOf(referenceJsonSchemaRuleData:
       rules,
       syntheticTitleCache,
       reference,
-    }: ResolvedRefData): ResolvedRefWithSibling => {
+    }: ResolvedReferenceContext): ResolvedRefWithSiblings => {
       const { refValue, origin } = resolvedRef
 
       if (!allowSiblings || (!options.richRefAllowed && Reflect.ownKeys(sibling).length !== 0)) {
-        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(data.ref), data.path, data.ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(ref), path, ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
         sibling = {}
       }
 
@@ -176,7 +175,6 @@ export function resolveJsonSchemaReferenceWithAllOf(referenceJsonSchemaRuleData:
         : { refValue: wrap, titleIndex, refIndex, siblingIndex, origin }
     }
 
-    const { resolveDefaultReference, ...referenceData } = data
-    return resolveDefaultReference(referenceData, wrapRefWithAllOfIfNeed)
+    return resolveDefaultReference(wrapRefWithAllOfIfNeed)
   }
 }

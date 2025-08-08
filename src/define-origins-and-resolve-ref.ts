@@ -8,7 +8,7 @@ import {
   SyncCloneHook,
   syncCrawl,
 } from '@netcracker/qubership-apihub-json-crawl'
-import { isPureRefNode, isRefNode, parsePointer, parseRef, pathItemToFullPath, resolveValueByPath } from './utils'
+import { isRefNode, parsePointer, parseRef, pathItemToFullPath, resolveValueByPath } from './utils'
 import {
   ChainItem,
   DEFAULT_OPTION_RESOLVE_REF,
@@ -29,12 +29,11 @@ import { JSON_SCHEMA_PROPERTY_ALL_OF, JSON_SCHEMA_PROPERTY_REF } from './rules/j
 import { RULES } from './rules'
 import { setOrigins } from './origins'
 import {
-  ReferenceResolverResponse,
-  ReferenceResolverHandler,
-  ReferenceResolverContext,
-  ResolvedRefAllOf,
-  ResolvedRefSibling,
-  ResolvedRefWithSibling,
+  RefAndSiblingResolver,
+  ReferenceHandlerResponse,
+  ResolvedRefWithChildrenOrigins,
+  ResolvedRefWithIndex,
+  ResolvedRefWithSiblings,
 } from './references/ref-resolver'
 
 export interface SyntheticAllOf {
@@ -176,8 +175,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           return { done: true }
         }
 
-        const resolveDefaultReference = (data: ReferenceResolverContext, referenceHandler: ReferenceResolverHandler): ReferenceResolverResponse => {
-          const { state, ref: $ref, safeKey, options, path, } = data
+        const resolveDefaultReference = (referenceHandler: RefAndSiblingResolver): ReferenceHandlerResponse => {
           const originForRef = getOrReuseOrigin(originForObj, {
             parent: originForObj,
             value: JSON_SCHEMA_PROPERTY_REF,
@@ -192,9 +190,9 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           }
           const reference = parseRef($ref)
 
-          const processResolvedReference: (resolvedRefWithSibling: ResolvedRefWithSibling) => ReturnType<DefineOriginsAndResolveRefSyncCloneHook> = (resolvedRefWithSibling) => {
-            if ((resolvedRefWithSibling as ResolvedRefSibling)?.childrenOrigins) {
-              const { refValue, origin, childrenOrigins } = resolvedRefWithSibling as ResolvedRefSibling
+          const processResolvedReference: (resolvedRefWithSibling: ResolvedRefWithSiblings) => ReturnType<DefineOriginsAndResolveRefSyncCloneHook> = (resolvedRefWithSibling) => {
+            if ((resolvedRefWithSibling as ResolvedRefWithChildrenOrigins)?.childrenOrigins) {
+              const { refValue, origin, childrenOrigins } = resolvedRefWithSibling as ResolvedRefWithChildrenOrigins
               return {
                 value: refValue,
                 state: {
@@ -230,7 +228,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               refIndex = 0,
               siblingIndex = 0,
               titleIndex = 0,
-            } = resolvedRefWithSibling as ResolvedRefAllOf
+            } = resolvedRefWithSibling as ResolvedRefWithIndex
             const childrenOrigins: OriginsMetaRecord = {}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore

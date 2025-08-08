@@ -84,12 +84,114 @@ describe('OAS 3.1 Reference object', () => {
     const VALUE_OVERRIDEN = 'overriden value'
     const VALUE_BASE = 'base value'
     const VALUE_SECOND = 'second value'
+    const APPLICATION_JSON = 'application/json'
+
+    type DataValue = Record<string, any> | string
+    type AdditionalValuePair = [DataValue, DataValue]
+
+    /** An additional values to add next to the Ref fields. This values should not be overridden. */
+    interface AdditionalValue {
+      path: JsonPath
+      values: AdditionalValuePair
+    }
 
     interface ReferenceObjectRules {
       refPaths: JsonPath[]
       componentsPath: JsonPath
       overridableFields: ReferenceObjectResolverOverrideField[]
-      data?: Record<string, any>
+      /**
+       * Additional values that can be added to the object, including both simple key-value pairs
+       * and more complex structures.
+       *
+       * Example of a simple case:
+       * - 'name': 'someName'
+       *
+       * Example of a more complex case:
+       * - 'content': {'application/xml': ... }
+       *
+       * This array allows values to be added at a specified path
+       */
+      additionalValues: AdditionalValue[]
+    }
+
+    const objectSchemaType = {
+      type: 'object',
+    }
+
+    const integerSchemaType  = {
+      type: 'integer',
+    }
+
+    const schemaObjectContent = {
+      schema: objectSchemaType ,
+    }
+
+    const applicationXmlContent = {
+      'application/xml': schemaObjectContent,
+    }
+
+    const applicationJsonContent = {
+      APPLICATION_JSON: schemaObjectContent,
+    }
+
+    const nameValuePair: AdditionalValue = {
+      path: ['name'],
+      values: [
+        'someName',
+        'overridedName',
+      ],
+    }
+
+    const operationIdValuePair: AdditionalValue = {
+      path: ['operationId'],
+      values: [
+        'getUserAddress',
+        'getUserAddressByUUID',
+      ],
+    }
+
+    const schemaValuePair: AdditionalValue = {
+      path: ['schema'],
+      values: [
+        objectSchemaType ,
+        integerSchemaType ,
+      ],
+    }
+
+    const contentValuePair: AdditionalValue = {
+      path: ['content'],
+      values: [
+        applicationXmlContent,
+        applicationJsonContent,
+      ],
+    }
+
+    const parametersValuePair: AdditionalValue = {
+      path: ['parameters'],
+      values: [
+        {
+          username: '$response.body#/username1',
+        },
+        {
+          username: '$response.body#/username2',
+        },
+      ],
+    }
+
+    const customValuePair: AdditionalValue = {
+      path: ['value'],
+      values: [
+        {"bar": "baz"},
+        {"foo": "bar"},
+      ],
+    }
+
+    const externalValuePair: AdditionalValue = {
+      path: ['externalValue'],
+      values: [
+        'https://example.com/username.json',
+        'https://example.com/username2.json',
+      ],
     }
 
     const responseObjectPaths: JsonPath[] = [
@@ -108,7 +210,7 @@ describe('OAS 3.1 Reference object', () => {
       ['paths', '/somePath', 'get', 'parameters', 0],
     ]
 
-    const contentEncodingHeaderSuffix = ['content', 'application/json', 'encoding', 'someProperty', 'headers', 'someHeader']
+    const contentEncodingHeaderSuffix = ['content', APPLICATION_JSON, 'encoding', 'someProperty', 'headers', 'someHeader']
 
     const headerObjectPaths: JsonPath[] = [
       ['components', 'headers', 'someHeader'],
@@ -125,10 +227,10 @@ describe('OAS 3.1 Reference object', () => {
     ]
 
     const mediaTypeObjectPaths: JsonPath[] = [
-      ...parameterObjectPaths.map(path => [...path, 'content', 'application/json']),
-      ...headerObjectPathsWithRecursionFirstLevel.map(path => [...path, 'content', 'application/json']),
-      ...requestBodyObjectPaths.map(path => [...path, 'content', 'application/json']),
-      ...responseObjectPaths.map(path => [...path, 'content', 'application/json']),
+      ...parameterObjectPaths.map(path => [...path, 'content', APPLICATION_JSON]),
+      ...headerObjectPathsWithRecursionFirstLevel.map(path => [...path, 'content', APPLICATION_JSON]),
+      ...requestBodyObjectPaths.map(path => [...path, 'content', APPLICATION_JSON]),
+      ...responseObjectPaths.map(path => [...path, 'content', APPLICATION_JSON]),
     ]
 
     const linkObjectPaths: JsonPath[] = [
@@ -164,61 +266,73 @@ describe('OAS 3.1 Reference object', () => {
       refPaths: parameterObjectPaths,
       componentsPath: ['components', 'parameters', 'componentsParameter'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [
+        nameValuePair,
+        schemaValuePair
+      ],
     }
 
     const requestBodyObject: ReferenceObjectRules = {
       refPaths: requestBodyObjectPaths,
       componentsPath: ['components', 'requestBodies', 'componentsRequestBody'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [contentValuePair],
     }
 
     const responseObject: ReferenceObjectRules = {
       refPaths: responseObjectPaths,
       componentsPath: ['components', 'responses', 'componentsResponse'],
-      overridableFields: [OPEN_API_PROPERTY_DESCRIPTION]
+      overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [contentValuePair],
     }
 
     const headerObject: ReferenceObjectRules = {
       refPaths: headerObjectPaths,
       componentsPath: ['components', 'headers', 'componentsHeader'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [schemaValuePair],
     }
 
     const linkObject: ReferenceObjectRules = {
       refPaths: linkObjectPaths,
       componentsPath: ['components', 'links', 'componentsLink'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [parametersValuePair, operationIdValuePair],
     }
 
     const securitySchemeObject: ReferenceObjectRules = {
       refPaths: securitySchemeObjectPaths,
       componentsPath: ['components', 'securitySchemes', 'componentsOauth2'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [nameValuePair],
     }
 
     const callbackObject: ReferenceObjectRules = {
       refPaths: callbackObjectPaths,
       componentsPath: ['components', 'callbacks', 'componentsCallback'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
+      additionalValues: [parametersValuePair],
     }
 
     const pathItemObject: ReferenceObjectRules = {
       refPaths: pathItemObjectPaths,
       componentsPath: ['components', 'pathItems', 'componentsPathItem'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
+      additionalValues: [parametersValuePair],
     }
 
     const mediaTypeObject: JsonPath[] = [
-      ...responseObject.refPaths.map(path => [...path, 'content', 'application/json']),
-      ...parameterObject.refPaths.map(path => [...path, 'content', 'application/json']),
-      ...requestBodyObject.refPaths.map(path => [...path, 'content', 'application/json']),
-      ...headerObject.refPaths.map(path => [...path, 'content', 'application/json']),
+      ...responseObject.refPaths.map(path => [...path, 'content', APPLICATION_JSON]),
+      ...parameterObject.refPaths.map(path => [...path, 'content', APPLICATION_JSON]),
+      ...requestBodyObject.refPaths.map(path => [...path, 'content', APPLICATION_JSON]),
+      ...headerObject.refPaths.map(path => [...path, 'content', APPLICATION_JSON]),
     ]
 
     const exampleObject: ReferenceObjectRules = {
       refPaths: exampleObjectPaths,
       componentsPath: ['components', 'examples', 'componentsExample'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
+      additionalValues: [customValuePair, externalValuePair],
     }
 
     const referenceObjectPaths: ReferenceObjectRules[] = [
@@ -282,7 +396,7 @@ describe('OAS 3.1 Reference object', () => {
       }
     }
 
-    referenceObjectPaths.forEach(({ refPaths, componentsPath, overridableFields }) => {
+    referenceObjectPaths.forEach(({ refPaths, componentsPath, overridableFields, additionalValues }) => {
       const allowDescriptionOverride = overridableFields.includes(OPEN_API_PROPERTY_DESCRIPTION)
       const allowSummaryOverride = overridableFields.includes(OPEN_API_PROPERTY_SUMMARY)
       refPaths.forEach(refPath => {
@@ -344,17 +458,12 @@ describe('OAS 3.1 Reference object', () => {
             })
 
             it(`properties other than description and summary could not be overriden via reference object`, () => {
-              const content = {
-                schema: {
-                  type: 'object',
-                },
-              }
+              additionalValues.forEach(additionalData => {
+                const path = additionalData.path
+                const values = additionalData.values
 
-              setValueAtPath(base31, [...componentsPath, 'content'], {
-                'application/xml': content,
-              })
-              setValueAtPath(base31, [...refPath, 'content'], {
-                'application/json': content,
+                setValueAtPath(base31, [...componentsPath, ...path], values[0])
+                setValueAtPath(base31, [...refPath, ...path], values[1])
               })
 
               setValueAtPath(base31, [...refPath, OPEN_API_PROPERTY_SUMMARY], VALUE_OVERRIDEN)
@@ -362,9 +471,13 @@ describe('OAS 3.1 Reference object', () => {
 
               const result = normalize(base31, OPTIONS) as any
 
-              const pathContent = getValueByPath(result, [...refPath, 'content'])
-              const componentsContent = getValueByPath(result, [...componentsPath, 'content'])
-              expect(pathContent).toBe(componentsContent)
+              additionalValues.forEach(additionalData => {
+                const path = additionalData.path
+
+                const refValueData = getValueByPath(result, [...refPath, ...path])
+                const componentsValueData = getValueByPath(result, [...componentsPath, ...path])
+                expect(refValueData).toBe(componentsValueData)
+              })
             })
 
             it(`could not override description or summary via reference object in OAS 3.0`, () => {

@@ -60,18 +60,18 @@ export interface ResolvedRefAllOf extends ResolvedRef {
 }
 
 export interface ResolvedRefData {
-  options: InternalResolveOptions,
-  state: CloneState<DefineOriginsAndResolveRefState>,
-  resolvedRef: ResolvedRef,
-  originForObj: ChainItem,
-  sibling: Record<PropertyKey, unknown>,
-  rules: CrawlRules<NormalizationRule> | undefined,
-  syntheticTitleCache: Map<string, Record<PropertyKey, unknown>>,
-  reference: RichReference,
+  options: InternalResolveOptions
+  state: CloneState<DefineOriginsAndResolveRefState>
+  resolvedRef: ResolvedRef
+  originForObj: ChainItem
+  sibling: Record<PropertyKey, unknown>
+  rules: CrawlRules<NormalizationRule> | undefined
+  syntheticTitleCache: Map<string, Record<PropertyKey, unknown>>
+  reference: RichReference
 }
 
 export const notAllowedReferenceHandler: ReferenceHandler = args => forbidReferenceResolver(args)
-export const jsonSchemaReferenceResolverHandler: ReferenceHandler = args => resolveJsonSchemaReferenceWithAllOf(args)
+export const jsonSchemaReferenceResolverHandler: ReferenceHandler = resolveJsonSchemaReferenceWithAllOf()
 export const referenceObjectResolverHandler: ReferenceHandler = referenceObjectResolver()
 
 export function forbidReferenceResolver({
@@ -124,49 +124,58 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
   }
 }
 
-export const resolveJsonSchemaReferenceWithAllOf = (data: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse => {
-  const wrapRefWithAllOfIfNeed = ({
-    options,
-    state,
-    resolvedRef,
-    originForObj,
-    sibling,
-    rules,
-    syntheticTitleCache,
-    reference,
-  }: ResolvedRefData): ResolvedRefWithSibling => {
-    const { refValue, origin } = resolvedRef
-    const referenceValue = refValue as Record<PropertyKey, unknown>
+export function resolveJsonSchemaReferenceWithAllOf(allowSiblings: boolean = false): ReferenceHandler {
+  return (data: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse => {
+    const wrapRefWithAllOfIfNeed = ({
+      options,
+      state,
+      resolvedRef,
+      originForObj,
+      sibling,
+      rules,
+      syntheticTitleCache,
+      reference,
+    }: ResolvedRefData): ResolvedRefWithSibling => {
+      const { refValue, origin } = resolvedRef
 
-    const wrap: SyntheticAllOf & Record<PropertyKey, unknown> = { [JSON_SCHEMA_PROPERTY_ALL_OF]: [] }
-    options.originsFlag && getOrReuseOrigin(wrap, originForObj, state.originCache)
-    options.originsFlag && getOrReuseOrigin(wrap[JSON_SCHEMA_PROPERTY_ALL_OF], originForObj, state.originCache)
-    options.syntheticAllOfFlag && setJsoProperty(wrap, options.syntheticAllOfFlag, true)
-    let titleIndex = -1
-    let refIndex = 0
-    let siblingIndex = -1
-    if (options.syntheticTitleFlag && rules?.resolvedReferenceNamePropertyKey) {
-      let syntheticTitle = syntheticTitleCache?.get(reference.normalized)
-      if (syntheticTitle === undefined) {
-        syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedReferenceNamePropertyKey)
-        syntheticTitleCache.set(reference.normalized, syntheticTitle)
-        state.lazySourceOriginCollector.set(syntheticTitle, { [rules.resolvedReferenceNamePropertyKey]: origin ? [origin] : [] })
+      if (!allowSiblings || (!options.richRefAllowed && Reflect.ownKeys(sibling).length !== 0)) {
+        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(data.ref), data.path, data.ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+        sibling = {}
       }
-      wrap.allOf.push(syntheticTitle)
-      titleIndex = 0
-      refIndex++
+
+      const referenceValue = refValue as Record<PropertyKey, unknown>
+
+      const wrap: SyntheticAllOf & Record<PropertyKey, unknown> = { [JSON_SCHEMA_PROPERTY_ALL_OF]: [] }
+      options.originsFlag && getOrReuseOrigin(wrap, originForObj, state.originCache)
+      options.originsFlag && getOrReuseOrigin(wrap[JSON_SCHEMA_PROPERTY_ALL_OF], originForObj, state.originCache)
+      options.syntheticAllOfFlag && setJsoProperty(wrap, options.syntheticAllOfFlag, true)
+      let titleIndex = -1
+      let refIndex = 0
+      let siblingIndex = -1
+      if (options.syntheticTitleFlag && rules?.resolvedReferenceNamePropertyKey) {
+        let syntheticTitle = syntheticTitleCache?.get(reference.normalized)
+        if (syntheticTitle === undefined) {
+          syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedReferenceNamePropertyKey)
+          syntheticTitleCache.set(reference.normalized, syntheticTitle)
+          state.lazySourceOriginCollector.set(syntheticTitle, { [rules.resolvedReferenceNamePropertyKey]: origin ? [origin] : [] })
+        }
+        wrap.allOf.push(syntheticTitle)
+        titleIndex = 0
+        refIndex++
+      }
+      wrap.allOf.push(referenceValue)
+      options.originsFlag && getOrReuseOrigin(referenceValue, originForObj, state.originCache)
+      if (Reflect.ownKeys(sibling).length) {
+        wrap.allOf.push(sibling)
+        siblingIndex = refIndex + 1
+        options.originsFlag && getOrReuseOrigin(sibling, originForObj, state.originCache)
+      }
+      return wrap.allOf.length === 1
+        ? { refValue: referenceValue, origin, childrenOrigins: {} }
+        : { refValue: wrap, titleIndex, refIndex, siblingIndex, origin }
     }
-    wrap.allOf.push(referenceValue)
-    options.originsFlag && getOrReuseOrigin(referenceValue, originForObj, state.originCache)
-    if (Reflect.ownKeys(sibling).length) {
-      wrap.allOf.push(sibling)
-      siblingIndex = refIndex + 1
-      options.originsFlag && getOrReuseOrigin(sibling, originForObj, state.originCache)
-    }
-    return wrap.allOf.length === 1
-      ? { refValue: referenceValue, origin, childrenOrigins: {} }
-      : { refValue: wrap, titleIndex, refIndex, siblingIndex, origin }
+
+    const { resolveDefaultReference, ...referenceData } = data
+    return resolveDefaultReference(referenceData, wrapRefWithAllOfIfNeed)
   }
-  const { resolveDefaultReference, ...referenceData } = data
-  return resolveDefaultReference(referenceData, wrapRefWithAllOfIfNeed)
 }

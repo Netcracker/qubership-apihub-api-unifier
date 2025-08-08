@@ -65,7 +65,7 @@ import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
 import {
   jsonSchemaReferenceResolverHandler,
   notAllowedReferenceHandler,
-  referenceObjectResolverHandler,
+  resolveJsonSchemaReferenceWithAllOf,
 } from '../references/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
@@ -193,9 +193,9 @@ export const JSON_SCHEMA_REPLACES_UNIFY_FUNCTION: Record<JsonSchemaSpecVersion, 
 const referenceResolver = (version: JsonSchemaSpecVersion): ReferenceHandler => {
   switch (version) {
     case SPEC_TYPE_JSON_SCHEMA_07:
-      return jsonSchemaReferenceResolverHandler
+      return resolveJsonSchemaReferenceWithAllOf(true)
     default:
-      return referenceObjectResolverHandler
+      return jsonSchemaReferenceResolverHandler
   }
 }
 

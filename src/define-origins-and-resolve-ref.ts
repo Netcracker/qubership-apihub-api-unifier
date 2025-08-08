@@ -166,7 +166,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
 
     if (options.resolveRef) {
       const { $ref, ...otherSibling } = value
-      let sibling = otherSibling
+      const sibling = otherSibling
 
       if ($ref) {
         const { referenceHandler } = rules || {}
@@ -189,10 +189,6 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
             setOrigins(state.node, safeKey, options.originsFlag, [originForObj])
             setOrigins(brokenValueClone, JSON_SCHEMA_PROPERTY_REF, options.originsFlag, [originForRef])
             return { done: true }
-          }
-          if (!options.richRefAllowed && Reflect.ownKeys(sibling).length !== 0) {
-            options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
-            sibling = {}
           }
           const reference = parseRef($ref)
 

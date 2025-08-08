@@ -171,7 +171,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
       if ($ref) {
         const { referenceHandler } = rules || {}
         if (!referenceHandler) {
-          options.onRefResolveError?.(ErrorMessage.referenceNotAllowed($ref), path, $ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+          options.onRefResolveError?.(ErrorMessage.referenceNotAllowed($ref), path, $ref, RefErrorTypes.REF_NOT_ALLOWED)
           state.node[safeKey] = value
           return { done: true }
         }
@@ -447,7 +447,7 @@ const resolveRefNode = (
           originCollector: originCollector,
         }, rules,
       })
-      if (isPureRefNode(value)) { //it possible only for broken refs
+      if (isRefNode(value)) { //it possible only for broken refs
         return undefined
       }
       pathChain = originResolver?.(value, pathChain, parentValue, key)

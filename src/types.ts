@@ -12,6 +12,7 @@ export const RefErrorTypes = {
   RICH_REF_NOT_ALLOWED: 'richRefObjectNotAllowed' as const,
   REF_NOT_FOUND: 'refNotFound' as const,
   REF_NOT_VALID_FORMAT: 'refNotValidFormat' as const,
+  REF_NOT_ALLOWED: 'refNotAllowed' as const,
 } as const
 
 export type RefErrorType = typeof RefErrorTypes[keyof typeof RefErrorTypes]

@@ -62,11 +62,7 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
-import {
-  jsonSchemaReferenceResolverHandler,
-  notAllowedReferenceHandler,
-  resolveJsonSchemaReferenceWithAllOf,
-} from '../references/ref-resolver'
+import { notAllowedReferenceHandler, resolveJsonSchemaReferenceWithAllOf } from '../references/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
 
@@ -190,12 +186,12 @@ export const JSON_SCHEMA_REPLACES_UNIFY_FUNCTION: Record<JsonSchemaSpecVersion, 
   [SPEC_TYPE_JSON_SCHEMA_07]: valueReplaces(JSON_SCHEMA_REPLACES[SPEC_TYPE_JSON_SCHEMA_07]),
 }
 
-const referenceResolver = (version: JsonSchemaSpecVersion): ReferenceHandler => {
+const referenceResolverRuleFunction = (version: JsonSchemaSpecVersion): ReferenceHandler => {
   switch (version) {
     case SPEC_TYPE_JSON_SCHEMA_07:
-      return resolveJsonSchemaReferenceWithAllOf(true)
+      return resolveJsonSchemaReferenceWithAllOf({allowSiblings: true})
     default:
-      return jsonSchemaReferenceResolverHandler
+      return resolveJsonSchemaReferenceWithAllOf({allowSiblings: false})
   }
 }
 
@@ -410,7 +406,7 @@ export const jsonSchemaRules: (
   }),
   deprecation: {
     deprecationResolver: ctx => JSON_SCHEMA_DEPRECATION_RESOLVER(ctx),
-    descriptionCalculator: ctx => `[Deprecated] schema ${calculateSchemaName(ctx)}`
+    descriptionCalculator: ctx => `[Deprecated] schema ${calculateSchemaName(ctx)}`,
   },
   '/additionalItems': ({ value }) => ({
     ...(typeof value === 'boolean'
@@ -525,7 +521,7 @@ export const jsonSchemaRules: (
   // Always fails validation, as if the schema { "not": {} }
   // While the empty schema object is unambiguous, there are many possible equivalents to the "false" schema. Using the boolean values ensures that the intent is clear to both human readers and implementations.
   validate: checkType(TYPE_OBJECT),
-  referenceHandler: referenceResolver(version),
+  referenceHandler: referenceResolverRuleFunction(version),
   merge: resolvers.jsonSchemaMergeResolver,
   canLiftCombiners: true,
   resolvedReferenceNamePropertyKey: JSON_SCHEMA_PROPERTY_TITLE,

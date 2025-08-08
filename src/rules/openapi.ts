@@ -87,7 +87,6 @@ import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
 import {
   notAllowedReferenceHandler,
   referenceObjectResolver,
-  referenceObjectResolverHandler,
   ReferenceObjectRuleData,
 } from '../references/ref-resolver'
 
@@ -265,7 +264,7 @@ export function referenceObjectRuleFunction({ version, allowOverrides }: Referen
     case SPEC_TYPE_OPEN_API_31:
       return referenceObjectResolver(allowOverrides)
     case SPEC_TYPE_OPEN_API_30:
-      return referenceObjectResolverHandler
+      return referenceObjectResolver()
     default:
       return notAllowedReferenceHandler
   }

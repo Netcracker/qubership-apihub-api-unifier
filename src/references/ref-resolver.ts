@@ -36,6 +36,10 @@ export interface ReferenceObjectRuleData {
   allowOverrides?: ReferenceObjectResolverOverrideField[]
 }
 
+export interface ReferenceJsonSchemaRuleData {
+  allowSiblings: boolean
+}
+
 export interface ReferenceResolverContext {
   value: unknown,
   safeKey: PropertyKey,
@@ -70,11 +74,7 @@ export interface ResolvedRefData {
   reference: RichReference
 }
 
-export const notAllowedReferenceHandler: ReferenceHandler = args => forbidReferenceResolver(args)
-export const jsonSchemaReferenceResolverHandler: ReferenceHandler = resolveJsonSchemaReferenceWithAllOf()
-export const referenceObjectResolverHandler: ReferenceHandler = referenceObjectResolver()
-
-export function forbidReferenceResolver({
+export function notAllowedReferenceHandler({
   options,
   state,
   safeKey,
@@ -124,7 +124,8 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
   }
 }
 
-export function resolveJsonSchemaReferenceWithAllOf(allowSiblings: boolean = false): ReferenceHandler {
+export function resolveJsonSchemaReferenceWithAllOf(referenceJsonSchemaRuleData: ReferenceJsonSchemaRuleData): ReferenceHandler {
+  const { allowSiblings } = referenceJsonSchemaRuleData
   return (data: ReferenceResolverContextWithDefaultResolver): ReferenceResolverResponse => {
     const wrapRefWithAllOfIfNeed = ({
       options,

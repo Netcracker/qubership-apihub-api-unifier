@@ -138,8 +138,13 @@ export function resolveJsonSchemaReferenceWithAllOf(referenceJsonSchemaRuleData:
     }: ResolvedReferenceContext): ResolvedRefWithSiblings => {
       const { refValue, origin } = resolvedRef
 
-      if (!allowSiblings || (!options.richRefAllowed && Reflect.ownKeys(sibling).length !== 0)) {
-        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(ref), path, ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
+      const isSiblingNotEmpty = Reflect.ownKeys(sibling).length !== 0
+      if ((!options.richRefAllowed || !allowSiblings) && isSiblingNotEmpty) {
+        const errorType = options.richRefAllowed
+          ? RefErrorTypes.REF_NOT_ALLOWED
+          : RefErrorTypes.RICH_REF_NOT_ALLOWED
+
+        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(ref), path, ref, errorType)
         sibling = {}
       }
 

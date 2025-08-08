@@ -62,7 +62,7 @@ import { ANY_VALUE, CompareMeta, deepCircularEqualsWithPropertyFilter } from '..
 import { createEvaluationCacheService } from '../cache'
 import { calculateSchemaName } from '../deprecated-item-description'
 import { JSON_SCHEMA_DEPRECATION_RESOLVER } from './jsonschema.deprecated'
-import { notAllowedReferenceHandler, resolveJsonSchemaReferenceWithAllOf } from '../references/ref-resolver'
+import { notAllowedReferenceHandler, jsonSchemaReferenceResolver } from '../references/ref-resolver'
 
 const EMPTY_MARKER = Symbol('empty-items')
 
@@ -189,9 +189,9 @@ export const JSON_SCHEMA_REPLACES_UNIFY_FUNCTION: Record<JsonSchemaSpecVersion, 
 const referenceResolverRuleFunction = (version: JsonSchemaSpecVersion): ReferenceHandler => {
   switch (version) {
     case SPEC_TYPE_JSON_SCHEMA_07:
-      return resolveJsonSchemaReferenceWithAllOf({allowSiblings: true})
+      return jsonSchemaReferenceResolver({allowSiblings: true})
     default:
-      return resolveJsonSchemaReferenceWithAllOf({allowSiblings: false})
+      return jsonSchemaReferenceResolver({allowSiblings: false})
   }
 }
 

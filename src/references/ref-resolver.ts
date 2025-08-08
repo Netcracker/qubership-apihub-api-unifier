@@ -123,7 +123,7 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
   }
 }
 
-export function resolveJsonSchemaReferenceWithAllOf(referenceJsonSchemaRuleData: ReferenceJsonSchemaRuleData): ReferenceHandler {
+export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: ReferenceJsonSchemaRuleData): ReferenceHandler {
   const { allowSiblings } = referenceJsonSchemaRuleData
   return ({resolveDefaultReference, ref, path}): ReferenceHandlerResponse => {
     const wrapRefWithAllOfIfNeed = ({

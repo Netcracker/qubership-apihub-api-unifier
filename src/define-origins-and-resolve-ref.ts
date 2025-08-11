@@ -66,7 +66,6 @@ export const defineOriginsAndResolveRef = (value: unknown, options?: ResolveOpti
     ...options,
     originsFlag: options?.originsAlreadyDefined ? undefined : options?.originsFlag,
     source: options?.source ?? value,
-    richRefAllowed: spec.type === SPEC_TYPE_OPEN_API_31 || spec.type === SPEC_TYPE_GRAPH_API,
     ignoreSymbols: new Set([
       ...(options?.originsFlag ? [options.originsFlag] : []),
       ...(options?.inlineRefsFlag ? [options.inlineRefsFlag] : []),

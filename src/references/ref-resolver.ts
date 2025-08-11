@@ -36,7 +36,7 @@ export interface ReferenceObjectRuleData {
   allowedOverrides?: ReferenceObjectResolverOverrideField[]
 }
 
-export interface ReferenceJsonSchemaRuleData {
+export interface JsonSchemaReferenceResolverOptions {
   richRefAllowed: boolean
 }
 
@@ -123,7 +123,7 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
   }
 }
 
-export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: ReferenceJsonSchemaRuleData): ReferenceHandler {
+export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: JsonSchemaReferenceResolverOptions): ReferenceHandler {
   const { richRefAllowed } = referenceJsonSchemaRuleData
   return ({resolveDefaultReference, ref, path}): ReferenceHandlerResponse => {
     const wrapRefWithAllOfIfNeed = ({

@@ -431,10 +431,10 @@ const resolveRefNode = (
   let parentValue: unknown = undefined
   let pathChain: ChainItem | undefined = undefined
   const path = parsePointer(reference.pointer)
-  let isPureRef: boolean
-  while ((isPureRef = isRefNode(value)) || path.length) {
+  let isRefValue: boolean
+  while ((isRefValue = isRefNode(value)) || path.length) {
     const key = path[0]
-    if (isPureRef) {
+    if (isRefValue) {
       //when ref go to the object that contains not yet resolved ref
       const originCollector: OriginsMetaRecord = {}
       parentValue = value

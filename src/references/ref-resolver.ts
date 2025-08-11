@@ -33,7 +33,7 @@ export type RefAndSiblingResolver = (context: ResolvedReferenceContext) => Resol
 
 export interface ReferenceObjectRuleData {
   version: OpenApiSpecVersion,
-  allowOverrides?: ReferenceObjectResolverOverrideField[]
+  allowedOverrides?: ReferenceObjectResolverOverrideField[]
 }
 
 export interface ReferenceJsonSchemaRuleData {

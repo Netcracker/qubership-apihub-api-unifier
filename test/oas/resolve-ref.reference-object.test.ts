@@ -21,7 +21,7 @@ import { ReferenceObjectResolverOverrideField } from '../../src/references/ref-r
 
 const OPTIONS = { resolveRef: true }
 
-describe('OAS 3.1 Reference object', () => {
+describe('OAS Reference object', () => {
 
   describe('Reference object general behaviour', () => {
     it('second-level object are the same when overriding description for response via reference object', () => {
@@ -95,7 +95,7 @@ describe('OAS 3.1 Reference object', () => {
       values: AdditionalValuePair
     }
 
-    interface ReferenceObjectRules {
+    interface ReferenceObjectRuleTestData {
       refPaths: JsonPath[]
       componentsPath: JsonPath
       overridableFields: ReferenceObjectResolverOverrideField[]
@@ -234,13 +234,13 @@ describe('OAS 3.1 Reference object', () => {
     ]
 
     const linkObjectPaths: JsonPath[] = [
-      // Link Object unification rules
+      // Link Object unification rules are not implemented yet
       //['components', 'links', 'someLink'],
       //...responseObjectPaths.map(path => [...path, 'links', 'someLink']),
     ]
 
     const callbackObjectPaths: JsonPath[] = [
-      // Callback Object unification rules
+      // Callback Object unification rules are not implemented yet
       //['components', 'callbacks', 'someCallback'],
       //...operationObjectPaths.map(path => [...path, 'callbacks', 'someCallback']),
     ]
@@ -262,7 +262,7 @@ describe('OAS 3.1 Reference object', () => {
       ...mediaTypeObjectPaths.map(path => [...path, 'examples', 'someExample']),
     ]
 
-    const parameterObject: ReferenceObjectRules = {
+    const parameterObject: ReferenceObjectRuleTestData = {
       refPaths: parameterObjectPaths,
       componentsPath: ['components', 'parameters', 'componentsParameter'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
@@ -272,49 +272,49 @@ describe('OAS 3.1 Reference object', () => {
       ],
     }
 
-    const requestBodyObject: ReferenceObjectRules = {
+    const requestBodyObject: ReferenceObjectRuleTestData = {
       refPaths: requestBodyObjectPaths,
       componentsPath: ['components', 'requestBodies', 'componentsRequestBody'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [contentValuePair],
     }
 
-    const responseObject: ReferenceObjectRules = {
+    const responseObject: ReferenceObjectRuleTestData = {
       refPaths: responseObjectPaths,
       componentsPath: ['components', 'responses', 'componentsResponse'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [contentValuePair],
     }
 
-    const headerObject: ReferenceObjectRules = {
+    const headerObject: ReferenceObjectRuleTestData = {
       refPaths: headerObjectPaths,
       componentsPath: ['components', 'headers', 'componentsHeader'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [schemaValuePair],
     }
 
-    const linkObject: ReferenceObjectRules = {
+    const linkObject: ReferenceObjectRuleTestData = {
       refPaths: linkObjectPaths,
       componentsPath: ['components', 'links', 'componentsLink'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [parametersValuePair, operationIdValuePair],
     }
 
-    const securitySchemeObject: ReferenceObjectRules = {
+    const securitySchemeObject: ReferenceObjectRuleTestData = {
       refPaths: securitySchemeObjectPaths,
       componentsPath: ['components', 'securitySchemes', 'componentsOauth2'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [nameValuePair],
     }
 
-    const callbackObject: ReferenceObjectRules = {
+    const callbackObject: ReferenceObjectRuleTestData = {
       refPaths: callbackObjectPaths,
       componentsPath: ['components', 'callbacks', 'componentsCallback'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [parametersValuePair],
     }
 
-    const pathItemObject: ReferenceObjectRules = {
+    const pathItemObject: ReferenceObjectRuleTestData = {
       refPaths: pathItemObjectPaths,
       componentsPath: ['components', 'pathItems', 'componentsPathItem'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
@@ -328,14 +328,14 @@ describe('OAS 3.1 Reference object', () => {
       ...headerObject.refPaths.map(path => [...path, 'content', APPLICATION_JSON]),
     ]
 
-    const exampleObject: ReferenceObjectRules = {
+    const exampleObject: ReferenceObjectRuleTestData = {
       refPaths: exampleObjectPaths,
       componentsPath: ['components', 'examples', 'componentsExample'],
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
       additionalValues: [customValuePair, externalValuePair],
     }
 
-    const referenceObjectPaths: ReferenceObjectRules[] = [
+    const referenceObjectPathsTestData: ReferenceObjectRuleTestData[] = [
       parameterObject,
       requestBodyObject,
       headerObject,
@@ -396,7 +396,7 @@ describe('OAS 3.1 Reference object', () => {
       }
     }
 
-    referenceObjectPaths.forEach(({ refPaths, componentsPath, overridableFields, additionalValues }) => {
+    referenceObjectPathsTestData.forEach(({ refPaths, componentsPath, overridableFields, additionalValues }) => {
       const allowDescriptionOverride = overridableFields.includes(OPEN_API_PROPERTY_DESCRIPTION)
       const allowSummaryOverride = overridableFields.includes(OPEN_API_PROPERTY_SUMMARY)
       refPaths.forEach(refPath => {
@@ -418,9 +418,9 @@ describe('OAS 3.1 Reference object', () => {
 
               const result = normalize(base31, OPTIONS) as any
 
-              const pathContent = getValueByPath(result, refPath)
+              const refContent = getValueByPath(result, refPath)
               const componentsContent = getValueByPath(result, componentsPath)
-              expect(pathContent).toBe(componentsContent)
+              expect(refContent).toBe(componentsContent)
             })
 
             it(`could ${allowDescriptionOverride ? '' : 'not '}override description via reference object`, () => {
@@ -474,9 +474,9 @@ describe('OAS 3.1 Reference object', () => {
               additionalValues.forEach(additionalData => {
                 const path = additionalData.path
 
-                const refValueData = getValueByPath(result, [...refPath, ...path])
-                const componentsValueData = getValueByPath(result, [...componentsPath, ...path])
-                expect(refValueData).toBe(componentsValueData)
+                const refContent = getValueByPath(result, [...refPath, ...path])
+                const componentsContent = getValueByPath(result, [...componentsPath, ...path])
+                expect(refContent).toBe(componentsContent)
               })
             })
 

@@ -189,9 +189,9 @@ export const JSON_SCHEMA_REPLACES_UNIFY_FUNCTION: Record<JsonSchemaSpecVersion, 
 const referenceResolverRuleFunction = (version: JsonSchemaSpecVersion): ReferenceHandler => {
   switch (version) {
     case SPEC_TYPE_JSON_SCHEMA_07:
-      return jsonSchemaReferenceResolver({allowSiblings: true})
+      return jsonSchemaReferenceResolver({richRefAllowed: true})
     default:
-      return jsonSchemaReferenceResolver({allowSiblings: false})
+      return jsonSchemaReferenceResolver({richRefAllowed: false})
   }
 }
 

@@ -4,7 +4,7 @@ import { commonOriginsCheck, TEST_ORIGINS_FLAG, TEST_SYNTHETIC_TITLE_FLAG } from
 
 describe('ref chain by several pure refs', () => {
   const source = {
-    openapi: '3.1.0',
+    openapi: '3.0.4',
     paths: {
       '/items': {
         get: {
@@ -38,7 +38,7 @@ describe('ref chain by several pure refs', () => {
   }
   it('resolve refs', () => {
     const expected = {
-      openapi: '3.1.0',
+      openapi: '3.0.4',
       paths: {
         '/items': {
           get: {

@@ -66,7 +66,6 @@ export const defineOriginsAndResolveRef = (value: unknown, options?: ResolveOpti
     ...options,
     originsFlag: options?.originsAlreadyDefined ? undefined : options?.originsFlag,
     source: options?.source ?? value,
-    richRefAllowed: spec.type === SPEC_TYPE_OPEN_API_31 || spec.type === SPEC_TYPE_GRAPH_API,
     ignoreSymbols: new Set([
       ...(options?.originsFlag ? [options.originsFlag] : []),
       ...(options?.inlineRefsFlag ? [options.inlineRefsFlag] : []),
@@ -431,10 +430,10 @@ const resolveRefNode = (
   let parentValue: unknown = undefined
   let pathChain: ChainItem | undefined = undefined
   const path = parsePointer(reference.pointer)
-  let isPureRef: boolean
-  while ((isPureRef = isRefNode(value)) || path.length) {
+  let isRefValue: boolean
+  while ((isRefValue = isRefNode(value)) || path.length) {
     const key = path[0]
-    if (isPureRef) {
+    if (isRefValue) {
       //when ref go to the object that contains not yet resolved ref
       const originCollector: OriginsMetaRecord = {}
       parentValue = value

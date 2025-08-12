@@ -62,12 +62,11 @@ interface HasInternalIgnoreSymbols {
 
 export interface InternalResolveOptions extends Omit<ResolveOptions, 'source' | 'resolveRef' | 'originsAlreadyDefined' | 'ignoreSymbols'>, HasInternalIgnoreSymbols {
   source: any
-  richRefAllowed: boolean         // allOf $ref and sibling content
   resolveRef: boolean
   originsAlreadyDefined: boolean
 }
 
-export interface InternalMergeOptions extends Omit<MergeOptions, never>, Omit<InternalResolveOptions, 'source' | 'richRefAllowed' | 'syntheticAllOfFlag'>, HasInternalIgnoreSymbols {
+export interface InternalMergeOptions extends Omit<MergeOptions, never>, Omit<InternalResolveOptions, 'source' | 'syntheticAllOfFlag'>, HasInternalIgnoreSymbols {
   evaluationCacheService: EvaluationCacheService
   spreadAllOfCache: PropertySpreadWithCacheService<PropertyKey, unknown>
   syntheticMetaDefinitions: MetaDefinitions

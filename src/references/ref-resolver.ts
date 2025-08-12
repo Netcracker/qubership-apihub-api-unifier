@@ -33,11 +33,11 @@ export type RefAndSiblingResolver = (context: ResolvedReferenceContext) => Resol
 
 export interface ReferenceObjectRuleData {
   version: OpenApiSpecVersion,
-  allowOverrides?: ReferenceObjectResolverOverrideField[]
+  allowedOverrides?: ReferenceObjectResolverOverrideField[]
 }
 
-export interface ReferenceJsonSchemaRuleData {
-  allowSiblings: boolean
+export interface JsonSchemaReferenceResolverOptions {
+  richRefAllowed: boolean
 }
 
 export interface ReferenceHandlerContext {
@@ -123,8 +123,8 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
   }
 }
 
-export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: ReferenceJsonSchemaRuleData): ReferenceHandler {
-  const { allowSiblings } = referenceJsonSchemaRuleData
+export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: JsonSchemaReferenceResolverOptions): ReferenceHandler {
+  const { richRefAllowed } = referenceJsonSchemaRuleData
   return ({resolveDefaultReference, ref, path}): ReferenceHandlerResponse => {
     const wrapRefWithAllOfIfNeed = ({
       options,
@@ -138,13 +138,8 @@ export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: Referen
     }: ResolvedReferenceContext): ResolvedRefWithSiblings => {
       const { refValue, origin } = resolvedRef
 
-      const isSiblingNotEmpty = Reflect.ownKeys(sibling).length !== 0
-      if ((!options.richRefAllowed || !allowSiblings) && isSiblingNotEmpty) {
-        const errorType = options.richRefAllowed
-          ? RefErrorTypes.REF_NOT_ALLOWED
-          : RefErrorTypes.RICH_REF_NOT_ALLOWED
-
-        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(ref), path, ref, errorType)
+      if (!richRefAllowed && Reflect.ownKeys(sibling).length !== 0) {
+        options.onRefResolveError?.(ErrorMessage.richRefObjectNotAllowed(ref), path, ref, RefErrorTypes.RICH_REF_NOT_ALLOWED)
         sibling = {}
       }
 

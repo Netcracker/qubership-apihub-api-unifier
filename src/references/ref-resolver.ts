@@ -99,20 +99,24 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
       const { refValue, origin } = resolvedRef
       const referenceValue = refValue as Record<PropertyKey, unknown>
 
+      options.originsFlag && getOrReuseOrigin(referenceValue, originForObj, state.originCache)
+
       const childrenOrigins: OriginsMetaRecord = {}
       if (!overrides?.length || !isObject(sibling) || Reflect.ownKeys(sibling).length === 0) {
         return { refValue: referenceValue, origin, childrenOrigins }
       }
 
       const referenceValueWithSibling = { ...referenceValue }
-      overrides.forEach(field => {
-        if (field in sibling) {
-          const siblingField = sibling[field]
-          referenceValueWithSibling[field] = siblingField
-          options.originsFlag && getOrReuseOrigin(siblingField, originForObj, state.originCache)
-          childrenOrigins[field] = [originForObj]
+      overrides.forEach(safeKey => {
+        if (safeKey in sibling) {
+          referenceValueWithSibling[safeKey] = sibling[safeKey]
+          childrenOrigins[safeKey] = state.originCollector[safeKey] ?? [{
+            parent: originForObj,
+            value: safeKey,
+          }]
         }
       })
+      options.originsFlag && getOrReuseOrigin(sibling, originForObj, state.originCache)
       return { refValue: referenceValueWithSibling, origin, childrenOrigins }
     }
     return resolveDefaultReference(overrideFieldsWithSiblings)
@@ -121,7 +125,7 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
 
 export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: JsonSchemaReferenceResolverOptions): ReferenceHandler {
   const { richRefAllowed } = referenceJsonSchemaRuleData
-  return ({resolveDefaultReference, ref, path}): ReferenceHandlerResponse => {
+  return ({ resolveDefaultReference, ref, path }): ReferenceHandlerResponse => {
     const wrapRefWithAllOfIfNeed = ({
       options,
       state,

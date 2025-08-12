@@ -118,12 +118,12 @@ describe('OAS Reference object', () => {
       type: 'object',
     }
 
-    const integerSchemaType  = {
+    const integerSchemaType = {
       type: 'integer',
     }
 
     const schemaObjectContent = {
-      schema: objectSchemaType ,
+      schema: objectSchemaType,
     }
 
     const applicationXmlContent = {
@@ -153,8 +153,8 @@ describe('OAS Reference object', () => {
     const schemaValuePair: AdditionalValue = {
       path: ['schema'],
       values: [
-        objectSchemaType ,
-        integerSchemaType ,
+        objectSchemaType,
+        integerSchemaType,
       ],
     }
 
@@ -181,8 +181,8 @@ describe('OAS Reference object', () => {
     const customValuePair: AdditionalValue = {
       path: ['value'],
       values: [
-        {"bar": "baz"},
-        {"foo": "bar"},
+        { 'bar': 'baz' },
+        { 'foo': 'bar' },
       ],
     }
 
@@ -268,7 +268,7 @@ describe('OAS Reference object', () => {
       overridableFields: [OPEN_API_PROPERTY_DESCRIPTION],
       additionalValues: [
         nameValuePair,
-        schemaValuePair
+        schemaValuePair,
       ],
     }
 
@@ -547,7 +547,7 @@ describe('OAS Reference object', () => {
                   description: 'Overriden description',
                   type: 'object',
                   [TEST_ORIGINS_FLAG]: {
-                    description: [{ parent: undefined as any, value: '200' }],
+                    description: [{ parent: undefined as any, value: 'description' }],
                     type: [{ parent: undefined as any, value: 'type' }],
                   },
                 },
@@ -580,7 +580,7 @@ describe('OAS Reference object', () => {
       // type parent from components
       expected.paths['/test'].get.responses['200'][TEST_ORIGINS_FLAG].type[0].parent = componentsOrigins.SuccessResponse[0]
       // description parent from responses
-      expected.paths['/test'].get.responses['200'][TEST_ORIGINS_FLAG].description[0].parent = expected.paths['/test'].get[TEST_ORIGINS_FLAG].responses[0]
+      expected.paths['/test'].get.responses['200'][TEST_ORIGINS_FLAG].description[0].parent = expected.paths['/test'].get.responses[TEST_ORIGINS_FLAG][200][0]
 
       const result = defineOriginsAndResolveRef(source, { originsFlag: TEST_ORIGINS_FLAG, source: components })
       expect(result).toEqual(expected)

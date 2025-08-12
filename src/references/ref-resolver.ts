@@ -110,7 +110,7 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
       overrides.forEach(safeKey => {
         if (safeKey in sibling) {
           referenceValueWithSibling[safeKey] = sibling[safeKey]
-          childrenOrigins[safeKey] = state.originCollector[safeKey] ?? [{
+          childrenOrigins[safeKey] = [{
             parent: originForObj,
             value: safeKey,
           }]

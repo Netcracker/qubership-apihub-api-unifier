@@ -266,6 +266,8 @@ const typeDefinitionRules: (ctx: CrawlRulesContext) => NormalizationRules = ({ v
     default:
       return {
         validate: () => false,
+        //TODO This function does not work with ref.
+        // It is used to resolve the reference object for the unknown type definition.
         '/**': { referenceHandler: referenceObjectResolver() },
         referenceHandler: referenceObjectResolver(),
       }

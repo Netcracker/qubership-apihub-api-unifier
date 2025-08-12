@@ -100,24 +100,20 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
       const referenceValue = refValue as Record<PropertyKey, unknown>
 
       const childrenOrigins: OriginsMetaRecord = {}
-      if (!overrides?.length || !isObject(sibling)) {
+      if (!overrides?.length || !isObject(sibling) || Reflect.ownKeys(sibling).length === 0) {
         return { refValue: referenceValue, origin, childrenOrigins }
       }
 
-      let modifiedReferenceValue = false
-      const newResult = { ...referenceValue }
-
+      const referenceValueWithSibling = { ...referenceValue }
       overrides.forEach(field => {
         if (field in sibling) {
           const siblingField = sibling[field]
-          newResult[field] = siblingField
-          modifiedReferenceValue = true
+          referenceValueWithSibling[field] = siblingField
           options.originsFlag && getOrReuseOrigin(siblingField, originForObj, state.originCache)
           childrenOrigins[field] = [originForObj]
         }
       })
-      const finalRef = modifiedReferenceValue ? newResult : referenceValue
-      return { refValue: finalRef, origin, childrenOrigins }
+      return { refValue: referenceValueWithSibling, origin, childrenOrigins }
     }
     return resolveDefaultReference(overrideFieldsWithSiblings)
   }

@@ -97,7 +97,7 @@ describe('OAS Reference Object', () => {
   interface ReferenceObjectRuleTestData {
     refPaths: JsonPath[]
     componentsPath: JsonPath
-    componentObject: any
+    componentObject: Record<string, any>
     overridableFields: ReferenceObjectResolverOverrideField[]
     /**
      * Additional values that can be added to the object, including both simple key-value pairs

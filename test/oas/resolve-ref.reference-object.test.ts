@@ -563,7 +563,7 @@ describe('OAS Reference Object', () => {
                   description: 'Overriden description',
                   type: 'object',
                   [TEST_ORIGINS_FLAG]: {
-                    description: [{ parent: undefined as any, value: '200' }],
+                    description: [{ parent: undefined as any, value: 'description' }],
                     type: [{ parent: undefined as any, value: 'type' }],
                   },
                 },
@@ -596,7 +596,7 @@ describe('OAS Reference Object', () => {
       // type parent from components
       expected.paths['/test'].get.responses['200'][TEST_ORIGINS_FLAG].type[0].parent = componentsOrigins.SuccessResponse[0]
       // description parent from responses
-      expected.paths['/test'].get.responses['200'][TEST_ORIGINS_FLAG].description[0].parent = expected.paths['/test'].get[TEST_ORIGINS_FLAG].responses[0]
+      expected.paths['/test'].get.responses['200'][TEST_ORIGINS_FLAG].description[0].parent = expected.paths['/test'].get.responses[TEST_ORIGINS_FLAG][200][0]
 
       const result = defineOriginsAndResolveRef(source, { originsFlag: TEST_ORIGINS_FLAG, source: components })
       expect(result).toEqual(expected)

@@ -1,7 +1,7 @@
 import { CrawlRules, JsonPath, SyncCloneHook } from '@netcracker/qubership-apihub-json-crawl'
 import { EvaluationCacheService, PropertySpreadWithCacheService } from './cache'
 import { HasSelfMetaResolver } from './utils'
-import { ReferenceHandlerContextWithResolver, ReferenceHandlerResponse } from './references/ref-resolver'
+import { ReferenceHandlerArgsWithResolver, ReferenceHandlerResponse } from './references/ref-resolver'
 
 export type RawJsonSchema = Record<PropertyKey, unknown> | boolean
 export type JsonSchema = Record<PropertyKey, unknown>
@@ -175,7 +175,7 @@ export interface MergeContext {
 }
 
 export type MergeResolver<T> = (args: ValueWithOrigins<T>[], ctx: MergeContext) => ValueWithOrigins<T> | undefined
-export type ReferenceHandler = (args: ReferenceHandlerContextWithResolver) => ReferenceHandlerResponse
+export type ReferenceHandler = (args: ReferenceHandlerArgsWithResolver) => ReferenceHandlerResponse
 
 export interface HasIgnoreTreeUnderSymbols {
   ignoreTreeUnderSymbols: boolean

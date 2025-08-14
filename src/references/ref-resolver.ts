@@ -31,7 +31,7 @@ export type ReferenceHandlerResponse =
 export type ResolvedRefWithSiblings = ResolvedRefWithChildrenOrigins | ResolvedRefWithIndex
 export type RefAndSiblingResolver = (context: ResolvedReferenceContext) => ResolvedRefWithSiblings
 
-export interface ReferenceObjectRuleData {
+export interface ReferenceObjectRuleConfig {
   version: OpenApiSpecVersion,
   allowedOverrides?: ReferenceObjectResolverOverrideField[]
 }
@@ -40,7 +40,7 @@ export interface JsonSchemaReferenceResolverOptions {
   richRefAllowed: boolean
 }
 
-export interface ReferenceHandlerContext {
+export interface ReferenceHandlerArgs {
   value: unknown,
   safeKey: PropertyKey,
   ref: any,
@@ -49,7 +49,7 @@ export interface ReferenceHandlerContext {
   options: InternalResolveOptions,
 }
 
-export interface ReferenceHandlerContextWithResolver extends ReferenceHandlerContext {
+export interface ReferenceHandlerArgsWithResolver extends ReferenceHandlerArgs {
   resolveDefaultReference: (resolver: RefAndSiblingResolver) => ReferenceHandlerResponse
 }
 
@@ -81,7 +81,7 @@ export function notAllowedReferenceHandler({
   ref,
   path,
   value,
-}: ReferenceHandlerContextWithResolver): ReferenceHandlerResponse {
+}: ReferenceHandlerArgsWithResolver): ReferenceHandlerResponse {
   options.onRefResolveError?.(ErrorMessage.referenceNotAllowed(ref), path, ref, RefErrorTypes.REF_NOT_ALLOWED)
   state.node[safeKey] = value
   return { done: true }
@@ -123,8 +123,7 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
   }
 }
 
-export function jsonSchemaReferenceResolver(referenceJsonSchemaRuleData: JsonSchemaReferenceResolverOptions): ReferenceHandler {
-  const { richRefAllowed } = referenceJsonSchemaRuleData
+export function jsonSchemaReferenceResolver({ richRefAllowed }: JsonSchemaReferenceResolverOptions): ReferenceHandler {
   return ({ resolveDefaultReference, ref, path }): ReferenceHandlerResponse => {
     const wrapRefWithAllOfIfNeed = ({
       options,

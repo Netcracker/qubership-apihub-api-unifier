@@ -87,7 +87,7 @@ import { OPEN_API_DEPRECATION_RESOLVER } from './openapi.deprecated'
 import {
   notAllowedReferenceHandler,
   referenceObjectResolver,
-  ReferenceObjectRuleData,
+  ReferenceObjectRuleConfig,
 } from '../references/ref-resolver'
 
 const OPEN_API_30_JSON_SCHEMA_NODE_TYPES = [
@@ -259,7 +259,10 @@ const OPEN_API_COMPONENTS_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_EXAMPLES]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-export function referenceObjectRuleFunction({ version, allowedOverrides }: ReferenceObjectRuleData): ReferenceHandler {
+export function referenceObjectRuleFunction({
+  version,
+  allowedOverrides,
+}: ReferenceObjectRuleConfig): ReferenceHandler {
   switch (version) {
     case SPEC_TYPE_OPEN_API_31:
       return referenceObjectResolver(allowedOverrides)
@@ -701,7 +704,10 @@ const openApiPathItemRules = (version: OpenApiSpecVersion): NormalizationRules =
     validate: checkType(TYPE_OBJECT),
   }),
   '/parameters': openApiParametersRules(version),
-  referenceHandler: referenceObjectRuleFunction({ version, allowedOverrides: [OPEN_API_PROPERTY_SUMMARY, OPEN_API_PROPERTY_DESCRIPTION] }),
+  referenceHandler: referenceObjectRuleFunction({
+    version,
+    allowedOverrides: [OPEN_API_PROPERTY_SUMMARY, OPEN_API_PROPERTY_DESCRIPTION],
+  }),
   validate: checkType(TYPE_OBJECT),
   unify: pathItemsUnification,
 })

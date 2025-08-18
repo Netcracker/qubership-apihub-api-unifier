@@ -704,10 +704,7 @@ const openApiPathItemRules = (version: OpenApiSpecVersion): NormalizationRules =
     validate: checkType(TYPE_OBJECT),
   }),
   '/parameters': openApiParametersRules(version),
-  referenceHandler: referenceObjectRuleFunction({
-    version,
-    allowedOverrides: [OPEN_API_PROPERTY_SUMMARY, OPEN_API_PROPERTY_DESCRIPTION],
-  }),
+  referenceHandler: referenceObjectResolver(),
   validate: checkType(TYPE_OBJECT),
   unify: pathItemsUnification,
 })
@@ -821,6 +818,9 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
       '/*': {
         ...openApiExtensionRulesFunction(() => openApiPathItemRules(version)),
       },
+    },
+    '/pathItems':{
+      ...openApiExtensionRulesFunction(openApiPathItemRules(version)),
     },
     ...openApiExamplesRules(version),
     ...openApiExtensionRules,

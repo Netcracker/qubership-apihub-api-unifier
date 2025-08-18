@@ -342,7 +342,7 @@ describe('OAS Reference Object', () => {
       description: VALUE_BASE,
       summary: VALUE_BASE,
     },
-    overridableFields: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
+    overridableFields: [],
     additionalValues: [parametersValuePair],
   }
 
@@ -365,7 +365,7 @@ describe('OAS Reference Object', () => {
     linkObjectTestData,
     securitySchemeObjectTestData,
     //callbackObjectTestData,
-    //pathItemObjectTestData,
+    pathItemObjectTestData,
     exampleObjectTestData,
   ]
 

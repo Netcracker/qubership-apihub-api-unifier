@@ -14,23 +14,6 @@
     "pathItems": {
       "componentsPathItem": {
         "post": {
-          "summary": "Add a new pet",
-          "description": "Adds a new pet to the store.",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "example": "Rex"
-                    }
-                  }
-                }
-              }
-            }
-          },
           "responses": {
             "200": {
               "description": "Pet successfully added"

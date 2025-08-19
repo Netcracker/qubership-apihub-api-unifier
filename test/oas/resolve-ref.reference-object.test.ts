@@ -406,8 +406,6 @@ describe('OAS Reference Object', () => {
 
     const result = normalize(baseSpec, OPTIONS) as any
 
-    const expectation = expect(result)
-
     const refPropertyValue = getValueByPath(result, [...refPath, property])
     const intermediateRefPropertyValue = getValueByPath(result, [...intermediateRefPath, property])
     const componentsPropertyValue = getValueByPath(result, [...componentsPath, property])

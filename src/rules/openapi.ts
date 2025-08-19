@@ -436,7 +436,7 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
       ...customFor30JsonSchemaRules,
       merge: resolvers.itemsMergeResolver,
       hashStrategy: CURRENT_DATA_LEVEL,
-      newDataLayer: true
+      newDataLayer: true,
     }),
     '/additionalItems': {
       validate: () => false,
@@ -496,6 +496,18 @@ const openApiJsonSchemaRules = (version: OpenApiSpecVersion): NormalizationRules
       return customFor30JsonSchemaRules
     case SPEC_TYPE_OPEN_API_31:
       return customFor31JsonSchemaRules
+  }
+}
+
+const openApiComponentsPathItemRules = (version: OpenApiSpecVersion): NormalizationRules => {
+  switch (version) {
+    case SPEC_TYPE_OPEN_API_31:
+      return ({
+        ...openApiExtensionRulesFunction(openApiPathItemRules(version)),
+        validate: checkType(TYPE_OBJECT),
+      })
+    default:
+      return ({ validate: () => false })
   }
 }
 
@@ -819,9 +831,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
         ...openApiExtensionRulesFunction(() => openApiPathItemRules(version)),
       },
     },
-    '/pathItems':{
-      ...openApiExtensionRulesFunction(openApiPathItemRules(version)),
-    },
+    '/pathItems': openApiComponentsPathItemRules(version),
     ...openApiExamplesRules(version),
     ...openApiExtensionRules,
     validate: checkType(TYPE_OBJECT),

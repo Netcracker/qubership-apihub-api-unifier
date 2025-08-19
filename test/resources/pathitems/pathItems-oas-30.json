@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Pet Store API",
+    "description": "A simple API for managing pets.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/path1": {
+      "$ref": "#/components/pathItems/componentsPathItem"
+    }
+  },
+  "components": {
+    "pathItems": {
+      "componentsPathItem": {
+        "post": {
+          "summary": "Add a new pet",
+          "description": "Adds a new pet to the store.",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Rex"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Pet successfully added"
+            }
+          }
+        }
+      }
+    }
+  }
+}

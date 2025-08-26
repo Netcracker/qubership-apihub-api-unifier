@@ -22,7 +22,7 @@ import {
   ResolveOptions,
   RichReference,
 } from './types'
-import { resolveSpec, SPEC_TYPE_GRAPH_API, SPEC_TYPE_OPEN_API_31 } from './spec-type'
+import { resolveSpec } from './spec-type'
 import { ErrorMessage } from './errors'
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { JSON_SCHEMA_PROPERTY_ALL_OF, JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'

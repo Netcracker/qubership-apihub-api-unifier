@@ -8,7 +8,16 @@ import {
   SyncCloneHook,
   syncCrawl,
 } from '@netcracker/qubership-apihub-json-crawl'
-import { isRefNode, parsePointer, parseRef, pathItemToFullPath, resolveValueByPath } from './utils'
+import {
+  hasProperty,
+  isOpenApi30,
+  isRefNode,
+  parsePointer,
+  parseRef,
+  pathItemToFullPath,
+  removeProperty,
+  resolveValueByPath,
+} from './utils'
 import {
   ChainItem,
   DEFAULT_OPTION_RESOLVE_REF,
@@ -21,8 +30,9 @@ import {
   RefErrorTypes,
   ResolveOptions,
   RichReference,
+  ValidateOptions,
 } from './types'
-import { resolveSpec } from './spec-type'
+import { resolveSpec, Spec } from './spec-type'
 import { ErrorMessage } from './errors'
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { JSON_SCHEMA_PROPERTY_ALL_OF, JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
@@ -35,6 +45,7 @@ import {
   ResolvedRefWithIndex,
   ResolvedRefWithSiblings,
 } from './references/ref-resolver'
+import { OPEN_API_PROPERTY_COMPONENTS, OPEN_API_PROPERTY_PATH_ITEMS } from './rules/openapi.const'
 
 export interface SyntheticAllOf {
   [JSON_SCHEMA_PROPERTY_ALL_OF]: Array<unknown>
@@ -58,14 +69,42 @@ export function evaluateSyntheticTitle(
 
 const IMPOSSIBLE_ORIGIN_PARENT: ChainItem = { parent: undefined, value: 'ERROR!!!' }
 
+/**
+ * Preprocesses an OpenAPI specification prior to reference resolution/origin definition.
+ *
+ * For OpenAPI 3.0 documents, `components.pathItems` is not a valid field (it was
+ * added in OAS 3.1). Some tools may still emit it. To keep the input compliant,
+ * deterministic, and to avoid misinterpreting invalid nodes as real API paths,
+ * this function removes `components.pathItems` for OAS 3.0 and emits an optional
+ * validation message via `options.onValidateError`.
+ */
+function preprocessOpenApiSpecification(spec: Spec, source: unknown, options?: ResolveOptions | ValidateOptions): void {
+  if (!isOpenApi30(spec) || !isObject(source)) {
+    return
+  }
+  if (OPEN_API_PROPERTY_COMPONENTS in source && isObject(source.components)) {
+    const components = source.components as Record<string, unknown>
+    if (!hasPathItems(components)) {
+      return
+    }
+    removePathItemsFromComponents(components);
+
+    (options as ValidateOptions)?.onValidateError?.(`Invalid property 'components.pathItems' for OpenAPI 3.0. The property has been removed to maintain 3.0 compliance.`, ['components', 'pathItems'], 'pathItems')
+  }
+}
+
 export const defineOriginsAndResolveRef = (value: unknown, options?: ResolveOptions) => {
   const spec = resolveSpec(value)
+  const source = options?.source ?? value
+
+  preprocessOpenApiSpecification(spec, source, options)
+
   const internalOptions = {
     resolveRef: DEFAULT_OPTION_RESOLVE_REF,
     originsAlreadyDefined: !!options?.originsFlag,
     ...options,
     originsFlag: options?.originsAlreadyDefined ? undefined : options?.originsFlag,
-    source: options?.source ?? value,
+    source,
     ignoreSymbols: new Set([
       ...(options?.originsFlag ? [options.originsFlag] : []),
       ...(options?.inlineRefsFlag ? [options.inlineRefsFlag] : []),
@@ -140,7 +179,13 @@ export const deDefineOriginsAndResolvedRefSymbols = (value: unknown, options?: R
 const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: InternalResolveOptions, cycleJsoHook: SyncCloneHook<DefineOriginsAndResolveRefState>) => DefineOriginsAndResolveRefSyncCloneHook = (rootJso, options, cycleJsoHook) => {
   const cyclingGuard: Set<unknown> = new Set()
   const syntheticTitleCache: Map<string, Record<PropertyKey, unknown>> = new Map()
-  const defineOriginsAndResolveRefHook: DefineOriginsAndResolveRefSyncCloneHook = ({ key, value, state, path, rules, }) => {
+  const defineOriginsAndResolveRefHook: DefineOriginsAndResolveRefSyncCloneHook = ({
+    key,
+    value,
+    state,
+    path,
+    rules,
+  }) => {
     if (state.ignoreTreeUnderSymbols) {
       return { value }
     }
@@ -189,7 +234,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           }
           const reference = parseRef($ref)
 
-          const processWrapRefWithAllOfReference = (resolvedRefWithSibling: ResolvedRefWithSiblings)  => {
+          const processWrapRefWithAllOfReference = (resolvedRefWithSibling: ResolvedRefWithSiblings) => {
             const {
               refValue,
               origin,
@@ -282,9 +327,9 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
             }
           }
 
-          const processResolvedReference = (resolvedRefWithSibling: ResolvedRefWithSiblings) =>  {
+          const processResolvedReference = (resolvedRefWithSibling: ResolvedRefWithSiblings) => {
             if (hasChildrenOrigins(resolvedRefWithSibling)) {
-                return processReferenceWithChildren(resolvedRefWithSibling)
+              return processReferenceWithChildren(resolvedRefWithSibling)
             }
             return processWrapRefWithAllOfReference(resolvedRefWithSibling)
           }
@@ -523,4 +568,12 @@ function cleanupRootOrigin(origins: ChainItem[]): void {
 export interface ResolvedRef {
   refValue: unknown
   origin: ChainItem | undefined
+}
+
+function hasPathItems(value: unknown): boolean {
+  return hasProperty(value, OPEN_API_PROPERTY_PATH_ITEMS)
+}
+
+function removePathItemsFromComponents(components: Record<string, unknown>): void {
+  removeProperty(components, OPEN_API_PROPERTY_PATH_ITEMS)
 }

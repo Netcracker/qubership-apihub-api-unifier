@@ -499,18 +499,6 @@ const openApiJsonSchemaRules = (version: OpenApiSpecVersion): NormalizationRules
   }
 }
 
-const openApiComponentsPathItemRules = (version: OpenApiSpecVersion): NormalizationRules => {
-  switch (version) {
-    case SPEC_TYPE_OPEN_API_31:
-      return ({
-        ...openApiExtensionRulesFunction(openApiPathItemRules(version)),
-        validate: checkType(TYPE_OBJECT),
-      })
-    default:
-      return ({ validate: () => false })
-  }
-}
-
 const openApiMediaTypesRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   '/*': {
     '/schema': openApiJsonSchemaRules(version),
@@ -831,7 +819,18 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
         ...openApiExtensionRulesFunction(() => openApiPathItemRules(version)),
       },
     },
-    '/pathItems': openApiComponentsPathItemRules(version),
+    /**
+     * Note: For OAS 3.0, `components.pathItems` is not a valid property.
+     * We intentionally keep these rules and do not delete this path here
+     * because invalid `components.pathItems` entries are pre-processed and
+     * handled in `define-origins-and-resolve-ref.ts`.
+     * Additionally, the reference resolver contains checks that guard against
+     * misuse in OAS 3.0. See: define-origins-and-resolve-ref.ts
+     */
+    '/pathItems': ({
+      ...openApiExtensionRulesFunction(openApiPathItemRules(version)),
+      validate: checkType(TYPE_OBJECT),
+    }),
     ...openApiExamplesRules(version),
     ...openApiExtensionRules,
     validate: checkType(TYPE_OBJECT),

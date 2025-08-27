@@ -13,6 +13,7 @@ import {
 } from './types'
 import { JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { resolveOrigins, setOriginsForArray } from './origins'
+import { Spec, SPEC_TYPE_OPEN_API_30 } from './spec-type'
 
 export class MapArray<K, V> extends Map<K, Array<V>> {
   public add(key: K, value: V): this {
@@ -383,4 +384,32 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
   setOriginsForArray(uniqueItems, originFlag, itemOrigins)
 
   return uniqueItems
+}
+
+export function isOpenApi30(spec: Spec): boolean {
+  return spec.type === SPEC_TYPE_OPEN_API_30
+}
+
+export function hasProperty(value: unknown, item: string): boolean {
+  return isObject(value) && item in value
+}
+
+export function removeProperty(
+  obj: Record<string, unknown>,
+  keys: string | string[],
+  { keepEmpty }: { keepEmpty?: boolean } = {}
+): void {
+  if (!isObject(obj)) {
+    return
+  }
+  const keysArray = Array.isArray(keys) ? keys : [keys]
+  for (const key of keysArray) {
+    if (key in obj) {
+      if (keepEmpty) {
+        obj[key] = {}
+      } else {
+        delete obj[key]
+      }
+    }
+  }
 }

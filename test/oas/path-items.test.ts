@@ -18,23 +18,32 @@ describe('OAS 3.1 Path Item Object', () => {
 })
 
 describe('OAS 3.0 Path Item Object', () => {
-  it('validation must not pass for the Item Object in components', () => {
-    const result = normalize(pathItemsOas30, OPTIONS) as any
+  let baseSpec: any
 
-    expect(result.components).toEqual({})
+  beforeEach(() => {
+    baseSpec = JSON.parse(JSON.stringify(pathItemsOas30))
+  })
+
+  it('validation must not pass for the Item Object in components', () => {
+    const result = normalize(baseSpec, OPTIONS) as any
+
+    expect(result).not.toHaveProperty(['components', 'pathItems'])
+  })
+
+  it('validation must put error for the Item Object in components', () => {
+    const errors: string[] = []
+    const result = normalize(baseSpec, {...OPTIONS, onValidateError: message => errors.push(message) }) as any
+
+    expect(errors).toMatchObject([
+      expect.stringMatching(/Invalid/),
+      expect.stringMatching(/match/),
+    ])
   })
 
   // Validation should not allow the ref to be resolved from components
-  it.skip('could not be resolved pathItem from components via reference object', () => {
-    const result = normalize(pathItemsOas30, OPTIONS) as any
+  it('could not be resolved pathItem from components via reference object', () => {
+    const result = normalize(baseSpec, OPTIONS) as any
 
-    const expectedResult = {
-      '/path1': {
-        '$ref': '#/components/pathItems/componentsPathItem',
-      },
-    }
-
-    expect(result.paths['/path1'].post).not.toBe(result.components.pathItems.componentsPathItem.post)
-    expect(result.paths).toEqual(expectedResult)
+    expect(result).toHaveProperty(['paths', '/path1'], {})
   })
 })

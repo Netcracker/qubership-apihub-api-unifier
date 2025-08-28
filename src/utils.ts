@@ -386,30 +386,6 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
   return uniqueItems
 }
 
-export function isOpenApi30(spec: Spec): boolean {
-  return spec.type === SPEC_TYPE_OPEN_API_30
-}
-
 export function hasProperty(value: unknown, item: string): boolean {
   return isObject(value) && item in value
-}
-
-export function removeProperty(
-  obj: Record<string, unknown>,
-  keys: string | string[],
-  { keepEmpty }: { keepEmpty?: boolean } = {}
-): void {
-  if (!isObject(obj)) {
-    return
-  }
-  const keysArray = Array.isArray(keys) ? keys : [keys]
-  for (const key of keysArray) {
-    if (key in obj) {
-      if (keepEmpty) {
-        obj[key] = {}
-      } else {
-        delete obj[key]
-      }
-    }
-  }
 }

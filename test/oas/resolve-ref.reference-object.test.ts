@@ -1,5 +1,5 @@
 import {
-  normalize,
+  normalize, NormalizeOptions,
   OPEN_API_PROPERTY_DESCRIPTION,
   OPEN_API_PROPERTY_SUMMARY,
   RefErrorType,
@@ -19,7 +19,7 @@ import notHangUpWhenProcessingResponseWhichPointsToItself
   from '../resources/reference-object/not-hang-up-when-processing-for-response-which-points-to-itself.json'
 import { ReferenceObjectResolverOverrideField } from '../../src/references/ref-resolver'
 
-const OPTIONS = { resolveRef: true }
+const OPTIONS: NormalizeOptions = { resolveRef: true, validate: true }
 
 describe('OAS Reference Object', () => {
 
@@ -410,8 +410,7 @@ describe('OAS Reference Object', () => {
     componentsPath: JsonPath,
   ) => {
     const refValueAfterNormalize = getValueByPath(result, refPath)
-    const refValueBeforeNormalize = getValueByPath(baseSpec, refPath)
-    expect(refValueAfterNormalize).toHaveProperty(['$ref'], refValueBeforeNormalize['$ref'])
+    expect(refValueAfterNormalize).toEqual({})
 
     const componentsValue = getValueByPath(result, componentsPath)
     expect(componentsValue).toBe(undefined)

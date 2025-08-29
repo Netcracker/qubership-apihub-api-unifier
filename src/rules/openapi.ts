@@ -823,9 +823,9 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
      * Note: For OAS 3.0, `components.pathItems` is not a valid property.
      * We intentionally keep these rules and do not delete this path here
      * because invalid `components.pathItems` entries are pre-processed and
-     * handled in `define-origins-and-resolve-ref.ts`.
+     * handled during pre-validation step.
      * Additionally, the reference resolver contains checks that guard against
-     * misuse in OAS 3.0. See: define-origins-and-resolve-ref.ts
+     * misuse in OAS 3.0. See: validate.ts
      */
     '/pathItems': ({
       ...openApiExtensionRulesFunction(openApiPathItemRules(version)),

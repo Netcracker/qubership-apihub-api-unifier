@@ -30,12 +30,9 @@ export function preValidation(source: unknown, options?: ResolveOptions | Valida
   }
   if (OPEN_API_PROPERTY_COMPONENTS in source && isObject(source.components)) {
     const components = source.components as Record<string, unknown>
-    if (!hasProperty(components, OPEN_API_PROPERTY_PATH_ITEMS)) {
-      return
+    if (Reflect.deleteProperty(components, OPEN_API_PROPERTY_PATH_ITEMS)) {
+      (options as ValidateOptions)?.onValidateError?.(`Invalid property 'components.pathItems' for OpenAPI 3.0. The property has been removed to maintain 3.0 compliance.`, ['components', 'pathItems'], 'pathItems')
     }
-    Reflect.deleteProperty(components, OPEN_API_PROPERTY_PATH_ITEMS);
-
-    (options as ValidateOptions)?.onValidateError?.(`Invalid property 'components.pathItems' for OpenAPI 3.0. The property has been removed to maintain 3.0 compliance.`, ['components', 'pathItems'], 'pathItems')
   }
 }
 

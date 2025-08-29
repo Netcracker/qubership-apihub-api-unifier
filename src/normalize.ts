@@ -19,10 +19,8 @@ import { removeOasExtensions } from './remove-oas-extensions'
 export const normalize = (value: unknown, options: NormalizeOptions = {}) => {
   const optionsWithDefaults = createOptionsWithDefaults(options)
   let spec = value
-  if (optionsWithDefaults.resolveRef || (!optionsWithDefaults.originsAlreadyDefined && optionsWithDefaults.originsFlag)) {
-    preValidation(spec, options)
-    spec = defineOriginsAndResolveRef(spec, optionsWithDefaults)
-  }
+  if (optionsWithDefaults.validate) { preValidation(spec, options) }
+  if (optionsWithDefaults.resolveRef || (!optionsWithDefaults.originsAlreadyDefined && optionsWithDefaults.originsFlag)) {spec = defineOriginsAndResolveRef(spec, optionsWithDefaults)}
   if (optionsWithDefaults.validate) { spec = validate(spec, optionsWithDefaults) }
   if (optionsWithDefaults.mergeAllOf) { spec = merge(spec, optionsWithDefaults) }
   if (optionsWithDefaults.unify) { spec = unify(spec, optionsWithDefaults) }

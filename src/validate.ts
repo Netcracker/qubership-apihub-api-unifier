@@ -12,7 +12,6 @@ import { createCycledJsoHandlerHook } from './cycle-jso'
 import { RULES } from './rules'
 import { cleanSeveralOrigins } from './origins'
 import { OPEN_API_PROPERTY_COMPONENTS, OPEN_API_PROPERTY_PATH_ITEMS } from './rules/openapi.const'
-import { hasProperty } from './utils'
 
 /**
  * Preprocesses an OpenAPI specification prior to reference resolution/origin definition.

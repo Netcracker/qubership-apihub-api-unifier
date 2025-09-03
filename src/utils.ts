@@ -386,6 +386,3 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
   return uniqueItems
 }
 
-export function hasProperty(value: unknown, item: string): boolean {
-  return isObject(value) && item in value
-}

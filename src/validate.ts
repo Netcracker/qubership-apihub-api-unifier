@@ -22,7 +22,7 @@ import { OPEN_API_PROPERTY_COMPONENTS, OPEN_API_PROPERTY_PATH_ITEMS } from './ru
  * this function removes `components.pathItems` for OAS 3.0 and emits an optional
  * validation message via `options.onValidateError`.
  */
-export function preValidation(source: unknown, options?: ResolveOptions | ValidateOptions): void {
+export function preValidate(source: unknown, options?: ValidateOptions & ResolveOptions): void {
   const spec = resolveSpec(source)
   if (spec.type !== SPEC_TYPE_OPEN_API_30 || !isObject(source)) {
     return

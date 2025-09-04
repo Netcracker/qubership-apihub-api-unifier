@@ -13,7 +13,6 @@ import {
 } from './types'
 import { JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { resolveOrigins, setOriginsForArray } from './origins'
-import { Spec, SPEC_TYPE_OPEN_API_30 } from './spec-type'
 
 export class MapArray<K, V> extends Map<K, Array<V>> {
   public add(key: K, value: V): this {
@@ -385,4 +384,3 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
 
   return uniqueItems
 }
-

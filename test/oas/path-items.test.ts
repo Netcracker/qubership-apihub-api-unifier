@@ -24,13 +24,13 @@ describe('OAS 3.0 Path Item Object', () => {
     baseSpec = JSON.parse(JSON.stringify(pathItemsOas30))
   })
 
-  it('validation must not pass for the Item Object in components', () => {
+  it('validation should discard pathItems section in components', () => {
     const result = normalize(baseSpec, OPTIONS) as any
 
     expect(result).not.toHaveProperty(['components', 'pathItems'])
   })
 
-  it('validation must put error for the Item Object in components', () => {
+  it('validation must raise error for the pathItem section in components', () => {
     const errors: string[] = []
     const result = normalize(baseSpec, {...OPTIONS, onValidateError: message => errors.push(message) }) as any
 
@@ -40,8 +40,7 @@ describe('OAS 3.0 Path Item Object', () => {
     ])
   })
 
-  // Validation should not allow the ref to be resolved from components
-  it('could not be resolved pathItem from components via reference object', () => {
+  it('could not resolve Path Item from components via reference object', () => {
     const result = normalize(baseSpec, OPTIONS) as any
 
     expect(result).toHaveProperty(['paths', '/path1'], {})

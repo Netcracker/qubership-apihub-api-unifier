@@ -5,12 +5,12 @@ import {
   JSON_SCHEMA_PROPERTY_ONE_OF,
   JsonSchemaCombinerType,
 } from './rules/jsonschema.const'
-import { InternalLiftCombinersOptions, MergeAndLiftCombinersSyncCloneHook, OriginLeafs } from './types'
+import { InternalLiftCombinersOptions, Jso, MergeAndLiftCombinersSyncCloneHook, OriginLeafs } from './types'
 import { uniqueItems } from './utils'
 import {
   cleanAllOrigins,
   cleanOrigins,
-  copyOrigins,
+  copyOrigins, copyOriginsForArray,
   mergeOrigins,
   resolveOrigins,
   resolveOriginsMetaRecord,
@@ -65,8 +65,16 @@ function liftCombiners(
   if (!(foundCombinerKeys.length > 1 || !isEmptySibling && foundCombinerKeys.length > 0)) { return value }
   const [firstCombinerKey, secondCombinerKey] = foundCombinerKeys
   const [firstCombiner, secondCombiner] = [value[firstCombinerKey], value[secondCombinerKey]]
-  const firstCombinerItems: unknown[] = Array.isArray(firstCombiner) ? firstCombiner : []
-  const secondCombinerItems: unknown[] = Array.isArray(secondCombiner) ? secondCombiner : []
+  let firstCombinerItems: unknown[] = []
+  if(Array.isArray(firstCombiner)){
+    firstCombinerItems = [...firstCombiner]
+    copyOriginsForArray(firstCombiner, firstCombinerItems, options.originsFlag)
+  }
+  let secondCombinerItems: unknown[] = []
+  if(Array.isArray(secondCombiner)){
+    secondCombinerItems = [...secondCombiner]
+    copyOriginsForArray(secondCombiner, secondCombinerItems, options.originsFlag)
+  }
   return cacheService.cacheEvaluationResultByFootprint(
     [...allValueKeys, ...firstCombinerItems, '|', ...secondCombinerItems],
     () => {

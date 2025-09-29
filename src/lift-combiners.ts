@@ -226,10 +226,14 @@ const extractCombinerItemsWithOrigins = (combiner: unknown, originsFlag: symbol 
   if (!Array.isArray(combiner)) {
     return []
   }
+  /*
+  We are reusing the original instances of the objects. 
+  If we change the combiner arrays during liftCombiners, 
+  we will inadvertently edit the array in other places where the same instance is used. 
+  Cloning here breaks that aliasing, so mutations do not leak across references.
+  */
   const items = [...combiner]
-  if(originsFlag){
-    copyOriginsForArray(combiner, items, originsFlag)
-  }
+  originsFlag && copyOriginsForArray(combiner, items, originsFlag)
   return items
 }
 

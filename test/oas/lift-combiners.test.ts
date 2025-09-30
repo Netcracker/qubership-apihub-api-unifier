@@ -2591,6 +2591,17 @@ describe('Lifting combiners from the same level with sibling props', () => {
   it('should be different objects between referenced object and resolved ref object after lift-combiners', () => {
     const result = normalize(differentObjectsWithResolvedRefObjectAfterLiftCombiners, { liftCombiners: true, syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG, }) as any
 
+    // Check that synthetic titles are added to anyOf items after resolving $ref and lifting combiners
+    const contentSchemaAnyOfPath = ['paths', '/path1', 'get', 'requestBody', 'content', 'application/json', 'schema', 'anyOf']
+    expect(result).toHaveProperty([...contentSchemaAnyOfPath, 0, 'title'])
+    expect(result).toHaveProperty([...contentSchemaAnyOfPath, 1, 'title'])
+
+    // Check that synthetic titles are not added to anyOf items in components.schemas.MySchema
+    const componentsSchemaAnyOfPath = ['components', 'schemas', 'MySchema', 'anyOf']
+    expect(result).not.toHaveProperty([...componentsSchemaAnyOfPath, 0, 'title'])
+    expect(result).not.toHaveProperty([...componentsSchemaAnyOfPath, 1, 'title'])
+
+    // Check that objects are different
     expect(result.components.schemas.MySchema.anyOf["0"]).not.toBe(result.paths["/path1"].get.requestBody.content["application/json"].schema.anyOf["0"])
     expect(result.components.schemas.MySchema.anyOf["1"]).not.toBe(result.paths["/path1"].get.requestBody.content["application/json"].schema.anyOf["1"])
   })

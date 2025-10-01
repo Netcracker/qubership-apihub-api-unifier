@@ -226,12 +226,30 @@ const extractCombinerItemsWithOrigins = (combiner: unknown, originsFlag: symbol 
   if (!Array.isArray(combiner)) {
     return []
   }
-  /*
-  We are reusing the original instances of the objects. 
-  If we change the combiner arrays during liftCombiners, 
-  we will inadvertently edit the array in other places where the same instance is used. 
-  Cloning here breaks that aliasing, so mutations do not leak across references.
-  */
+  /**
+   * Extracts combiner items into a new array with preserved origins.
+   *
+   * Purpose:
+   * - prevents accidental mutation leaks when the same combiner array
+   *   is referenced in multiple places;
+   * - cloning breaks aliasing so local modifications (e.g. title form syntheticTitleFlag)
+   *   apply only to the resolved instance, not to the original source.
+   *
+   * Example:
+   * Options:
+   *    syntheticTitleFlag: Symbol('syntheticTitleFlag')
+   * Input:
+   *   paths...schema: { "$ref": "#/components/schemas/MySchema" }
+   *   components...MySchema: { anyOf: [{ "type": "string" }, { "type": "null" }] }
+   *
+   * Without cloning (leak):
+   *   Resolved $ref -> [{ "title": "MySchema", "type": "string"}, ...]
+   *   MySchema.anyOf -> [{ "title": "MySchema", "type": "string" }, ...]
+   *
+   * With cloning (correct):
+   *   Resolved $ref -> [{ "title": "MySchema", "type": "string"}, ...]
+   *   MySchema.anyOf -> [{ "type": "string" }, ...]
+   */
   const items = [...combiner]
   originsFlag && copyOriginsForArray(combiner, items, originsFlag)
   return items

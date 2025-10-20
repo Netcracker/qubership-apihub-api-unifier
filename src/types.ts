@@ -75,6 +75,7 @@ export interface InternalMergeOptions extends Omit<MergeOptions, never>, Omit<In
 
 export interface HashOptions {
   hashFlag?: symbol
+  filteredHashFlag?: symbol
 }
 
 export interface InternalHashOptions extends HashOptions {}
@@ -214,13 +215,6 @@ export interface ValidateState extends HasIgnoreTreeUnderSymbols {
 export interface UnifyState extends HasIgnoreTreeUnderSymbols, HasSelfOriginsResolver, HasParentValue {
 }
 
-export const CURRENT_DATA_LEVEL = 'current-data-level'
-export const BEFORE_SECOND_DATA_LEVEL = 'second-data-levels'
-
-export type InclusionStrategy =
-  typeof CURRENT_DATA_LEVEL |
-  typeof BEFORE_SECOND_DATA_LEVEL
-
 export interface NormalizationRule {
   readonly merge?: MergeResolver<any>
   readonly validate?: ValidateFunction[] | ValidateFunction
@@ -228,7 +222,7 @@ export interface NormalizationRule {
   readonly unify?: UnifyFunction[] | UnifyFunction
   readonly mandatoryUnify?: UnifyFunction[] | UnifyFunction
   readonly resolvedReferenceNamePropertyKey?: PropertyKey
-  readonly hashStrategy?: InclusionStrategy
+  readonly hashEngage?: boolean
   readonly hashOwner?: boolean
   readonly newDataLayer?: boolean
   readonly deprecation?: DeprecationPolicy

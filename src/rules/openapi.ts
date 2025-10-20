@@ -1,6 +1,4 @@
 import {
-  BEFORE_SECOND_DATA_LEVEL,
-  CURRENT_DATA_LEVEL,
   InternalUnifyOptions,
   NormalizationRules,
   ReferenceHandler,
@@ -430,49 +428,49 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
     '/type': {
       validate: [checkType(TYPE_STRING), checkContains(...OPEN_API_30_JSON_SCHEMA_NODE_TYPES)],
       merge: resolvers.mergeTypes,
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
     },
     '/items': () => ({
       ...customFor30JsonSchemaRules,
       merge: resolvers.itemsMergeResolver,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
       newDataLayer: true,
     }),
     '/additionalItems': {
       validate: () => false,
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
       newDataLayer: true,
     },
     '/patternProperties': {
       validate: () => false,
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
       newDataLayer: true,
     },
     '/readOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/writeOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/deprecated': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/nullable': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or, //todo need check
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/example': {
       validate: checkType(...TYPE_JSON_ANY),
       merge: resolvers.last,
       '/**': { validate: checkType(...TYPE_JSON_ANY) },
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     unify: insertIntoArrayByInstruction(
       concatArrays<UnifyFunction>(core.unify, extension.unify),
@@ -577,36 +575,36 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
     },
     '/name': {
       validate: checkType(TYPE_STRING),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/in': {
       validate: checkType(TYPE_STRING),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/description': { validate: checkType(TYPE_STRING) },
     '/required': {
       validate: checkType(TYPE_BOOLEAN),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/deprecated': {
       validate: checkType(TYPE_BOOLEAN),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/allowEmptyValue': {
       validate: checkType(TYPE_BOOLEAN),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/style': {
       validate: checkType(TYPE_STRING),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/explode': {
       validate: checkType(TYPE_BOOLEAN),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/allowReserved': {
       validate: checkType(TYPE_BOOLEAN),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/content': openApiMediaTypesRules(version),
     ...openApiExampleRules,
@@ -622,7 +620,7 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
       valueDefaults(OPEN_API_PARAMETER_DEFAULTS),
       valueReplaces(OPEN_API_PARAMETER_REPLACES),
     ],
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
     hashOwner: true,
   },
   validate: checkType(TYPE_ARRAY),
@@ -803,6 +801,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
     '/schemas': {
       '/*': openApiJsonSchemaRules(version),
       validate: checkType(TYPE_OBJECT),
+      hashEngage: true,
     },
     '/responses': openApiResponsesRules(version),
     '/parameters': {
@@ -838,6 +837,7 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
       valueDefaults(OPEN_API_COMPONENTS_DEFAULTS),
       valueReplaces(OPEN_API_COMPONENTS_REPLACES),
     ],
+    hashEngage: true,
   },
   ...openApiExtensionRules,
   '/**': { referenceHandler: notAllowedReferenceHandler },
@@ -846,4 +846,5 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
     valueDefaults(OPEN_API_ROOT_DEFAULTS),
     valueReplaces(OPEN_API_ROOT_REPLACES),
   ],
+  hashEngage: true
 })

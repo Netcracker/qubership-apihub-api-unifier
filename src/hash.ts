@@ -1,101 +1,60 @@
-import {
-  BEFORE_SECOND_DATA_LEVEL as SECOND_DATA_LEVELS,
-  CURRENT_DATA_LEVEL,
-  HashOptions,
-  InternalHashOptions,
-  NormalizationRule,
-} from './types'
+import { HashOptions, InternalHashOptions, NormalizationRule } from './types'
 import { resolveSpec, SPEC_TYPE_GRAPH_API } from './spec-type'
-import { CrawlRules, isObject, syncClone, SyncCloneHook, syncCrawl, SyncCrawlHook } from '@netcracker/qubership-apihub-json-crawl'
+import { isObject, syncCrawl, SyncCrawlHook } from '@netcracker/qubership-apihub-json-crawl'
 import { RULES } from './rules'
-import objectHash, { NotUndefined } from 'object-hash'
+import { cryptoMd5, objectToString } from './utils'
 
-const calculateHash: (object: NotUndefined) => string = (object) => {
-  const res = objectHash(object, {
-    unorderedArrays: true,
-    unorderedObjects: true,
-    algorithm: 'md5',
-  })
-  return res
-}
+export type ObjPath = (string | number)[]
 
-const createHashObject: (object: NotUndefined, rules: CrawlRules<NormalizationRule>) => NotUndefined = (object, rules) => {
-  const creatorHook = createHashObjectCreatorHook()
-  return syncClone(object, creatorHook, { state: { dataLevel: 0 }, rules }) as NotUndefined
-}
+//todo only for tests
+const optionalFieldFlag = Symbol('optional-fields')
 
-const createHashObjectCreatorHook: () => HashObjectCreatorCrawlHook = () => {
+const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHook = (options) => {
+  const { hashFlag, filteredHashFlag } = options
+
   const cycleGuard: Set<unknown> = new Set()
-  const creatorHook: HashObjectCreatorCrawlHook = ({ key, value, rules, state }) => {
+  const optionalFieldStates = new Map<any, ObjPath>()
+
+  const generateHash = (value: any, flag: symbol, optionalFields?: ObjPath): string => {
+    return cryptoMd5(objectToString(value, flag, optionalFields))
+  }
+
+  const hashHook: HashScannerCrawlHook = ({ key, value, rules, state }) => {
     if (typeof key === 'symbol') {
-      return { done: true }
+      return { done: true, state: { ...state, fieldsForOptionalHash: [] } }
     }
     if (!rules) {
+      state.fieldsForOptionalHash.push(key)
       return { done: true }
     }
-    let ignoreKey = true
-    switch (rules.hashStrategy) {
-      case CURRENT_DATA_LEVEL: {
-        ignoreKey = state.dataLevel > 0
-        break
-      }
-      case SECOND_DATA_LEVELS: {
-        ignoreKey = state.dataLevel > 1
-        break
-      }
-    }
+    const ignoreKey = !rules.hashEngage
+    ignoreKey && state.fieldsForOptionalHash.push(key)
     if (!isObject(value)) {
-      return { done: ignoreKey, value }
+      return { done: true, value }
     }
-    if (cycleGuard.has(value)) {
-      return {
-        done: ignoreKey,
-        value: rules.newDataLayer ? value : undefined,
-        state: {
-          ...state,
-          dataLevel: key !== undefined && rules.newDataLayer ? state.dataLevel + 1 : state.dataLevel,
-        },
-      }
+    const nestedFieldsForOptionalHash = optionalFieldStates.get(value) || []
+    if (!optionalFieldStates.has(value)) {
+      optionalFieldStates.set(value, nestedFieldsForOptionalHash)
     }
-    cycleGuard.add(value)
+
+    const done = !(!cycleGuard.has(value) && cycleGuard.add(value))
     return {
-      done: ignoreKey,
+      done,
       value,
-      state: {
-        ...state,
-        dataLevel: key !== undefined && rules.newDataLayer ? state.dataLevel + 1 : state.dataLevel,
-      },
-    }
-  }
-  return creatorHook
-}
-
-const createHashScannerHook: (options: HashOptions) => HashScannerCrawlHook = (options) => {
-  const flag = options.hashFlag ?? Symbol('should-never-happen')
-  const cycleGuard: Set<unknown> = new Set()
-  const hashHook: HashScannerCrawlHook = ({ key, value, rules }) => {
-    if (typeof key === 'symbol') {
-      return { done: true }
-    }
-
-    if (!isObject(value)) {
-      return { done: true }
-    }
-
-    if (cycleGuard.has(value)) {
-      return { done: true }
-    }
-    cycleGuard.add(value)
-    return {
-      value, exitHook: rules?.hashOwner ? () => {
-        let hash: string | undefined = undefined
-        value[flag] = () => {
-          if (!hash) {
-            hash = calculateHash(createHashObject(value, rules))
-          }
-          return hash
+      state: { ...state, fieldsForOptionalHash: nestedFieldsForOptionalHash },
+      exitHook: () => {
+        if (hashFlag) {
+          value[hashFlag] = generateHash(value, hashFlag)
         }
-      } : undefined,
+
+        // even if the optionalFields are empty, it is necessary to calculate the hash again,
+        // since its children may have optional fields and their hash will be different.
+        if (filteredHashFlag) {
+          value[filteredHashFlag] = generateHash(value, filteredHashFlag, nestedFieldsForOptionalHash)
+        }
+
+        value[optionalFieldFlag] = nestedFieldsForOptionalHash
+      },
     }
   }
 
@@ -104,31 +63,27 @@ const createHashScannerHook: (options: HashOptions) => HashScannerCrawlHook = (o
 
 type HashScannerCrawlHook = SyncCrawlHook<HashScannerCrawlState, NormalizationRule>
 
-export interface HashScannerCrawlState {}
-
-type HashObjectCreatorCrawlHook = SyncCloneHook<HashObjectCreatorState, NormalizationRule>
-
-export interface HashObjectCreatorState {
-  dataLevel: number
+export interface HashScannerCrawlState {
+  fieldsForOptionalHash: ObjPath
 }
-
 
 export const hash = (value: unknown, options?: HashOptions) => {
   const internalOptions = {
     ...options,
   } satisfies InternalHashOptions
   const flag = options?.hashFlag
-  if (!flag) {
+  const filteredFlag = options?.filteredHashFlag
+  if (!flag && !filteredFlag) {
     return value
   }
   const spec = resolveSpec(value)
-  if (spec.type === SPEC_TYPE_GRAPH_API){
+  if (spec.type === SPEC_TYPE_GRAPH_API) {
     return value //cause not implemented
   }
   syncCrawl<HashScannerCrawlState, NormalizationRule>(
     value,
-    [createHashScannerHook(internalOptions)],
-    { rules: RULES[spec.type] },
+    [createHashObjectCreatorHook(internalOptions)],
+    { state: { fieldsForOptionalHash: [] }, rules: RULES[spec.type] },
   )
 
   return value
@@ -136,6 +91,7 @@ export const hash = (value: unknown, options?: HashOptions) => {
 
 export const deHash = (value: unknown, options?: HashOptions) => {
   const flag = options?.hashFlag
+  const filteredFlag = options?.filteredHashFlag
   if (!flag) {
     return value
   }
@@ -148,7 +104,10 @@ export const deHash = (value: unknown, options?: HashOptions) => {
       return { done: true }
     }
     cycleGuard.add(value)
-    flag in value && delete value[flag]
+    if (flag && flag in value) {delete value[flag]}
+    if (filteredFlag && filteredFlag in value) { delete value[filteredFlag] }
+    //todo del after tests
+    if (optionalFieldFlag in value) { delete value[optionalFieldFlag] }
     return { value }
   })
   return value

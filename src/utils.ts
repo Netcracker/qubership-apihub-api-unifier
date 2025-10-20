@@ -1,11 +1,19 @@
-import { isArray, isObject, JSON_ROOT_KEY, SyncCloneHook, SyncCrawlHook, type JsonPath } from '@netcracker/qubership-apihub-json-crawl'
+import {
+  isArray,
+  isObject,
+  JSON_ROOT_KEY,
+  type JsonPath,
+  SyncCloneHook,
+  SyncCrawlHook,
+} from '@netcracker/qubership-apihub-json-crawl'
 
 import {
   ChainItem,
   DEFAULT_TYPE_FLAG_PURE,
   DEFAULT_TYPE_FLAG_SYNTHETIC,
   DefaultMetaRecord,
-  Jso, OriginLeafs,
+  Jso,
+  OriginLeafs,
   PureRefNode,
   type RawJsonSchema,
   RefNode,
@@ -13,6 +21,8 @@ import {
 } from './types'
 import { JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { resolveOrigins, setOriginsForArray } from './origins'
+import crypto from 'crypto'
+import { ObjPath } from './hash'
 
 export class MapArray<K, V> extends Map<K, Array<V>> {
   public add(key: K, value: V): this {
@@ -383,4 +393,133 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
   setOriginsForArray(uniqueItems, originFlag, itemOrigins)
 
   return uniqueItems
+}
+
+export function cryptoMd5(str: string): string{
+  return crypto.createHash('md5').update(str).digest('hex')
+}
+
+type HashData = string | number | boolean | null | undefined | object
+
+export function objectToString(object: HashData, symbol: symbol, excludeKeys?: ObjPath): string {
+  const context: any[] = []
+  let result = ''
+
+  const write = (str: string): void => {
+    result += str
+  }
+
+  const isNativeFunction = (f: any): boolean => {
+    if (typeof f !== 'function') {
+      return false
+    }
+    const exp = /^function\s+\w*\s*\(\s*\)\s*{\s+\[native code\]\s+}$/i
+    return exp.exec(Function.prototype.toString.call(f)) != null
+  }
+
+  const hasher = {
+    dispatch(value: HashData): void {
+      let type: string = typeof value
+      if (value === null) {
+        type = 'null'
+      }
+      const handler = (this as any)['_' + type]
+      if (handler) {
+        handler.call(this, value)
+      } else {
+        write(`[${type}]`)
+      }
+    },
+
+    _object(obj: Record<string, any>): void {
+      if (obj === null) {
+        return write('null')
+      }
+
+      if (context.includes(obj)) {
+        return write(`[CIRCULAR:${context.indexOf(obj)}]`)
+      }
+      context.push(obj)
+
+      const pattern = /\[object (.*)\]/i
+      const objType = (pattern.exec(Object.prototype.toString.call(obj)) || [])[1]?.toLowerCase() || 'object'
+
+      // Special typed objects
+      if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(obj)) {
+        write('buffer:')
+        return write(obj.toString())
+      }
+
+      if (objType !== 'object' && objType !== 'function' && objType !== 'asyncfunction') {
+        const handler = (this as any)['_' + objType]
+        if (handler) {return handler.call(this, obj)}
+        return write(`[${objType}]`)
+      }
+
+      let keys = Object.keys(obj).sort()
+      if (!isNativeFunction(obj)) {
+        keys.unshift('prototype', '__proto__', 'constructor')
+      }
+      if (excludeKeys) {
+        keys = keys.filter((key: string) => !excludeKeys.includes(key))
+      }
+      write(`object:${keys.length}:`)
+      for (const key of keys) {
+        this.dispatch(key)
+        write(':')
+        const value = obj[key]
+        if(isObject(value)){
+          const replacedValue = obj[key]?.[symbol]
+          this.dispatch(replacedValue ? replacedValue : obj[key])
+        }else {
+          this.dispatch(value)
+        }
+        write(',')
+      }
+    },
+
+    _array(arr: any[]): void {
+      write(`array:${arr.length}:`)
+
+      const entries = arr.map((entry) => entry[symbol] ?? entry)
+      entries.sort()
+      for (const e of entries) {
+        this.dispatch(e)
+      }
+    },
+    _boolean(b: boolean): void {
+      write(`bool:${b}`)
+    },
+    _string(s: string): void {
+      write(`string:${s.length}:${s}`)
+    },
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    _function(fn: Function): void {
+      write('fn:')
+      this.dispatch('[native]')
+    },
+    _number(n: number): void {
+      write(`number:${n}`)
+    },
+    _bigint(bi: bigint): void {
+      write(`bigint:${bi.toString()}`)
+    },
+    _null(): void {
+      write('Null')
+    },
+    _undefined(): void {
+      write('Undefined')
+    },
+    _map(map: Map<any, any>): void {
+      write('map:')
+      this._array(Array.from(map.entries()))
+    },
+    _set(set: Set<any>): void {
+      write('set:')
+      this._array(Array.from(set.values()))
+    },
+  }
+
+  hasher.dispatch(object)
+  return result
 }

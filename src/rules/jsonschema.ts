@@ -1,6 +1,4 @@
 import {
-  BEFORE_SECOND_DATA_LEVEL,
-  CURRENT_DATA_LEVEL,
   NormalizationRules,
   OriginLeafs,
   ReferenceHandler,
@@ -202,13 +200,13 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
     '/contentMediaType': {
       validate: checkType(TYPE_STRING),
       merge: resolvers.last,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/const': {
       validate: checkType(...TYPE_JSON_ANY),
       merge: resolvers.equal,
       '/**': { validate: checkType(...TYPE_JSON_ANY) },
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/propertyNames': () => {
       const common = self()
@@ -216,7 +214,7 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
         ...common,
         //maybe better to remove propertyNames at all?
         unify: insertIntoArrayByInstruction(concatArrays<UnifyFunction>(common.unify), replaceValue(jsonSchemaTypeInfer, excludeNotAllowedTypes([JSON_SCHEMA_NODE_TYPE_STRING]))),
-        hashStrategy: CURRENT_DATA_LEVEL,
+        hashEngage: true,
       }
     },
     '/contains': self,
@@ -232,35 +230,35 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
       ),
       validate: checkType(TYPE_OBJECT),
       merge: resolvers.dependenciesMergeResolver,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/defs': {
       '/*': self,
       validate: checkType(TYPE_OBJECT),
       merge: resolvers.mergeObjects,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/additionalProperties': () => ({
       ...self(),
       merge: resolvers.additionalPropertiesMergeResolver,
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
       newDataLayer: true,
     }),
     '/additionalItems': () => ({
       ...self(),
       merge: resolvers.additionalItemsMergeResolver,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
       newDataLayer: true,
     }),
     '/exclusiveMaximum': {
       validate: checkType(TYPE_NUMBER),
       merge: resolvers.minValue, //todo how it works for allOf
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/exclusiveMinimum': {
       validate: checkType(TYPE_NUMBER),
       merge: resolvers.maxValue, //todo how it works for allOf
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     validate: checkType(TYPE_OBJECT, TYPE_BOOLEAN),
   }),
@@ -269,17 +267,17 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
     '/readOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/writeOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
     '/deprecated': {
       merge: resolvers.or,
       validate: checkType(TYPE_BOOLEAN),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
   }),
 }
@@ -300,7 +298,7 @@ export const jsonSchemaRules: (
         '/*': { validate: [checkType(TYPE_STRING), checkContains(...JSON_SCHEMA_NODE_TYPES)] },
       }),
     merge: resolvers.mergeTypes,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
   }),
   '/title': {
     validate: checkType(TYPE_STRING),
@@ -313,78 +311,78 @@ export const jsonSchemaRules: (
   '/format': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/default': {
     validate: checkType(...TYPE_JSON_ANY),
     merge: resolvers.last,
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/multipleOf': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.mergeMultipleOf,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/maximum': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/exclusiveMaximum': {
     validate: checkType(TYPE_BOOLEAN),
     merge: resolvers.or,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/minimum': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    // hashEngage: true,
   },
   '/exclusiveMinimum': {
     validate: checkType(TYPE_BOOLEAN),
     merge: resolvers.or,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/maxLength': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/minLength': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/pattern': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.mergePattern,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/maxItems': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/minItems': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/uniqueItems': {
     validate: checkType(TYPE_BOOLEAN),
     merge: resolvers.or,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/maxProperties': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/minProperties': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/items': ({ value }) => ({
     ...(Array.isArray(value)
@@ -392,7 +390,7 @@ export const jsonSchemaRules: (
           validate: [checkType(TYPE_ARRAY)],
           '/*': {
             ...self(),
-            hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+            hashEngage: true,
             newDataLayer: true,
           },
         }
@@ -402,7 +400,7 @@ export const jsonSchemaRules: (
         }
     ),
     merge: resolvers.itemsMergeResolver,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   }),
   deprecation: {
     deprecationResolver: ctx => JSON_SCHEMA_DEPRECATION_RESOLVER(ctx),
@@ -416,16 +414,16 @@ export const jsonSchemaRules: (
         newDataLayer: true,
       }),
     merge: resolvers.additionalItemsMergeResolver,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   }),
   '/required': {
     validate: checkType(TYPE_ARRAY),
     merge: resolvers.mergeStringSets,
     '/*': {
       validate: checkType(TYPE_STRING),
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
     },
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/enum': {
     validate: checkType(TYPE_ARRAY),
@@ -433,52 +431,52 @@ export const jsonSchemaRules: (
     unify: unifyJsonSchemaEnums,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      hashStrategy: CURRENT_DATA_LEVEL,
+      hashEngage: true,
     },
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/properties': {
     '/*': () => ({
       ...self(),
       newDataLayer: true,
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
     }),
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.propertiesMergeResolver,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/additionalProperties': ({ value }) => ({
     ...(typeof value === 'boolean' ? { validate: [] } : self()),
     merge: resolvers.additionalPropertiesMergeResolver,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
     newDataLayer: true,
   }),
   '/patternProperties': {
     '/*': () => ({
       ...self(),
       newDataLayer: true,
-      hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+      hashEngage: true,
     }),
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.propertiesMergeResolver,
-    hashStrategy: CURRENT_DATA_LEVEL,
+    hashEngage: true,
   },
   '/oneOf': {
     validate: checkType(TYPE_ARRAY),
     merge: resolvers.mergeCombination,
-    '/*': () => ({ ...self(), hashStrategy: BEFORE_SECOND_DATA_LEVEL }),
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    '/*': () => ({ ...self(),       hashEngage: true, }),
+    hashEngage: true,
   },
   '/anyOf': {
     validate: checkType(TYPE_ARRAY),
     merge: resolvers.mergeCombination,
     '/*': self,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
   },
   '/not': () => ({
     ...self(),
     merge: resolvers.mergeNot,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
   }),
   //TODO NOT BY SPECIFICATION. ONLY IN 06 VERSION. NC SPECIFIC EXCLUSION
   '/examples': {
@@ -492,21 +490,21 @@ export const jsonSchemaRules: (
     '/*': self,
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.mergeObjects,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
   },
   '/allOf': {
     validate: checkType(TYPE_ARRAY),
     //actually this contains only dead allOf. Cause all other should be already resolved
     merge: resolvers.concatArrays,
     '/*': self,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
   },
   '/$ref': {
     validate: checkType(TYPE_STRING),
     //actually this contains only dead refs. Cause all other should be already resolved
     merge: resolvers.concatString,
     //why anyOf?
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
+    hashEngage: true,
   },
   '/**': { referenceHandler: notAllowedReferenceHandler },
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested
@@ -536,6 +534,6 @@ export const jsonSchemaRules: (
   ],
   mandatoryUnify: [forwardOnlyCleanUpSyntheticJsonSchemaTypes],
   ...versionSpecific[version](self),
-  hashStrategy: CURRENT_DATA_LEVEL,
+  hashEngage: true,
   hashOwner: true,
 })

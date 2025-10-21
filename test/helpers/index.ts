@@ -198,7 +198,7 @@ export const TEST_ORIGINS_FLAG = Symbol('test-origin')
 export const TEST_ORIGINS_FOR_DEFAULTS: OriginLeafs = [{ parent: undefined, value: 'test-origins-defaults' }]
 export const TEST_DEFAULTS_FLAG = Symbol('test-defaults')
 export const TEST_HASH_FLAG = Symbol('test-hash')
-export const TEST_FILTERED_HASH_FLAG = Symbol('test-filtered-hash')
+export const TEST_SEMANTIC_HASH_FLAG = Symbol('test-semantic-hash')
 
 export const isSymbol = (value: unknown): value is symbol => {
   return typeof value === 'symbol'
@@ -220,8 +220,8 @@ export const resolveValueByPath = (obj: unknown, path: JsonPath): unknown | unde
 }
 
 export function resolveHashesByPath(data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1): [Hash, Hash] {
-  const hash1 = resolveValueByPath(data1, [...path1, TEST_FILTERED_HASH_FLAG]) as string
-  const hash2 = resolveValueByPath(data2, [...path2, TEST_FILTERED_HASH_FLAG]) as string
+  const hash1 = resolveValueByPath(data1, [...path1, TEST_SEMANTIC_HASH_FLAG]) as string
+  const hash2 = resolveValueByPath(data2, [...path2, TEST_SEMANTIC_HASH_FLAG]) as string
   if (!hash1 || !hash2) {
     throw new Error(`No hash found, path1: ${path1}, path2: ${path2}`)
   }
@@ -256,8 +256,8 @@ export function countUniqueHashes(spec: unknown): number {
     if (!isObject(value)) {
       return { done: true }
     }
-    if (TEST_FILTERED_HASH_FLAG in value && value.type === 'object') {
-      const hash = value[TEST_FILTERED_HASH_FLAG]
+    if (TEST_SEMANTIC_HASH_FLAG in value && value.type === 'object') {
+      const hash = value[TEST_SEMANTIC_HASH_FLAG]
       hashesSet.add(hash)
       hashesMap.set(value, hash)
     }

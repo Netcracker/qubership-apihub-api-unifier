@@ -229,7 +229,7 @@ describe('e2e', () => {
       liftCombiners: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       validate: true,
-      hashFlag: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG
     }
     it('pure schema', () => {

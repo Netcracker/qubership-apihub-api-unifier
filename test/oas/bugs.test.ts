@@ -1,5 +1,12 @@
 import { TEST_DEFAULTS_FLAG, TEST_HASH_FLAG, TEST_SYNTHETIC_ALL_OF_FLAG } from '../helpers/index'
-import { denormalize, JSON_SCHEMA_PROPERTY_DEPRECATED, normalize, OriginLeafs, resolveOrigins } from '../../src'
+import {
+  denormalize,
+  HashOptions,
+  JSON_SCHEMA_PROPERTY_DEPRECATED,
+  normalize,
+  OriginLeafs,
+  resolveOrigins,
+} from '../../src'
 import outOfMemoryCauseTooManyCombinations from '../resources/out-of-memory-cause-too-many-combinations.json'
 import bugWithWrongOrigins from '../resources/bug-with-wrong-origins.json'
 import bugWithSpearedArray from '../resources/bug-with-speared-array.json'
@@ -176,7 +183,7 @@ describe('Bugs', () => {
   it('make denormalize inside custom symbols', () => {
     const options = {
       defaultsFlag: TEST_DEFAULTS_FLAG,
-      hashFlag: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
@@ -233,7 +240,7 @@ describe('Bugs', () => {
       allowNotValidSyntheticChanges: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
-      hashFlag: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG,
     }) as any
     expect(result.paths['customer'].get.parameters[0].schema).not.toHaveProperty([TEST_INLINE_REFS_FLAG])
@@ -247,7 +254,7 @@ describe('Bugs', () => {
       allowNotValidSyntheticChanges: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
-      hashFlag: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG,
     }) as any
     expect(result).toHaveProperty(['paths', '/datasets/events', 'get', 'parameters', 'length'], 10) /*1 and 3 index will be missing*/

@@ -10,7 +10,7 @@ export type ObjPath = (string | number)[]
 const optionalFieldFlag = Symbol('optional-fields')
 
 const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHook = (options) => {
-  const { hashFlag, filteredHashFlag } = options
+  const { semanticHashProperty, hashProperty } = options
 
   const cycleGuard: Set<unknown> = new Set()
   const optionalFieldStates = new Map<any, ObjPath>()
@@ -27,7 +27,7 @@ const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHoo
       state.fieldsForOptionalHash.push(key)
       return { done: true }
     }
-    const ignoreKey = !rules.hashEngage
+    const ignoreKey = rules.noHash
     ignoreKey && state.fieldsForOptionalHash.push(key)
     if (!isObject(value)) {
       return { done: true, value }
@@ -43,14 +43,14 @@ const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHoo
       value,
       state: { ...state, fieldsForOptionalHash: nestedFieldsForOptionalHash },
       exitHook: () => {
-        if (hashFlag) {
-          value[hashFlag] = generateHash(value, hashFlag)
+        if (hashProperty) {
+          value[hashProperty] = generateHash(value, hashProperty)
         }
 
         // even if the optionalFields are empty, it is necessary to calculate the hash again,
         // since its children may have optional fields and their hash will be different.
-        if (filteredHashFlag) {
-          value[filteredHashFlag] = generateHash(value, filteredHashFlag, nestedFieldsForOptionalHash)
+        if (semanticHashProperty) {
+          value[semanticHashProperty] = generateHash(value, semanticHashProperty, nestedFieldsForOptionalHash)
         }
 
         value[optionalFieldFlag] = nestedFieldsForOptionalHash
@@ -71,9 +71,9 @@ export const hash = (value: unknown, options?: HashOptions) => {
   const internalOptions = {
     ...options,
   } satisfies InternalHashOptions
-  const flag = options?.hashFlag
-  const filteredFlag = options?.filteredHashFlag
-  if (!flag && !filteredFlag) {
+  const semanticHashFlag = options?.semanticHashProperty
+  const hashFlag = options?.hashProperty
+  if (!semanticHashFlag && !hashFlag) {
     return value
   }
   const spec = resolveSpec(value)
@@ -90,9 +90,9 @@ export const hash = (value: unknown, options?: HashOptions) => {
 }
 
 export const deHash = (value: unknown, options?: HashOptions) => {
-  const flag = options?.hashFlag
-  const filteredFlag = options?.filteredHashFlag
-  if (!flag) {
+  const semanticHashFlag = options?.semanticHashProperty
+  const hashFlag = options?.hashProperty
+  if (!semanticHashFlag && !hashFlag) {
     return value
   }
   const cycleGuard: Set<unknown> = new Set()
@@ -104,8 +104,8 @@ export const deHash = (value: unknown, options?: HashOptions) => {
       return { done: true }
     }
     cycleGuard.add(value)
-    if (flag && flag in value) {delete value[flag]}
-    if (filteredFlag && filteredFlag in value) { delete value[filteredFlag] }
+    if (semanticHashFlag && semanticHashFlag in value) {delete value[semanticHashFlag]}
+    if (hashFlag && hashFlag in value) { delete value[hashFlag] }
     //todo del after tests
     if (optionalFieldFlag in value) { delete value[optionalFieldFlag] }
     return { value }

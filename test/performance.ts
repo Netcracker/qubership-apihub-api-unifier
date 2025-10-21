@@ -21,7 +21,7 @@ for (let j = 0; j < 2; j++) {
       allowNotValidSyntheticChanges: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
-      hashFlag: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_HASH_FLAG,
     })
     const to = performance.now() - from
     console.log(j, i, to)

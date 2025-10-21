@@ -26,14 +26,14 @@ export const normalize = (value: unknown, options: NormalizeOptions = {}) => {
   if (optionsWithDefaults.unify) { spec = unify(spec, optionsWithDefaults) }
   if (optionsWithDefaults.mergeAllOf && !optionsWithDefaults.unify && !optionsWithDefaults.allowNotValidSyntheticChanges) { spec = cleanUpSynthetic(spec, optionsWithDefaults) }
   if (optionsWithDefaults.removeOasExtensions) { spec = removeOasExtensions(spec, optionsWithDefaults) }
-  if (optionsWithDefaults.hashFlag) { spec = hash(spec, optionsWithDefaults) }
+  if (optionsWithDefaults.semanticHashProperty || optionsWithDefaults.hashProperty) { spec = hash(spec, optionsWithDefaults) }
   return spec
 }
 
 export const denormalize = (value: unknown, options: DenormalizeOptions = {}) => {
   const optionsWithDefaults = createOptionsWithDefaults(options)
   let spec = value
-  if (optionsWithDefaults.hashFlag) { spec = deHash(spec, optionsWithDefaults) }
+  if (optionsWithDefaults.semanticHashProperty || optionsWithDefaults.hashProperty) { spec = deHash(spec, optionsWithDefaults) }
   if (optionsWithDefaults.mergeAllOf && !optionsWithDefaults.unify && !optionsWithDefaults.allowNotValidSyntheticChanges) { spec = deCleanUpSynthetic(spec, optionsWithDefaults) }
   if (optionsWithDefaults.unify) { spec = deUnify(spec, optionsWithDefaults) }
   //if in future we found way to denormalize following operation it should be in this order

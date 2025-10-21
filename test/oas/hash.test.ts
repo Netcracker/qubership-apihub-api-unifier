@@ -5,7 +5,7 @@ import {
   countUniqueHashes,
   createOas,
   createOasWithParameters,
-  TEST_FILTERED_HASH_FLAG,
+  TEST_SEMANTIC_HASH_FLAG,
   TEST_HASH_FLAG,
   TEST_ORIGINS_FLAG,
   TEST_PARAMETER_NAME,
@@ -15,8 +15,8 @@ import {
 import petstore from '../resources/petstore.json'
 
 const DEFAULT_OPTIONS: NormalizeOptions = {
-  hashFlag: TEST_HASH_FLAG,
-  filteredHashFlag: TEST_FILTERED_HASH_FLAG,
+  semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
+  hashProperty: TEST_HASH_FLAG,
 }
 
 describe('hash', () => {

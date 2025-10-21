@@ -200,13 +200,11 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
     '/contentMediaType': {
       validate: checkType(TYPE_STRING),
       merge: resolvers.last,
-      hashEngage: true,
     },
     '/const': {
       validate: checkType(...TYPE_JSON_ANY),
       merge: resolvers.equal,
       '/**': { validate: checkType(...TYPE_JSON_ANY) },
-      hashEngage: true,
     },
     '/propertyNames': () => {
       const common = self()
@@ -214,7 +212,6 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
         ...common,
         //maybe better to remove propertyNames at all?
         unify: insertIntoArrayByInstruction(concatArrays<UnifyFunction>(common.unify), replaceValue(jsonSchemaTypeInfer, excludeNotAllowedTypes([JSON_SCHEMA_NODE_TYPE_STRING]))),
-        hashEngage: true,
       }
     },
     '/contains': self,
@@ -222,43 +219,37 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
       '/*': ({ value }) => (Array.isArray(value)
           ? {
             validate: checkType(TYPE_ARRAY),
+            noHash: true,
             '/*': {
               validate: checkType(TYPE_STRING),
+              noHash: true,
             },
           }
           : self()
       ),
       validate: checkType(TYPE_OBJECT),
       merge: resolvers.dependenciesMergeResolver,
-      hashEngage: true,
     },
     '/defs': {
       '/*': self,
       validate: checkType(TYPE_OBJECT),
       merge: resolvers.mergeObjects,
-      hashEngage: true,
     },
     '/additionalProperties': () => ({
       ...self(),
       merge: resolvers.additionalPropertiesMergeResolver,
-      hashEngage: true,
-      newDataLayer: true,
     }),
     '/additionalItems': () => ({
       ...self(),
       merge: resolvers.additionalItemsMergeResolver,
-      hashEngage: true,
-      newDataLayer: true,
     }),
     '/exclusiveMaximum': {
       validate: checkType(TYPE_NUMBER),
       merge: resolvers.minValue, //todo how it works for allOf
-      hashEngage: true,
     },
     '/exclusiveMinimum': {
       validate: checkType(TYPE_NUMBER),
       merge: resolvers.maxValue, //todo how it works for allOf
-      hashEngage: true,
     },
     validate: checkType(TYPE_OBJECT, TYPE_BOOLEAN),
   }),
@@ -267,17 +258,14 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
     '/readOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashEngage: true,
     },
     '/writeOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashEngage: true,
     },
     '/deprecated': {
       merge: resolvers.or,
       validate: checkType(TYPE_BOOLEAN),
-      hashEngage: true,
     },
   }),
 }
@@ -298,91 +286,77 @@ export const jsonSchemaRules: (
         '/*': { validate: [checkType(TYPE_STRING), checkContains(...JSON_SCHEMA_NODE_TYPES)] },
       }),
     merge: resolvers.mergeTypes,
-    hashEngage: true,
   }),
   '/title': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
+    noHash: true,
   },
   '/description': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
+    noHash: true,
   },
   '/format': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
-    hashEngage: true,
   },
   '/default': {
     validate: checkType(...TYPE_JSON_ANY),
     merge: resolvers.last,
     '/**': { validate: checkType(...TYPE_JSON_ANY) },
-    hashEngage: true,
   },
   '/multipleOf': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.mergeMultipleOf,
-    hashEngage: true,
   },
   '/maximum': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashEngage: true,
   },
   '/exclusiveMaximum': {
     validate: checkType(TYPE_BOOLEAN),
     merge: resolvers.or,
-    hashEngage: true,
   },
   '/minimum': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    // hashEngage: true,
   },
   '/exclusiveMinimum': {
     validate: checkType(TYPE_BOOLEAN),
     merge: resolvers.or,
-    hashEngage: true,
   },
   '/maxLength': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashEngage: true,
   },
   '/minLength': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashEngage: true,
   },
   '/pattern': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.mergePattern,
-    hashEngage: true,
   },
   '/maxItems': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashEngage: true,
   },
   '/minItems': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashEngage: true,
   },
   '/uniqueItems': {
     validate: checkType(TYPE_BOOLEAN),
     merge: resolvers.or,
-    hashEngage: true,
   },
   '/maxProperties': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.minValue,
-    hashEngage: true,
   },
   '/minProperties': {
     validate: checkType(TYPE_NUMBER),
     merge: resolvers.maxValue,
-    hashEngage: true,
   },
   '/items': ({ value }) => ({
     ...(Array.isArray(value)
@@ -390,17 +364,13 @@ export const jsonSchemaRules: (
           validate: [checkType(TYPE_ARRAY)],
           '/*': {
             ...self(),
-            hashEngage: true,
-            newDataLayer: true,
           },
         }
         : {
           ...self(),
-          newDataLayer: true,
         }
     ),
     merge: resolvers.itemsMergeResolver,
-    hashEngage: true,
   }),
   deprecation: {
     deprecationResolver: ctx => JSON_SCHEMA_DEPRECATION_RESOLVER(ctx),
@@ -411,10 +381,10 @@ export const jsonSchemaRules: (
       ? { validate: [] }
       : {
         ...self(),
-        newDataLayer: true,
+        noHash: true
       }),
     merge: resolvers.additionalItemsMergeResolver,
-    hashEngage: true,
+    noHash: true
   }),
   '/required': {
     validate: checkType(TYPE_ARRAY),
@@ -423,7 +393,6 @@ export const jsonSchemaRules: (
       validate: checkType(TYPE_STRING),
       hashEngage: true,
     },
-    hashEngage: true,
   },
   '/enum': {
     validate: checkType(TYPE_ARRAY),
@@ -431,52 +400,39 @@ export const jsonSchemaRules: (
     unify: unifyJsonSchemaEnums,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      hashEngage: true,
     },
-    hashEngage: true,
   },
   '/properties': {
     '/*': () => ({
       ...self(),
-      newDataLayer: true,
-      hashEngage: true,
     }),
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.propertiesMergeResolver,
-    hashEngage: true,
   },
   '/additionalProperties': ({ value }) => ({
     ...(typeof value === 'boolean' ? { validate: [] } : self()),
     merge: resolvers.additionalPropertiesMergeResolver,
-    hashEngage: true,
-    newDataLayer: true,
   }),
   '/patternProperties': {
     '/*': () => ({
-      ...self(),
-      newDataLayer: true,
-      hashEngage: true,
+      ...self()
     }),
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.propertiesMergeResolver,
-    hashEngage: true,
   },
   '/oneOf': {
     validate: checkType(TYPE_ARRAY),
     merge: resolvers.mergeCombination,
-    '/*': () => ({ ...self(),       hashEngage: true, }),
-    hashEngage: true,
+    '/*': () => self(),
   },
   '/anyOf': {
     validate: checkType(TYPE_ARRAY),
     merge: resolvers.mergeCombination,
     '/*': self,
-    hashEngage: true,
   },
   '/not': () => ({
     ...self(),
     merge: resolvers.mergeNot,
-    hashEngage: true,
   }),
   //TODO NOT BY SPECIFICATION. ONLY IN 06 VERSION. NC SPECIFIC EXCLUSION
   '/examples': {
@@ -484,27 +440,26 @@ export const jsonSchemaRules: (
     merge: resolvers.last,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
+      noHash: true,
     },
+    noHash: true,
   },
   '/definitions': {
     '/*': self,
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.mergeObjects,
-    hashEngage: true,
   },
   '/allOf': {
     validate: checkType(TYPE_ARRAY),
     //actually this contains only dead allOf. Cause all other should be already resolved
     merge: resolvers.concatArrays,
     '/*': self,
-    hashEngage: true,
   },
   '/$ref': {
     validate: checkType(TYPE_STRING),
     //actually this contains only dead refs. Cause all other should be already resolved
     merge: resolvers.concatString,
     //why anyOf?
-    hashEngage: true,
   },
   '/**': { referenceHandler: notAllowedReferenceHandler },
   //4.3.2. Boolean JSON Schemas - not supported. Cause not tested
@@ -533,7 +488,5 @@ export const jsonSchemaRules: (
     cleanUpSyntheticJsonSchemaTypes,
   ],
   mandatoryUnify: [forwardOnlyCleanUpSyntheticJsonSchemaTypes],
-  ...versionSpecific[version](self),
-  hashEngage: true,
-  hashOwner: true,
+  ...versionSpecific[version](self)
 })

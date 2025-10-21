@@ -74,8 +74,8 @@ export interface InternalMergeOptions extends Omit<MergeOptions, never>, Omit<In
 }
 
 export interface HashOptions {
-  hashFlag?: symbol
-  filteredHashFlag?: symbol
+  semanticHashProperty?: symbol
+  hashProperty?: symbol
 }
 
 export interface InternalHashOptions extends HashOptions {}
@@ -222,9 +222,7 @@ export interface NormalizationRule {
   readonly unify?: UnifyFunction[] | UnifyFunction
   readonly mandatoryUnify?: UnifyFunction[] | UnifyFunction
   readonly resolvedReferenceNamePropertyKey?: PropertyKey
-  readonly hashEngage?: boolean
-  readonly hashOwner?: boolean
-  readonly newDataLayer?: boolean
+  readonly noHash?: boolean
   readonly deprecation?: DeprecationPolicy
   readonly isExtension?: boolean
   readonly referenceHandler?: ReferenceHandler

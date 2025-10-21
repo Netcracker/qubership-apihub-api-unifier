@@ -24,7 +24,7 @@ describe('performance', () => {
         allowNotValidSyntheticChanges: true,
         syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
         originsFlag: TEST_ORIGINS_FLAG,
-        hashFlag: TEST_HASH_FLAG,
+        semanticHashProperty: TEST_HASH_FLAG,
       })
       const to = performance.now() - from
     })

@@ -481,7 +481,7 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
     _array(arr: any[]): void {
       write(`array:${arr.length}:`)
 
-      const entries = arr.map((entry) => entry[symbol] ?? entry)
+      const entries = arr.map((entry) => entry[symbol] ?? {})
       entries.sort()
       for (const e of entries) {
         this.dispatch(e)

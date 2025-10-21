@@ -1,10 +1,4 @@
-import {
-  InternalUnifyOptions,
-  NormalizationRules,
-  ReferenceHandler,
-  UnifyContext,
-  UnifyFunction,
-} from '../types'
+import { InternalUnifyOptions, NormalizationRules, ReferenceHandler, UnifyContext, UnifyFunction } from '../types'
 import {
   OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
@@ -294,13 +288,19 @@ const openApiExternalDocsRules: NormalizationRules = {
     '/description': { validate: checkType(TYPE_STRING) },
     '/url': { validate: checkType(TYPE_STRING) },
     ...openApiExtensionRules,
+    noHash: true,
+    '/**': { noHash: true },
   },
 }
 
 const openApiExampleRules: NormalizationRules = {
   '/example': {
     validate: checkType(...TYPE_JSON_ANY),
-    '/**': { validate: checkType(...TYPE_JSON_ANY) },
+    noHash: true,
+    '/**': {
+      validate: checkType(...TYPE_JSON_ANY),
+      noHash: true,
+    },
   },
 }
 
@@ -308,16 +308,21 @@ const openApiExamplesRules = (version: OpenApiSpecVersion): NormalizationRules =
   '/examples': {
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.last,
+    noHash: true,
     '/*': {
       ...openApiExtensionRulesFunction({
         validate: checkType(...TYPE_JSON_ANY),
+        noHash: true,
       }),
       referenceHandler: referenceObjectRuleFunction({
         version,
         allowedOverrides: [OPEN_API_PROPERTY_DESCRIPTION, OPEN_API_PROPERTY_SUMMARY],
       }),
     },
-    '/**': { validate: checkType(...TYPE_JSON_ANY) },
+    '/**': {
+      validate: checkType(...TYPE_JSON_ANY),
+      noHash: true,
+    },
   },
 })
 
@@ -428,49 +433,43 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
     '/type': {
       validate: [checkType(TYPE_STRING), checkContains(...OPEN_API_30_JSON_SCHEMA_NODE_TYPES)],
       merge: resolvers.mergeTypes,
-      hashEngage: true,
     },
     '/items': () => ({
       ...customFor30JsonSchemaRules,
       merge: resolvers.itemsMergeResolver,
-      hashEngage: true,
-      newDataLayer: true,
     }),
     '/additionalItems': {
       validate: () => false,
-      hashEngage: true,
-      newDataLayer: true,
+      noHash: true,
     },
     '/patternProperties': {
       validate: () => false,
-      hashEngage: true,
-      newDataLayer: true,
+      noHash: true,
     },
     '/readOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashEngage: true,
     },
     '/writeOnly': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashEngage: true,
     },
     '/deprecated': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or,
-      hashEngage: true,
     },
     '/nullable': {
       validate: checkType(TYPE_BOOLEAN),
       merge: resolvers.or, //todo need check
-      hashEngage: true,
     },
     '/example': {
       validate: checkType(...TYPE_JSON_ANY),
       merge: resolvers.last,
-      '/**': { validate: checkType(...TYPE_JSON_ANY) },
-      hashEngage: true,
+      noHash: true,
+      '/**': {
+        validate: checkType(...TYPE_JSON_ANY),
+        noHash: true,
+      },
     },
     unify: insertIntoArrayByInstruction(
       concatArrays<UnifyFunction>(core.unify, extension.unify),
@@ -541,7 +540,10 @@ const openApiHeadersRules = (version: OpenApiSpecVersion): NormalizationRules =>
       descriptionCalculator: ctx => `[Deprecated] header${nonEmptyString(calculateHeaderName(ctx.paths, ctx.key))}${nonEmptyString(calculateHeaderPlace(ctx.paths, ctx.suffix))}`,
       inlineDescriptionSuffixCalculator: (ctx) => `in header '${ctx.key.toString()}' ${ctx.suffix}`,
     },
-    '/description': { validate: checkType(TYPE_STRING) },
+    '/description': {
+      validate: checkType(TYPE_STRING),
+      noHash: true,
+    },
     '/required': { validate: checkType(TYPE_BOOLEAN) },
     '/deprecated': { validate: checkType(TYPE_BOOLEAN) },
     '/allowEmptyValue': { validate: checkType(TYPE_BOOLEAN) },
@@ -575,43 +577,37 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
     },
     '/name': {
       validate: checkType(TYPE_STRING),
-      hashEngage: true,
     },
     '/in': {
       validate: checkType(TYPE_STRING),
-      hashEngage: true,
     },
-    '/description': { validate: checkType(TYPE_STRING) },
+    '/description': {
+      validate: checkType(TYPE_STRING),
+      noHash: true,
+    },
     '/required': {
       validate: checkType(TYPE_BOOLEAN),
-      hashEngage: true,
     },
     '/deprecated': {
       validate: checkType(TYPE_BOOLEAN),
-      hashEngage: true,
     },
     '/allowEmptyValue': {
       validate: checkType(TYPE_BOOLEAN),
-      hashEngage: true,
     },
     '/style': {
       validate: checkType(TYPE_STRING),
-      hashEngage: true,
     },
     '/explode': {
       validate: checkType(TYPE_BOOLEAN),
-      hashEngage: true,
     },
     '/allowReserved': {
       validate: checkType(TYPE_BOOLEAN),
-      hashEngage: true,
     },
     '/content': openApiMediaTypesRules(version),
     ...openApiExampleRules,
     ...openApiExamplesRules(version),
     '/schema': () => ({
       ...openApiJsonSchemaRules(version),
-      newDataLayer: true,
     }),
     ...openApiExtensionRules,
     referenceHandler: referenceObjectRuleFunction({ version, allowedOverrides: [OPEN_API_PROPERTY_DESCRIPTION] }),
@@ -620,14 +616,15 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
       valueDefaults(OPEN_API_PARAMETER_DEFAULTS),
       valueReplaces(OPEN_API_PARAMETER_REPLACES),
     ],
-    hashEngage: true,
-    hashOwner: true,
   },
   validate: checkType(TYPE_ARRAY),
 })
 
 const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules => ({
-  '/description': { validate: checkType(TYPE_STRING) },
+  '/description': {
+    validate: checkType(TYPE_STRING),
+    noHash: true,
+  },
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
   ...openApiExtensionRules,
@@ -643,7 +640,10 @@ const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules =>
 
 const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   ...openApiExtensionRulesFunction({
-    '/description': { validate: checkType(TYPE_STRING) },
+    '/description': {
+      validate: checkType(TYPE_STRING),
+      noHash: true,
+    },
     '/headers': openApiHeadersRules(version),
     '/content': openApiMediaTypesRules(version),
     '/links': openApiLinksRules(version),
@@ -801,7 +801,6 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
     '/schemas': {
       '/*': openApiJsonSchemaRules(version),
       validate: checkType(TYPE_OBJECT),
-      hashEngage: true,
     },
     '/responses': openApiResponsesRules(version),
     '/parameters': {
@@ -837,7 +836,6 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
       valueDefaults(OPEN_API_COMPONENTS_DEFAULTS),
       valueReplaces(OPEN_API_COMPONENTS_REPLACES),
     ],
-    hashEngage: true,
   },
   ...openApiExtensionRules,
   '/**': { referenceHandler: notAllowedReferenceHandler },
@@ -846,5 +844,4 @@ export const openApiRules = (version: OpenApiSpecVersion): NormalizationRules =>
     valueDefaults(OPEN_API_ROOT_DEFAULTS),
     valueReplaces(OPEN_API_ROOT_REPLACES),
   ],
-  hashEngage: true
 })

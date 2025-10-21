@@ -291,4 +291,3 @@ export interface ValueWithOrigins<T> {
 }
 
 export type Hash = string
-export type DeferredHash = () => Hash

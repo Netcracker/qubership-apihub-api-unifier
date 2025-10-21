@@ -23,6 +23,7 @@ import { JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { resolveOrigins, setOriginsForArray } from './origins'
 import crypto from 'crypto'
 import { ObjPath } from './hash'
+import objectHash from 'object-hash'
 
 export class MapArray<K, V> extends Map<K, Array<V>> {
   public add(key: K, value: V): this {
@@ -396,7 +397,10 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
 }
 
 export function cryptoMd5(str: string): string{
-  return crypto.createHash('md5').update(str).digest('hex')
+  //Have error: crypto.createHash is not a function. crypto for Node.js, need user browserify?
+  //return crypto.createHash('md5').update(str).digest('hex')
+  // todo fix it
+  return objectHash.MD5(str)
 }
 
 type HashData = string | number | boolean | null | undefined | object
@@ -481,6 +485,9 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
     _array(arr: any[]): void {
       write(`array:${arr.length}:`)
 
+      // the elements of the array should already have a hash calculated,
+      // if it doesn't exist, it means it didn't pass according to the rules.
+      // todo check for looping
       const entries = arr.map((entry) => entry[symbol] ?? {})
       entries.sort()
       for (const e of entries) {

@@ -77,9 +77,6 @@ export const hash = (value: unknown, options?: HashOptions) => {
     return value
   }
   const spec = resolveSpec(value)
-  if (spec.type === SPEC_TYPE_GRAPH_API) {
-    return value //cause not implemented
-  }
   syncCrawl<HashScannerCrawlState, NormalizationRule>(
     value,
     [createHashObjectCreatorHook(internalOptions)],

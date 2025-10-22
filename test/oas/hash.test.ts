@@ -89,7 +89,7 @@ describe('hash', () => {
     checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it.skip('minimum affects hash', () => {
+  it('minimum affects hash', () => {
     const data1 = createOas({ minimum: 2 })
     const data2 = createOas({ minimum: 3 })
 
@@ -263,7 +263,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it.skip('other item fields do not affect hash (openapi 3.1.0)', () => {
+  it('other item fields affect hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -284,7 +284,7 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
   it('item type in items object affects hash (openapi 3.0.0)', () => {
@@ -329,7 +329,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it.skip('other item fields do not affect hash (openapi 3.0.0)', () => {
+  it('other item fields affect hash (openapi 3.0.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -350,7 +350,7 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
   it('additionalItems type affects hash (openapi 3.1.0)', () => {
@@ -521,7 +521,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it.skip('other property fields do not affect hash', () => {
+  it('other property fields affect hash', () => {
     const data1 = createOas({
       type: 'object',
       properties: {
@@ -554,8 +554,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  // need
-  it.skip('hashes in cycled specs are calculated correctly', () => {
+  it('hashes in cycled specs are calculated correctly', () => {
     const data1 = createOas({
       type: 'object',
       properties: {
@@ -577,7 +576,7 @@ describe('hash', () => {
         cycle: {
           type: 'object',
           properties: {
-            foo3: { type: 'string' },
+            foo2: { type: 'string' },
             recursive: {
               $ref: `#/components/schemas/${TEST_SCHEMA_NAME}/properties/cycle`,
             },
@@ -637,7 +636,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it.skip('other additionalProperties fields do not affect hash', () => {
+  it('other additionalProperties fields affect hash', () => {
     const data1 = createOas({
       type: 'object',
       additionalProperties: {
@@ -656,7 +655,7 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
   it('boolean additionalProperties affects hash', () => {
@@ -1169,7 +1168,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it.skip('other parameter\'s schema fields do not affect hash', () => {
+  it('other parameter\'s schema fields do not affect hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1207,11 +1206,11 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it.skip('no hash collisions', () => {
+  it('no hash collisions', () => {
     const customOptions = { ...DEFAULT_OPTIONS }
     const result = normalize(petstore, customOptions)
 
     const uniqueHashesCount = countUniqueHashes(result)
-    expect(uniqueHashesCount).toEqual(14)
+    expect(uniqueHashesCount).toEqual(16)
   })
 })

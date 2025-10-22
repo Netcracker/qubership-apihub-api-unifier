@@ -551,7 +551,7 @@ describe('hash', () => {
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
     checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME, 'properties', 'foo'])
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
   it('hashes in cycled specs are calculated correctly', () => {
@@ -1168,7 +1168,7 @@ describe('hash', () => {
     checkHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('other parameter\'s schema fields do not affect hash', () => {
+  it('other parameter\'s schema fields affect hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1190,7 +1190,7 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
   it('symbol in array does not break hash calculation', () => {

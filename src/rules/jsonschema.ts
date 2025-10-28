@@ -391,7 +391,6 @@ export const jsonSchemaRules: (
     merge: resolvers.mergeStringSets,
     '/*': {
       validate: checkType(TYPE_STRING),
-      hashEngage: true,
     },
   },
   '/enum': {

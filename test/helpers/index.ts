@@ -219,23 +219,31 @@ export const resolveValueByPath = (obj: unknown, path: JsonPath): unknown | unde
   return value
 }
 
-export function resolveHashesByPath(data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1): [Hash, Hash] {
-  const hash1 = resolveValueByPath(data1, [...path1, TEST_SEMANTIC_HASH_PROPERTY]) as string
-  const hash2 = resolveValueByPath(data2, [...path2, TEST_SEMANTIC_HASH_PROPERTY]) as string
+export function resolveHashPropertyValuesByPath(hashProperty: PropertyKey, data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1 ): [Hash, Hash] {
+  const hash1 = resolveValueByPath(data1, [...path1, hashProperty]) as string
+  const hash2 = resolveValueByPath(data2, [...path2, hashProperty]) as string
   if (!hash1 || !hash2) {
     throw new Error(`No hash found, path1: ${path1}, path2: ${path2}`)
   }
   return [hash1, hash2]
 }
 
-export function checkHashesEqualByPath(data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1) {
-  const [hash1, hash2] = resolveHashesByPath(data1, data2, path1, path2)
+export function checkHashPropertyValuesEqualByPath(hashProperty: PropertyKey, data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1 ) {
+  const [hash1, hash2] = resolveHashPropertyValuesByPath(hashProperty, data1, data2, path1, path2 )
   expect(hash1).toEqual(hash2)
 }
 
-export function checkHashesNotEqualByPath(data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1) {
-  const [hash1, hash2] = resolveHashesByPath(data1, data2, path1, path2)
+export function checkHashPropertyValuesNotEqualByPath(hashProperty: PropertyKey, data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1 ) {
+  const [hash1, hash2] = resolveHashPropertyValuesByPath(hashProperty, data1, data2, path1, path2 )
   expect(hash1).not.toEqual(hash2)
+}
+
+export function checkSemanticHashesEqualByPath(data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1 ) {
+  checkHashPropertyValuesEqualByPath(TEST_SEMANTIC_HASH_PROPERTY, data1, data2, path1, path2 )
+}
+
+export function checkSemanticHashesNotEqualByPath(data1: unknown, data2: unknown, path1: JsonPath, path2: JsonPath = path1 ) {
+  checkHashPropertyValuesNotEqualByPath(TEST_SEMANTIC_HASH_PROPERTY, data1, data2, path1, path2 )
 }
 
 export function createSimpleOriginsMetaRecord(key: PropertyKey) {

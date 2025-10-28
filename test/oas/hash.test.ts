@@ -2,8 +2,8 @@ import { describe, expect, it } from '@jest/globals'
 
 import { normalize, NormalizeOptions, setJsoProperty } from '../../src'
 import {
-  checkHashesEqualByPath,
-  checkHashesNotEqualByPath,
+  checkSemanticHashesEqualByPath,
+  checkSemanticHashesNotEqualByPath,
   countUniqueHashes,
   createOas,
   createOasWithParameters,
@@ -21,8 +21,8 @@ const DEFAULT_OPTIONS: NormalizeOptions = {
   hashProperty: TEST_HASH_PROPERTY,
 }
 
-describe('hash', () => {
-  it('title does not affect hash', () => {
+describe('semantic hash', () => {
+  it('title does not affect semantic hash', () => {
     const data1 = createOas({
       title: 'Some Schema 1',
       type: 'string',
@@ -34,154 +34,154 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('type affects hash', () => {
+  it('type affects semantic hash', () => {
     const data1 = createOas({ type: 'string' })
     const data2 = createOas({ type: 'number' })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('format affects hash', () => {
+  it('format affects semantic hash', () => {
     const data1 = createOas({ format: 'uri' })
     const data2 = createOas({ format: 'ip' })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('default affects hash', () => {
+  it('default affects semantic hash', () => {
     const data1 = createOas({ default: 'first sample' })
     const data2 = createOas({ default: 'last sample' })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('multipleOf affects hash', () => {
+  it('multipleOf affects semantic hash', () => {
     const data1 = createOas({ multipleOf: 2 })
     const data2 = createOas({ multipleOf: 3 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('maximum affects hash', () => {
+  it('maximum affects semantic hash', () => {
     const data1 = createOas({ maximum: 2 })
     const data2 = createOas({ maximum: 3 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('exclusiveMaximum affects hash', () => {
+  it('exclusiveMaximum affects semantic hash', () => {
     const data1 = createOas({ exclusiveMaximum: true })
     const data2 = createOas({ exclusiveMaximum: false })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('minimum affects hash', () => {
+  it('minimum affects semantic hash', () => {
     const data1 = createOas({ minimum: 2 })
     const data2 = createOas({ minimum: 3 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('exclusiveMinimum affects hash', () => {
+  it('exclusiveMinimum affects semantic hash', () => {
     const data1 = createOas({ exclusiveMinimum: true })
     const data2 = createOas({ exclusiveMinimum: false })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('maxLength affects hash', () => {
+  it('maxLength affects semantic hash', () => {
     const data1 = createOas({ maxLength: 5 })
     const data2 = createOas({ maxLength: 10 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('minLength affects hash', () => {
+  it('minLength affects semantic hash', () => {
     const data1 = createOas({ minLength: 5 })
     const data2 = createOas({ minLength: 10 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('pattern affects hash', () => {
+  it('pattern affects semantic hash', () => {
     const data1 = createOas({ pattern: 'qwe' })
     const data2 = createOas({ pattern: 'asd' })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('maxItems affects hash', () => {
+  it('maxItems affects semantic hash', () => {
     const data1 = createOas({ maxItems: 10 })
     const data2 = createOas({ maxItems: 5 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('minItems affects hash', () => {
+  it('minItems affects semantic hash', () => {
     const data1 = createOas({ minItems: 10 })
     const data2 = createOas({ minItems: 5 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('uniqueItems affects hash', () => {
+  it('uniqueItems affects semantic hash', () => {
     const data1 = createOas({ uniqueItems: true })
     const data2 = createOas({ uniqueItems: false })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('maxProperties affects hash', () => {
+  it('maxProperties affects semantic hash', () => {
     const data1 = createOas({ maxProperties: 10 })
     const data2 = createOas({ maxProperties: 5 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('minProperties affects hash', () => {
+  it('minProperties affects semantic hash', () => {
     const data1 = createOas({ minProperties: 10 })
     const data2 = createOas({ minProperties: 5 })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('item type in items array affects hash (openapi 3.1.0)', () => {
+  it('item type in items array affects semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: [{
@@ -198,10 +198,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('item title in items array does not affect hash (openapi 3.1.0)', () => {
+  it('item title in items array does not affect semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: [{
@@ -220,10 +220,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('item type in items object affects hash (openapi 3.1.0)', () => {
+  it('item type in items object affects semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -240,10 +240,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('item title in items object does not affect hash (openapi 3.1.0)', () => {
+  it('item title in items object does not affect semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -262,10 +262,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('other item fields affect hash (openapi 3.1.0)', () => {
+  it('other item fields affect semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -286,10 +286,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('item type in items object affects hash (openapi 3.0.0)', () => {
+  it('item type in items object affects semantic hash (openapi 3.0.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -306,10 +306,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('item title in items object does not affect hash (openapi 3.0.0)', () => {
+  it('item title in items object does not affect semantic hash (openapi 3.0.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -328,10 +328,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('other item fields affect hash (openapi 3.0.0)', () => {
+  it('other item fields affect semantic hash (openapi 3.0.0)', () => {
     const data1 = createOas({
       type: 'object',
       items: {
@@ -352,10 +352,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('additionalItems type affects hash (openapi 3.1.0)', () => {
+  it('additionalItems type affects semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       additionalItems: {
@@ -372,10 +372,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('additionalItems title does not affect hash (openapi 3.1.0)', () => {
+  it('additionalItems title does not affect semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       additionalItems: {
@@ -394,10 +394,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('boolean additionalItems affects hash (openapi 3.1.0)', () => {
+  it('boolean additionalItems affects semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       additionalItems: true,
@@ -410,10 +410,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('none of the additionalItems properties affect hash (openapi 3.0.0)', () => {
+  it('none of the additionalItems properties affects semantic hash (openapi 3.0.0)', () => {
     const data1 = createOas({
       type: 'object',
       additionalItems: {
@@ -434,46 +434,46 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('required affects hash', () => {
+  it('required affects semantic hash', () => {
     const data1 = createOas({ required: ['prop2', 'prop1'] })
     const data2 = createOas({ required: ['prop3'] })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('required order does not affect hash', () => {
+  it('required order does not affect semantic hash', () => {
     const data1 = createOas({ required: ['prop1', 'prop2', 'prop3'] })
     const data2 = createOas({ required: ['prop3', 'prop2', 'prop1'] })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('enum affects hash', () => {
+  it('enum affects semantic hash', () => {
     const data1 = createOas({ enum: ['Husky', 'Retriever'] })
     const data2 = createOas({ enum: ['Dingo'] })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('enum order does not affect hash', () => {
+  it('enum order does not affect semantic hash', () => {
     const data1 = createOas({ enum: ['Husky', 'Retriever', 'Dingo', 'Shepherd'] })
     const data2 = createOas({ enum: ['Shepherd', 'Dingo', 'Retriever', 'Husky'] })
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('property type affects hash', () => {
+  it('property type affects semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       properties: {
@@ -494,10 +494,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('property title does not affect hash', () => {
+  it('property title does not affect semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       properties: {
@@ -520,10 +520,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('other property fields affect hash', () => {
+  it('other property fields affect semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       properties: {
@@ -552,11 +552,11 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME, 'properties', 'foo'])
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME, 'properties', 'foo'])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('hashes in cycled specs are calculated correctly', () => {
+  it('semantic hashes in cycled specs are calculated correctly', () => {
     const data1 = createOas({
       type: 'object',
       properties: {
@@ -589,14 +589,14 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result1,
+    checkSemanticHashesEqualByPath(result1, result1,
       ['components', 'schemas', TEST_SCHEMA_NAME, 'properties', 'cycle'],
       ['components', 'schemas', TEST_SCHEMA_NAME, 'properties', 'cycle', 'properties', 'recursive'],
     )
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('additionalProperties type affects hash', () => {
+  it('additionalProperties type affects semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       additionalProperties: {
@@ -613,10 +613,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('additionalProperties title does not affect hash', () => {
+  it('additionalProperties title does not affect semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       additionalProperties: {
@@ -635,10 +635,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('other additionalProperties fields affect hash', () => {
+  it('other additionalProperties fields affect semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       additionalProperties: {
@@ -657,10 +657,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('boolean additionalProperties affects hash', () => {
+  it('boolean additionalProperties affects semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       additionalProperties: true,
@@ -673,10 +673,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('patternProperties type affects hash (openapi 3.1.0)', () => {
+  it('patternProperties type affects semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       patternProperties: {
@@ -693,10 +693,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('patternProperties title does not affect hash (openapi 3.1.0)', () => {
+  it('patternProperties title does not affect semantic hash (openapi 3.1.0)', () => {
     const data1 = createOas({
       type: 'object',
       patternProperties: {
@@ -719,10 +719,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('none of the patternProperties properties affect hash (openapi 3.0.0)', () => {
+  it('none of the patternProperties properties affect semantic hash (openapi 3.0.0)', () => {
     const data1 = createOas({
       type: 'object',
       patternProperties: {
@@ -745,10 +745,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('oneOf order does not affect hash', () => {
+  it('oneOf order does not affect semantic hash', () => {
     const data1 = createOas({
       oneOf: [
         { type: 'integer' },
@@ -766,10 +766,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('oneOf title does not affect hash', () => {
+  it('oneOf title does not affect semantic hash', () => {
     const data1 = createOas({
       oneOf: [
         {
@@ -787,10 +787,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('oneOf type affects hash', () => {
+  it('oneOf type affects semantic hash', () => {
     const data1 = createOas({
       oneOf: [
         {
@@ -808,10 +808,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('oneOf readOnly field affects hash', () => {
+  it('oneOf readOnly field affects semantic hash', () => {
     const data1 = createOas({
       oneOf: [
         {
@@ -829,10 +829,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('anyOf order does not affect hash', () => {
+  it('anyOf order does not affect semantic hash', () => {
     const data1 = createOas({
       anyOf: [
         { type: 'string' },
@@ -850,10 +850,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('allOf order does not affect hash', () => {
+  it('allOf order does not affect semantic hash', () => {
     const data1 = createOas({
       allOf: [
         { type: 'string' },
@@ -871,10 +871,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('allOf title does not affect hash', () => {
+  it('allOf title does not affect semantic hash', () => {
     const data1 = createOas({
       allOf: [
         {
@@ -892,10 +892,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('allOf type affects hash', () => {
+  it('allOf type affects semantic hash', () => {
     const data1 = createOas({
       allOf: [
         {
@@ -913,10 +913,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('allOf readOnly field affects hash', () => {
+  it('allOf readOnly field affects semantic hash', () => {
     const data1 = createOas({
       allOf: [
         {
@@ -934,10 +934,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('not type affects hash', () => {
+  it('not type affects semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       not: {
@@ -954,10 +954,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('not title does not affect hash', () => {
+  it('not title does not affect semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       not: {
@@ -976,10 +976,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('definitions type affects hash', () => {
+  it('definitions type affects semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       definitions: {
@@ -1000,10 +1000,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('definitions title does not affect hash', () => {
+  it('definitions title does not affect semantic hash', () => {
     const data1 = createOas({
       type: 'object',
       definitions: {
@@ -1024,10 +1024,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('$ref affects hash', () => {
+  it('$ref affects semantic hash', () => {
     const data1 = createOas({
       $ref: '#/components/schemas/Test1',
     })
@@ -1038,10 +1038,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('annotation severity fields do not affect hashes', () => {
+  it('annotation severity fields do not affect semantic hashes', () => {
     const data1 = createOas({
       description: 'description 1',
       anyOf: [
@@ -1072,10 +1072,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('parameter name affects hash', () => {
+  it('parameter name affects semantic hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie 1',
       in: 'cookie',
@@ -1087,10 +1087,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('parameter\'s "in" field affects hash', () => {
+  it('parameter\'s "in" field affects semantic hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1102,10 +1102,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('parameter\'s fields with annotation severity do not affect hashes', () => {
+  it('parameter\'s fields with annotation severity do not affect semantic hashes', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1125,10 +1125,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('parameter\'s schema type affects hash', () => {
+  it('parameter\'s schema type affects semantic hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1146,10 +1146,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('parameter\'s schema title does not affect hash', () => {
+  it('parameter\'s schema title does not affect semantic hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1167,10 +1167,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('other parameter\'s schema fields affect hash', () => {
+  it('other parameter\'s schema fields affect semantic hash', () => {
     const data1 = createOasWithParameters({
       name: 'Cookie',
       in: 'cookie',
@@ -1192,10 +1192,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
+    checkSemanticHashesNotEqualByPath(result1, result2, ['components', 'parameters', TEST_PARAMETER_NAME])
   })
 
-  it('symbol in array does not break hash calculation', () => {
+  it('symbol in array does not break semantic hash calculation', () => {
     const requiredArray1 = ['prop1']
     const requiredArray2 = ['prop1']
     setJsoProperty<unknown>(requiredArray1, TEST_ORIGINS_FLAG, { type: [{ value: 'type' }] })
@@ -1205,10 +1205,10 @@ describe('hash', () => {
 
     const result1 = normalize(data1, DEFAULT_OPTIONS)
     const result2 = normalize(data2, DEFAULT_OPTIONS)
-    checkHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
+    checkSemanticHashesEqualByPath(result1, result2, ['components', 'schemas', TEST_SCHEMA_NAME])
   })
 
-  it('no hash collisions', () => {
+  it('no semantic hash collisions', () => {
     const customOptions = { ...DEFAULT_OPTIONS }
     const result = normalize(petstore, customOptions)
 

@@ -1,3 +1,5 @@
+import { describe, expect, it } from '@jest/globals'
+
 import { normalize, NormalizeOptions, setJsoProperty } from '../../src'
 import {
   checkHashesEqualByPath,

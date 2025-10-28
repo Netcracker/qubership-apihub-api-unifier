@@ -3,7 +3,7 @@ import {
 } from '../src'
 import { readFileSync } from 'fs'
 import { load } from 'js-yaml'
-import { buildGraphApi, TEST_HASH_FLAG, TEST_ORIGINS_FLAG, TEST_SYNTHETIC_TITLE_FLAG } from './helpers'
+import { buildGraphApi, TEST_ORIGINS_FLAG, TEST_SEMANTIC_HASH_FLAG, TEST_SYNTHETIC_TITLE_FLAG } from './helpers'
 
 const SPECS = [
   load(readFileSync(`./test/resources/performance/openapi_large_x6.yaml`).toString()),
@@ -24,7 +24,7 @@ describe('performance', () => {
         allowNotValidSyntheticChanges: true,
         syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
         originsFlag: TEST_ORIGINS_FLAG,
-        semanticHashProperty: TEST_HASH_FLAG,
+        semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
       })
       const to = performance.now() - from
     })

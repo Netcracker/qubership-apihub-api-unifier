@@ -1,4 +1,4 @@
-import { TEST_DEFAULTS_FLAG, TEST_HASH_FLAG, TEST_SYNTHETIC_ALL_OF_FLAG } from '../helpers/index'
+import { TEST_DEFAULTS_FLAG, TEST_SEMANTIC_HASH_FLAG, TEST_SYNTHETIC_ALL_OF_FLAG } from '../helpers/index'
 import {
   denormalize,
   HashOptions,
@@ -183,7 +183,7 @@ describe('Bugs', () => {
   it('make denormalize inside custom symbols', () => {
     const options = {
       defaultsFlag: TEST_DEFAULTS_FLAG,
-      semanticHashProperty: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
@@ -203,14 +203,14 @@ describe('Bugs', () => {
       }
     }, options) as any
     expect(normalized).toHaveProperty(['components', 'schemas', 'From', TEST_INLINE_REFS_FLAG])
-    expect(normalized).toHaveProperty(['components', 'schemas', 'From', TEST_HASH_FLAG])
+    expect(normalized).toHaveProperty(['components', 'schemas', 'From', TEST_SEMANTIC_HASH_FLAG])
     const customSymbol = Symbol('custom')
     normalized.components.schemas[customSymbol] = normalized.components.schemas.From
     delete normalized.components.schemas.To
     delete normalized.components.schemas.From
     const result = denormalize(normalized, options)
     expect(result).not.toHaveProperty(['components', 'schemas', customSymbol, TEST_INLINE_REFS_FLAG])
-    expect(result).not.toHaveProperty(['components', 'schemas', customSymbol, TEST_HASH_FLAG])
+    expect(result).not.toHaveProperty(['components', 'schemas', customSymbol, TEST_SEMANTIC_HASH_FLAG])
   })
 
   // todo: inline-refs symbol can't be in schema
@@ -240,7 +240,7 @@ describe('Bugs', () => {
       allowNotValidSyntheticChanges: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
-      semanticHashProperty: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG,
     }) as any
     expect(result.paths['customer'].get.parameters[0].schema).not.toHaveProperty([TEST_INLINE_REFS_FLAG])
@@ -254,7 +254,7 @@ describe('Bugs', () => {
       allowNotValidSyntheticChanges: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       originsFlag: TEST_ORIGINS_FLAG,
-      semanticHashProperty: TEST_HASH_FLAG,
+      semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG,
     }) as any
     expect(result).toHaveProperty(['paths', '/datasets/events', 'get', 'parameters', 'length'], 10) /*1 and 3 index will be missing*/

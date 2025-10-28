@@ -71,9 +71,9 @@ export const hash = (value: unknown, options?: HashOptions) => {
   const internalOptions = {
     ...options,
   } satisfies InternalHashOptions
-  const semanticHashFlag = options?.semanticHashProperty
-  const hashFlag = options?.hashProperty
-  if (!semanticHashFlag && !hashFlag) {
+  const semanticHashProperty = options?.semanticHashProperty
+  const hashProperty = options?.hashProperty
+  if (!semanticHashProperty && !hashProperty) {
     return value
   }
   const spec = resolveSpec(value)
@@ -87,9 +87,9 @@ export const hash = (value: unknown, options?: HashOptions) => {
 }
 
 export const deHash = (value: unknown, options?: HashOptions) => {
-  const semanticHashFlag = options?.semanticHashProperty
-  const hashFlag = options?.hashProperty
-  if (!semanticHashFlag && !hashFlag) {
+  const semanticHashProperty = options?.semanticHashProperty
+  const hashProperty = options?.hashProperty
+  if (!semanticHashProperty && !hashProperty) {
     return value
   }
   const cycleGuard: Set<unknown> = new Set()
@@ -101,8 +101,8 @@ export const deHash = (value: unknown, options?: HashOptions) => {
       return { done: true }
     }
     cycleGuard.add(value)
-    if (semanticHashFlag && semanticHashFlag in value) {delete value[semanticHashFlag]}
-    if (hashFlag && hashFlag in value) { delete value[hashFlag] }
+    if (semanticHashProperty && semanticHashProperty in value) {delete value[semanticHashProperty]}
+    if (hashProperty && hashProperty in value) { delete value[hashProperty] }
     //todo del after tests
     if (optionalFieldFlag in value) { delete value[optionalFieldFlag] }
     return { value }

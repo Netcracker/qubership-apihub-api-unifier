@@ -27,7 +27,7 @@ const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHoo
       state.fieldsForOptionalHash.push(key)
       return { done: true }
     }
-    const ignoreKey = rules.noHash
+    const ignoreKey = rules.excludeFromSemanticHash
     ignoreKey && state.fieldsForOptionalHash.push(key)
     if (!isObject(value)) {
       return { done: true, value }

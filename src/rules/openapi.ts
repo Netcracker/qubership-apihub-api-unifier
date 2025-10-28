@@ -288,18 +288,18 @@ const openApiExternalDocsRules: NormalizationRules = {
     '/description': { validate: checkType(TYPE_STRING) },
     '/url': { validate: checkType(TYPE_STRING) },
     ...openApiExtensionRules,
-    noHash: true,
-    '/**': { noHash: true },
+    excludeFromSemanticHash: true,
+    '/**': { excludeFromSemanticHash: true },
   },
 }
 
 const openApiExampleRules: NormalizationRules = {
   '/example': {
     validate: checkType(...TYPE_JSON_ANY),
-    noHash: true,
+    excludeFromSemanticHash: true,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
   },
 }
@@ -308,11 +308,11 @@ const openApiExamplesRules = (version: OpenApiSpecVersion): NormalizationRules =
   '/examples': {
     validate: checkType(TYPE_OBJECT),
     merge: resolvers.last,
-    noHash: true,
+    excludeFromSemanticHash: true,
     '/*': {
       ...openApiExtensionRulesFunction({
         validate: checkType(...TYPE_JSON_ANY),
-        noHash: true,
+        excludeFromSemanticHash: true,
       }),
       referenceHandler: referenceObjectRuleFunction({
         version,
@@ -321,7 +321,7 @@ const openApiExamplesRules = (version: OpenApiSpecVersion): NormalizationRules =
     },
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
   },
 })
@@ -440,11 +440,11 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
     }),
     '/additionalItems': {
       validate: () => false,
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
     '/patternProperties': {
       validate: () => false,
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
     '/readOnly': {
       validate: checkType(TYPE_BOOLEAN),
@@ -465,10 +465,10 @@ const customFor30JsonSchemaRulesFactory = (): NormalizationRules => {
     '/example': {
       validate: checkType(...TYPE_JSON_ANY),
       merge: resolvers.last,
-      noHash: true,
+      excludeFromSemanticHash: true,
       '/**': {
         validate: checkType(...TYPE_JSON_ANY),
-        noHash: true,
+        excludeFromSemanticHash: true,
       },
     },
     unify: insertIntoArrayByInstruction(
@@ -542,7 +542,7 @@ const openApiHeadersRules = (version: OpenApiSpecVersion): NormalizationRules =>
     },
     '/description': {
       validate: checkType(TYPE_STRING),
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
     '/required': { validate: checkType(TYPE_BOOLEAN) },
     '/deprecated': { validate: checkType(TYPE_BOOLEAN) },
@@ -583,7 +583,7 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
     },
     '/description': {
       validate: checkType(TYPE_STRING),
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
     '/required': {
       validate: checkType(TYPE_BOOLEAN),
@@ -623,7 +623,7 @@ const openApiParametersRules = (version: OpenApiSpecVersion): NormalizationRules
 const openApiRequestRules = (version: OpenApiSpecVersion): NormalizationRules => ({
   '/description': {
     validate: checkType(TYPE_STRING),
-    noHash: true,
+    excludeFromSemanticHash: true,
   },
   '/required': { validate: checkType(TYPE_BOOLEAN) },
   '/content': openApiMediaTypesRules(version),
@@ -642,7 +642,7 @@ const openApiResponsesRules = (version: OpenApiSpecVersion): NormalizationRules 
   ...openApiExtensionRulesFunction({
     '/description': {
       validate: checkType(TYPE_STRING),
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
     '/headers': openApiHeadersRules(version),
     '/content': openApiMediaTypesRules(version),

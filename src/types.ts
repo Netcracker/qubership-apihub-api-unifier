@@ -222,7 +222,7 @@ export interface NormalizationRule {
   readonly unify?: UnifyFunction[] | UnifyFunction
   readonly mandatoryUnify?: UnifyFunction[] | UnifyFunction
   readonly resolvedReferenceNamePropertyKey?: PropertyKey
-  readonly noHash?: boolean
+  readonly excludeFromSemanticHash?: boolean
   readonly deprecation?: DeprecationPolicy
   readonly isExtension?: boolean
   readonly referenceHandler?: ReferenceHandler

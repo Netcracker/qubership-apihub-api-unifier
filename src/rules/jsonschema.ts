@@ -219,10 +219,10 @@ const versionSpecific: Record<JsonSchemaSpecVersion, (self: () => NormalizationR
       '/*': ({ value }) => (Array.isArray(value)
           ? {
             validate: checkType(TYPE_ARRAY),
-            noHash: true,
+            excludeFromSemanticHash: true,
             '/*': {
               validate: checkType(TYPE_STRING),
-              noHash: true,
+              excludeFromSemanticHash: true,
             },
           }
           : self()
@@ -290,12 +290,12 @@ export const jsonSchemaRules: (
   '/title': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
-    noHash: true,
+    excludeFromSemanticHash: true,
   },
   '/description': {
     validate: checkType(TYPE_STRING),
     merge: resolvers.last,
-    noHash: true,
+    excludeFromSemanticHash: true,
   },
   '/format': {
     validate: checkType(TYPE_STRING),
@@ -381,10 +381,10 @@ export const jsonSchemaRules: (
       ? { validate: [] }
       : {
         ...self(),
-        noHash: true
+        excludeFromSemanticHash: true
       }),
     merge: resolvers.additionalItemsMergeResolver,
-    noHash: true
+    excludeFromSemanticHash: true
   }),
   '/required': {
     validate: checkType(TYPE_ARRAY),
@@ -439,9 +439,9 @@ export const jsonSchemaRules: (
     merge: resolvers.last,
     '/**': {
       validate: checkType(...TYPE_JSON_ANY),
-      noHash: true,
+      excludeFromSemanticHash: true,
     },
-    noHash: true,
+    excludeFromSemanticHash: true,
   },
   '/definitions': {
     '/*': self,

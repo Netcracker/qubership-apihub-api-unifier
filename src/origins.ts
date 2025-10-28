@@ -167,7 +167,7 @@ export function addUniqueElements(
     return
   }
 
-  let targetArray = getJsoProperty(target, propertyKey) as unknown[]
+  let targetArray = getJsoProperty(target, propertyKey)
   if (targetArray === undefined) {
     targetArray = []
     copyOrigins(source, target, propertyKey, propertyKey, originsFlag)

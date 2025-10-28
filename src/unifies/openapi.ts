@@ -12,11 +12,12 @@ import {
 } from '../origins'
 import { ErrorMessage } from '../errors'
 import PathItemObject = OpenAPIV3.PathItemObject
+import ParameterObject = OpenAPIV3.ParameterObject
 
 const EXTENSION_PREFIX = 'x-'
 
-const getParameterUniqueKey = (param: any): string | undefined => {
-  if (!param || typeof param !== 'object') {
+const getParameterUniqueKey = (param: ParameterObject): string | undefined => {
+  if (!isObject(param)) {
     return undefined
   }
   const name = param.name

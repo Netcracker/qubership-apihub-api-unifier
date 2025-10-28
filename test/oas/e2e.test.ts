@@ -7,7 +7,7 @@ import {
   normalize,
   NormalizeOptions,
 } from '../../src'
-import { TEST_INLINE_REFS_FLAG, TEST_ORIGINS_FLAG, TEST_SEMANTIC_HASH_FLAG, TEST_SYNTHETIC_TITLE_FLAG } from '../helpers'
+import { TEST_INLINE_REFS_FLAG, TEST_ORIGINS_FLAG, TEST_SEMANTIC_HASH_PROPERTY, TEST_SYNTHETIC_TITLE_FLAG } from '../helpers'
 
 describe('e2e', () => {
   it('resolve type after all', () => {
@@ -229,7 +229,7 @@ describe('e2e', () => {
       liftCombiners: true,
       syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
       validate: true,
-      semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
+      semanticHashProperty: TEST_SEMANTIC_HASH_PROPERTY,
       inlineRefsFlag: TEST_INLINE_REFS_FLAG
     }
     it('pure schema', () => {

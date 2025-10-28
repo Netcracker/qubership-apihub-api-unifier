@@ -7,8 +7,8 @@ import {
   countUniqueHashes,
   createOas,
   createOasWithParameters,
-  TEST_SEMANTIC_HASH_FLAG,
-  TEST_HASH_FLAG,
+  TEST_SEMANTIC_HASH_PROPERTY,
+  TEST_HASH_PROPERTY,
   TEST_ORIGINS_FLAG,
   TEST_PARAMETER_NAME,
   TEST_SCHEMA_NAME,
@@ -17,8 +17,8 @@ import {
 import petstore from '../resources/petstore.json'
 
 const DEFAULT_OPTIONS: NormalizeOptions = {
-  semanticHashProperty: TEST_SEMANTIC_HASH_FLAG,
-  hashProperty: TEST_HASH_FLAG,
+  semanticHashProperty: TEST_SEMANTIC_HASH_PROPERTY,
+  hashProperty: TEST_HASH_PROPERTY,
 }
 
 describe('hash', () => {

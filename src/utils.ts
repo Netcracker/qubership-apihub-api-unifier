@@ -405,6 +405,7 @@ export function cryptoMd5(str: string): string{
 
 type HashData = string | number | boolean | null | undefined | object
 
+// TODO: move to separate file, add proper attribution and description of changes
 export function objectToString(object: HashData, symbol: symbol, excludeKeys?: ObjPath): string {
   const context: any[] = []
   let result = ''
@@ -440,6 +441,8 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
         return write('null')
       }
 
+      //TODO: remove circular objects handling, should not be required
+      // since we are only interested in shallow hash calculation and use pre-computed hash for nested objects
       if (context.includes(obj)) {
         return write(`[CIRCULAR:${context.indexOf(obj)}]`)
       }

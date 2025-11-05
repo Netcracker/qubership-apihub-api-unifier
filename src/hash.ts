@@ -12,11 +12,11 @@ const optionalFieldFlag = Symbol('optional-fields')
 const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHook = (options) => {
   const { semanticHashProperty, hashProperty } = options
 
-  const cycleGuard: Set<unknown> = new Set()
+  const cycleIndexMap: Map<unknown, number> = new Map()
   const optionalFieldStates = new Map<any, ObjPath>()
 
-  const generateHash = (value: any, flag: symbol, optionalFields?: ObjPath): string => {
-    return cryptoMd5(objectToString(value, flag, optionalFields))
+  const generateHash = (value: any, flag: symbol, cycleIndexMap: Map<unknown, number>, firstOccurrence: boolean, optionalFields?: ObjPath): string => {
+    return cryptoMd5(objectToString(value, flag, cycleIndexMap, firstOccurrence, optionalFields))
   }
 
   const hashHook: HashScannerCrawlHook = ({ key, value, rules, state }) => {
@@ -37,20 +37,21 @@ const createHashObjectCreatorHook: (options: HashOptions) => HashScannerCrawlHoo
       optionalFieldStates.set(value, nestedFieldsForOptionalHash)
     }
 
-    const done = !(!cycleGuard.has(value) && cycleGuard.add(value))
+    const firstOccurrence = !cycleIndexMap.has(value)
+    const done = !(firstOccurrence && cycleIndexMap.set(value, cycleIndexMap.size))
     return {
       done,
       value,
       state: { ...state, fieldsForOptionalHash: nestedFieldsForOptionalHash },
       exitHook: () => {
         if (hashProperty) {
-          value[hashProperty] = generateHash(value, hashProperty)
+          value[hashProperty] = generateHash(value, hashProperty, cycleIndexMap, firstOccurrence)
         }
 
         // even if the optionalFields are empty, it is necessary to calculate the hash again,
         // since its children may have optional fields and their hash will be different.
         if (semanticHashProperty) {
-          value[semanticHashProperty] = generateHash(value, semanticHashProperty, nestedFieldsForOptionalHash)
+          value[semanticHashProperty] = generateHash(value, semanticHashProperty, cycleIndexMap, firstOccurrence, nestedFieldsForOptionalHash)
         }
 
         value[optionalFieldFlag] = nestedFieldsForOptionalHash
@@ -101,7 +102,7 @@ export const deHash = (value: unknown, options?: HashOptions) => {
       return { done: true }
     }
     cycleGuard.add(value)
-    if (semanticHashProperty && semanticHashProperty in value) {delete value[semanticHashProperty]}
+    if (semanticHashProperty && semanticHashProperty in value) { delete value[semanticHashProperty] }
     if (hashProperty && hashProperty in value) { delete value[hashProperty] }
     //todo del after tests
     if (optionalFieldFlag in value) { delete value[optionalFieldFlag] }

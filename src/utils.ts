@@ -396,7 +396,7 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
   return uniqueItems
 }
 
-export function cryptoMd5(str: string): string{
+export function cryptoMd5(str: string): string {
   //Have error: crypto.createHash is not a function. crypto for Node.js, need user browserify?
   //return crypto.createHash('md5').update(str).digest('hex')
   // todo fix it
@@ -406,8 +406,7 @@ export function cryptoMd5(str: string): string{
 type HashData = string | number | boolean | null | undefined | object
 
 // TODO: move to separate file, add proper attribution and description of changes
-export function objectToString(object: HashData, symbol: symbol, excludeKeys?: ObjPath): string {
-  const context: any[] = []
+export function objectToString(object: HashData, hashProperty: symbol, cycleIndexMap: Map<unknown, number>, firstOccurrence: boolean, excludeKeys?: ObjPath): string {
   let result = ''
 
   const write = (str: string): void => {
@@ -441,12 +440,13 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
         return write('null')
       }
 
-      //TODO: remove circular objects handling, should not be required
-      // since we are only interested in shallow hash calculation and use pre-computed hash for nested objects
-      if (context.includes(obj)) {
-        return write(`[CIRCULAR:${context.indexOf(obj)}]`)
+      if (isObject(obj) && obj[hashProperty] !== undefined) {
+        return this.dispatch(`[OBJ_HASH:${obj[hashProperty]}]`)
       }
-      context.push(obj)
+
+      if (cycleIndexMap.has(obj) && !firstOccurrence) {
+        return this.dispatch(`[CIRCULAR:${cycleIndexMap.get(obj)}]`)
+      }
 
       const pattern = /\[object (.*)\]/i
       const objType = (pattern.exec(Object.prototype.toString.call(obj)) || [])[1]?.toLowerCase() || 'object'
@@ -459,14 +459,12 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
 
       if (objType !== 'object' && objType !== 'function' && objType !== 'asyncfunction') {
         const handler = (this as any)['_' + objType]
-        if (handler) {return handler.call(this, obj)}
+        if (handler) { return handler.call(this, obj) }
         return write(`[${objType}]`)
       }
 
       let keys = Object.keys(obj).sort()
-      if (!isNativeFunction(obj)) {
-        keys.unshift('prototype', '__proto__', 'constructor')
-      }
+
       if (excludeKeys) {
         keys = keys.filter((key: string) => !excludeKeys.includes(key))
       }
@@ -475,12 +473,12 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
         this.dispatch(key)
         write(':')
         const value = obj[key]
-        if(isObject(value)){
-          const replacedValue = obj[key]?.[symbol]
-          this.dispatch(replacedValue ? replacedValue : obj[key])
-        }else {
-          this.dispatch(value)
+        if (isObject(value)) {
+          if (!cycleIndexMap.has(value) && value[hashProperty] === undefined) {
+            throw new Error(`Pre-calculated hash not found for property with non-circular reference '${String(key)}'`)
+          }
         }
+        this.dispatch(value)
         write(',')
       }
     },
@@ -491,7 +489,15 @@ export function objectToString(object: HashData, symbol: symbol, excludeKeys?: O
       // the elements of the array should already have a hash calculated,
       // if it doesn't exist, it means it didn't pass according to the rules.
       // todo check for looping
-      const entries = arr.map((entry) => entry[symbol] ?? {})
+      const entries = arr.map((entry) => {
+        if (isObject(entry)) {
+          if (!cycleIndexMap.has(entry) && entry[hashProperty] === undefined) {
+            throw new Error(`Pre-calculated hash not found for non-circular reference object in array`)
+          }
+          return entry[hashProperty]
+        }
+        return entry
+      })
       entries.sort()
       for (const e of entries) {
         this.dispatch(e)

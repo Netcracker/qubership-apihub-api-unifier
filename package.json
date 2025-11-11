@@ -40,7 +40,7 @@
     "simplify"
   ],
   "dependencies": {
-    "@netcracker/qubership-apihub-json-crawl": "feature-support-oas-extension-changes-classification",
+    "@netcracker/qubership-apihub-json-crawl": "dev",
     "object-hash": "3.0.0",
     "fast-equals": "4.0.3"
   },

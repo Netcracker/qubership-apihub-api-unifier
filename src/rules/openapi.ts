@@ -2,11 +2,13 @@ import {
   BEFORE_SECOND_DATA_LEVEL,
   CURRENT_DATA_LEVEL,
   InternalUnifyOptions,
+  NormalizationRule,
   NormalizationRules,
   ReferenceHandler,
   UnifyContext,
   UnifyFunction,
 } from '../types'
+import { CrawlPrefixRules } from '@netcracker/qubership-apihub-json-crawl'
 import {
   OpenApiSpecVersion,
   SPEC_TYPE_JSON_SCHEMA_04,
@@ -259,17 +261,20 @@ const OPEN_API_COMPONENTS_REPLACES: Record<string, ReplaceMapping> = {
   [OPEN_API_PROPERTY_EXAMPLES]: TO_EMPTY_OBJECT_MAPPING,
 }
 
-const openApiSpecificationExtensionRules = {
-  '/^': {
-    'x-': {
-      isExtension: true,
-      validate: checkType(...TYPE_JSON_ANY),
-      merge: resolvers.last,
-      '/*': { validate: checkType(...TYPE_JSON_ANY) },
-      '/**': { validate: checkType(...TYPE_JSON_ANY) },
-    },
+// extracted to facilitate type checking  
+const _openApiSpecificationExtensionPrefixRules: CrawlPrefixRules<NormalizationRule> = {
+  'x-': {
+    isExtension: true,
+    validate: checkType(...TYPE_JSON_ANY),
+    merge: resolvers.last,
+    '/*': { validate: checkType(...TYPE_JSON_ANY) },
+    '/**': { validate: checkType(...TYPE_JSON_ANY) },
   },
-} as NormalizationRules
+}
+
+const openApiSpecificationExtensionRules: NormalizationRules = {
+  '/^': _openApiSpecificationExtensionPrefixRules,
+}
 
 export function referenceObjectRuleFunction({
   version,

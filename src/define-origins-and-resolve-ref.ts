@@ -50,7 +50,7 @@ export function evaluateSyntheticTitle(
     return {}
   }
   const result = {
-    [targetPropertyKey]: path[path.length - 1].toString(),
+    [targetPropertyKey]: path.at(-1)?.toString(),
     [syntheticTitleFlag]: true,
   }
   return result
@@ -451,7 +451,7 @@ const resolveRefNode = (
   const path = parsePointer(reference.pointer)
   // Initialize with the name from the initial reference
   let lastReferenceName: string | undefined = reference.jsonPath.length > 0
-    ? reference.jsonPath[reference.jsonPath.length - 1].toString()
+    ? reference.jsonPath.at(-1)?.toString()
     : undefined
   let isRefValue: boolean
   while ((isRefValue = isRefNode(value)) || path.length) {
@@ -465,7 +465,7 @@ const resolveRefNode = (
       if (typeof refString === 'string') {
         const parsedRef = parseRef(refString)
         if (parsedRef.jsonPath.length > 0) {
-          lastReferenceName = parsedRef.jsonPath[parsedRef.jsonPath.length - 1].toString()
+          lastReferenceName = parsedRef.jsonPath.at(-1)?.toString()
         }
       }
       value = syncClone<DefineOriginsAndResolveRefState, NormalizationRule>(value, [cycleJsoHook, resolveRefHook, cycleJsoHook], {

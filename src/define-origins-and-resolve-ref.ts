@@ -461,7 +461,7 @@ const resolveRefNode = (
       const originCollector: OriginsMetaRecord = {}
       parentValue = value
       // Track the reference name from the $ref
-      const refString = (value as any).$ref
+      const refString = isObject(value) ? value.$ref : undefined
       if (typeof refString === 'string') {
         const parsedRef = parseRef(refString)
         if (parsedRef.jsonPath.length > 0) {

@@ -96,10 +96,15 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
       originForObj,
       sibling,
     }: ResolvedReferenceContext): ResolvedRefWithSiblings => {
-      const { refValue, origin } = resolvedRef
+      const { refValue, origin, lastReferenceName } = resolvedRef
       const referenceValue = refValue as Record<PropertyKey, unknown>
 
       options.originsFlag && getOrReuseOrigin(referenceValue, originForObj, state.originCache)
+
+      // Add reference name property if configured
+      if (options.referenceNameProperty && lastReferenceName !== undefined) {
+        referenceValue[options.referenceNameProperty] = lastReferenceName
+      }
 
       const childrenOrigins: OriginsMetaRecord = {}
       if (!overrides?.length || !isObject(sibling) || Reflect.ownKeys(sibling).length === 0) {
@@ -116,6 +121,10 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
           }]
         }
       })
+      // Add reference name property to the copy with overrides as well
+      if (options.referenceNameProperty && lastReferenceName !== undefined) {
+        referenceValueWithSibling[options.referenceNameProperty] = lastReferenceName
+      }
       options.originsFlag && getOrReuseOrigin(sibling, originForObj, state.originCache)
       return { refValue: referenceValueWithSibling, origin, childrenOrigins }
     }

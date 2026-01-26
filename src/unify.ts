@@ -20,7 +20,7 @@ import {
   UnifySyncCloneHook,
 } from './types'
 import { isArray, JSON_ROOT_KEY, syncClone } from '@netcracker/qubership-apihub-json-crawl'
-import { resolveSpec } from './spec-type'
+import { resolveSpec, Spec } from './spec-type'
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { RULES } from './rules'
 import { createEvaluationCacheService, createPropertySpreadWithCacheService } from './cache'
@@ -177,16 +177,16 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
   )
 }
 
-export const deUnify = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
-  return deUnifyImpl(value, false, options)
+export const deUnify = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions, overriddenSpec?: Spec) => {
+  return deUnifyImpl(value, false, options, overriddenSpec)
 }
 
-export const deCleanUpSynthetic = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
-  return deUnifyImpl(value, true, options)
+export const deCleanUpSynthetic = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions, overriddenSpec?: Spec) => {
+  return deUnifyImpl(value, true, options, overriddenSpec)
 }
 
-const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
-  const spec = resolveSpec(value)
+const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions, overriddenSpec?: Spec) => {
+  const spec = overriddenSpec || resolveSpec(value)
   const internalOptions = {
     resolveRef: DEFAULT_OPTION_RESOLVE_REF,
     originsAlreadyDefined: DEFAULT_OPTION_ORIGINS_ALREADY_DEFINED,

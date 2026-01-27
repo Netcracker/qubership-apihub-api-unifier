@@ -1,10 +1,13 @@
 import { isObject } from '@netcracker/qubership-apihub-json-crawl'
 
+export const SPEC_TYPE_JSON_SCHEMA_TYPE = 'json-schema'
 export const SPEC_TYPE_JSON_SCHEMA_04 = 'json-schema-04'
 export const SPEC_TYPE_JSON_SCHEMA_06 = 'json-schema-06'
 export const SPEC_TYPE_JSON_SCHEMA_07 = 'json-schema-07'
+export const SPEC_TYPE_OPEN_API_TYPE = 'openapi'
 export const SPEC_TYPE_OPEN_API_30 = 'openapi-3.0'
 export const SPEC_TYPE_OPEN_API_31 = 'openapi-3.1'
+export const SPEC_TYPE_ASYNCAPI_TYPE = 'asyncapi'
 export const SPEC_TYPE_ASYNCAPI_2 = 'asyncapi-2'
 export const SPEC_TYPE_GRAPH_API = 'graphapi'
 
@@ -17,11 +20,28 @@ export type OpenApiSpecVersion =
   typeof SPEC_TYPE_OPEN_API_30
   | typeof SPEC_TYPE_OPEN_API_31
 
+export const JSON_SCHEMA_SPEC_TYPES = new Set<SpecType>([
+  SPEC_TYPE_JSON_SCHEMA_04,
+  SPEC_TYPE_JSON_SCHEMA_06,
+  SPEC_TYPE_JSON_SCHEMA_07,
+])
+
+export const OPEN_API_SPEC_TYPES = new Set<SpecType>([
+  SPEC_TYPE_OPEN_API_30,
+  SPEC_TYPE_OPEN_API_31,
+])
+
 export type SpecType =
   JsonSchemaSpecVersion
   | OpenApiSpecVersion
   | typeof SPEC_TYPE_GRAPH_API
   | typeof SPEC_TYPE_ASYNCAPI_2
+
+export type SpecTypeFamily =
+  typeof SPEC_TYPE_OPEN_API_TYPE
+  | typeof SPEC_TYPE_JSON_SCHEMA_TYPE
+  | typeof SPEC_TYPE_ASYNCAPI_TYPE
+  | typeof SPEC_TYPE_GRAPH_API
 
 interface OpenApiSpec {
   openapi: string

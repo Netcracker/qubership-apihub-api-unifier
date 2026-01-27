@@ -15,7 +15,6 @@ import { merge } from './merge'
 import { cleanUpSynthetic, deCleanUpSynthetic, deUnify, unify } from './unify'
 import { deHash, hash } from './hash'
 import { removeOasExtensions } from './remove-oas-extensions'
-import { Spec } from './spec-type'
 
 export const normalize = (value: unknown, options: NormalizeOptions = {}) => {
   const optionsWithDefaults = createOptionsWithDefaults(options)
@@ -31,12 +30,12 @@ export const normalize = (value: unknown, options: NormalizeOptions = {}) => {
   return spec
 }
 
-export const denormalize = (value: unknown, options: DenormalizeOptions = {}, overriddenSpec?: Spec) => {
+export const denormalize = (value: unknown, options: DenormalizeOptions = {}) => {
   const optionsWithDefaults = createOptionsWithDefaults(options)
   let spec = value
   if (optionsWithDefaults.hashFlag) { spec = deHash(spec, optionsWithDefaults) }
-  if (optionsWithDefaults.mergeAllOf && !optionsWithDefaults.unify && !optionsWithDefaults.allowNotValidSyntheticChanges) { spec = deCleanUpSynthetic(spec, optionsWithDefaults,  overriddenSpec) }
-  if (optionsWithDefaults.unify) { spec = deUnify(spec, optionsWithDefaults, overriddenSpec) }
+  if (optionsWithDefaults.mergeAllOf && !optionsWithDefaults.unify && !optionsWithDefaults.allowNotValidSyntheticChanges) { spec = deCleanUpSynthetic(spec, optionsWithDefaults) }
+  if (optionsWithDefaults.unify) { spec = deUnify(spec, optionsWithDefaults) }
   //if in future we found way to denormalize following operation it should be in this order
   // if (shouldMergeAllOf) {spec = merge(spec, options)}
   // if (shouldValidate) {spec = validate(spec, options)}

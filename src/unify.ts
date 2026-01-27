@@ -20,7 +20,7 @@ import {
   UnifySyncCloneHook,
 } from './types'
 import { isArray, JSON_ROOT_KEY, syncClone } from '@netcracker/qubership-apihub-json-crawl'
-import { resolveSpec, Spec } from './spec-type'
+import { resolveSpec, SPEC_TYPE_ASYNCAPI_2, SPEC_TYPE_GRAPH_API, SpecType } from './spec-type'
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { RULES } from './rules'
 import { createEvaluationCacheService, createPropertySpreadWithCacheService } from './cache'
@@ -31,6 +31,7 @@ import {
 } from './unifies/meta-types'
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
+import { specTypeFamily } from './utils'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward
@@ -38,6 +39,32 @@ function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
 
 function toBackwardMutationFunction(value: UnifyFunction): MutationFunction | undefined {
   return typeof value === 'function' ? undefined : value.backward
+}
+
+/**
+ * Validates `override` for detected `specType`.
+ *
+ * Rules:
+ * - Override is allowed only within the same spec family (as determined by `specTypeFamily()`),
+ *   e.g. OpenAPI 3.0 ↔ 3.1, or JSON Schema drafts (04/06/07).
+ * - Some spec types are not overridable and will always throw: AsyncAPI 2 and GraphAPI.
+ */
+function resolveDeUnifySpecType(specType: SpecType, override?: SpecType): SpecType {
+  if (!override || override === specType) {
+    return specType
+  }
+
+  if (specType === SPEC_TYPE_ASYNCAPI_2 || specType === SPEC_TYPE_GRAPH_API) {
+    throw new Error(`Spec type '${specType}' cannot be redefined (requested '${override}').`)
+  }
+
+  const detectedFamily = specTypeFamily(specType)
+  const overrideFamily = specTypeFamily(override)
+  if (detectedFamily !== overrideFamily) {
+    throw new Error(`Spec type '${specType}' can only be redefined within the same family (requested '${override}').`)
+  }
+
+  return override
 }
 
 const createUnifyHook: (options: InternalUnifyOptions, mandatoryOnly: boolean) => UnifySyncCloneHook = (options, mandatoryOnly) => {
@@ -177,16 +204,18 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
   )
 }
 
-export const deUnify = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions, overriddenSpec?: Spec) => {
-  return deUnifyImpl(value, false, options, overriddenSpec)
+export const deUnify = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
+  return deUnifyImpl(value, false, options)
 }
 
-export const deCleanUpSynthetic = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions, overriddenSpec?: Spec) => {
-  return deUnifyImpl(value, true, options, overriddenSpec)
+export const deCleanUpSynthetic = (value: unknown, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
+  return deUnifyImpl(value, true, options)
 }
 
-const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions, overriddenSpec?: Spec) => {
-  const spec = overriddenSpec || resolveSpec(value)
+const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
+  const spec = resolveSpec(value)
+  const specType = resolveDeUnifySpecType(spec.type, options?.forceRulesSpecType)
+
   const internalOptions = {
     resolveRef: DEFAULT_OPTION_RESOLVE_REF,
     originsAlreadyDefined: DEFAULT_OPTION_ORIGINS_ALREADY_DEFINED,
@@ -197,8 +226,8 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
     ...options,
     evaluationCacheService: createEvaluationCacheService(),
     spreadAllOfCache: createPropertySpreadWithCacheService(JSON_SCHEMA_PROPERTY_ALL_OF),
-    syntheticMetaDefinitions: createSyntheticMetaDefinitions(spec.type, options?.originsFlag),
-    nativeMetaDefinitions: createNativeMetaDefinitionsForDeUnify(spec.type, options?.originsFlag),
+    syntheticMetaDefinitions: createSyntheticMetaDefinitions(specType, options?.originsFlag),
+    nativeMetaDefinitions: createNativeMetaDefinitionsForDeUnify(specType, options?.originsFlag),
     ignoreSymbols: new Set([
       ...(options?.originsFlag ? [options.originsFlag] : []),
       ...(options?.inlineRefsFlag ? [options.inlineRefsFlag] : []),
@@ -216,7 +245,7 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
     createSelfOriginsCloneHook(internalOptions.originsFlag),
   ],
     {
-      rules: RULES[spec.type] || {},
+      rules: RULES[specType] || {},
       state: {
         parentValue: undefined,
         ignoreTreeUnderSymbols: false,

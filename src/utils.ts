@@ -26,10 +26,10 @@ import {
   JSON_SCHEMA_SPEC_TYPES,
   OPEN_API_SPEC_TYPES,
   SPEC_TYPE_ASYNCAPI_2,
-  SPEC_TYPE_ASYNCAPI_TYPE,
+  SPEC_TYPE_ASYNCAPI_TYPE_FAMILY,
   SPEC_TYPE_GRAPH_API,
-  SPEC_TYPE_JSON_SCHEMA_TYPE,
-  SPEC_TYPE_OPEN_API_TYPE,
+  SPEC_TYPE_JSON_SCHEMA_TYPE_FAMILY,
+  SPEC_TYPE_OPEN_API_TYPE_FAMILY,
   SpecType,
   SpecTypeFamily,
 } from './spec-type'
@@ -409,15 +409,15 @@ export function loadYaml(file: string){
   return load(file, {schema:JSON_SCHEMA})
 }
 
-export function specTypeFamily(specType: SpecType): SpecTypeFamily {
+export function determineSpecTypeFamily(specType: SpecType): SpecTypeFamily {
   if (OPEN_API_SPEC_TYPES.has(specType)) {
-    return SPEC_TYPE_OPEN_API_TYPE
+    return SPEC_TYPE_OPEN_API_TYPE_FAMILY
   }
   if (JSON_SCHEMA_SPEC_TYPES.has(specType)) {
-    return SPEC_TYPE_JSON_SCHEMA_TYPE
+    return SPEC_TYPE_JSON_SCHEMA_TYPE_FAMILY
   }
   if (specType === SPEC_TYPE_ASYNCAPI_2) {
-    return SPEC_TYPE_ASYNCAPI_TYPE
+    return SPEC_TYPE_ASYNCAPI_TYPE_FAMILY
   }
   return SPEC_TYPE_GRAPH_API
 }

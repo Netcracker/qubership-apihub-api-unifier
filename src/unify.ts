@@ -31,7 +31,7 @@ import {
 } from './unifies/meta-types'
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
-import { specTypeFamily } from './utils'
+import { determineSpecTypeFamily } from './utils'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward
@@ -47,7 +47,7 @@ function toBackwardMutationFunction(value: UnifyFunction): MutationFunction | un
  * Rules:
  * - Override is allowed only within the same spec family (as determined by `specTypeFamily()`),
  *   e.g. OpenAPI 3.0 ↔ 3.1, or JSON Schema drafts (04/06/07).
- * - Some spec types are not overridable and will always throw: AsyncAPI 2 and GraphAPI.
+ * - Some spec types are not overridable and will always throw: AsyncAPI and GraphAPI.
  */
 function resolveDeUnifySpecType(specType: SpecType, override?: SpecType): SpecType {
   if (!override || override === specType) {
@@ -58,8 +58,8 @@ function resolveDeUnifySpecType(specType: SpecType, override?: SpecType): SpecTy
     throw new Error(`Spec type '${specType}' cannot be redefined (requested '${override}').`)
   }
 
-  const detectedFamily = specTypeFamily(specType)
-  const overrideFamily = specTypeFamily(override)
+  const detectedFamily = determineSpecTypeFamily(specType)
+  const overrideFamily = determineSpecTypeFamily(override)
   if (detectedFamily !== overrideFamily) {
     throw new Error(`Spec type '${specType}' can only be redefined within the same family (requested '${override}').`)
   }

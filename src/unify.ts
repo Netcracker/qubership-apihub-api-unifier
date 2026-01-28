@@ -214,7 +214,7 @@ export const deCleanUpSynthetic = (value: unknown, options?: DeUnifyOptions & Li
 
 const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOptions & LiftCombinersOptions & ResolveOptions) => {
   const spec = resolveSpec(value)
-  const specType = resolveDeUnifySpecType(spec.type, options?.forceRulesSpecType)
+  const specType = resolveDeUnifySpecType(spec.type, options?.forceRulesForSpecVersion)
 
   const internalOptions = {
     resolveRef: DEFAULT_OPTION_RESOLVE_REF,

@@ -55,7 +55,7 @@ export interface UnifyOptions {
 
 export interface DeUnifyOptions extends UnifyOptions {
   skip?: PropertySkipFunction,                     // predicate to skip rollback unification
-  forceRulesSpecType?: SpecType,                   // force deunify rules (spec family only: OpenAPI 3.0/3.1, JsonSchemaSpecVersion); cannot override AsyncAPI 2 / GraphAPI
+  forceRulesForSpecVersion?: SpecType,             // force deunify rules (spec family only: OpenAPI 3.0/3.1, JsonSchemaSpecVersion); cannot override AsyncAPI / GraphAPI
 }
 
 interface HasInternalIgnoreSymbols {

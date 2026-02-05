@@ -10,6 +10,7 @@ export const SPEC_TYPE_OPEN_API_31 = 'openapi-3.1'
 export const SPEC_TYPE_ASYNCAPI_TYPE_FAMILY = 'asyncapi'
 //TODO: delete when AsyncAPI v3 support is added
 export const SPEC_TYPE_ASYNCAPI_2 = 'asyncapi-2'
+export const SPEC_TYPE_GRAPH_API_TYPE_FAMILY = 'graphapi'
 export const SPEC_TYPE_GRAPH_API = 'graphapi'
 
 const JSON_SCHEMA_SPEC_VERSIONS = [
@@ -40,7 +41,7 @@ export type SpecTypeFamily =
   typeof SPEC_TYPE_OPEN_API_TYPE_FAMILY
   | typeof SPEC_TYPE_JSON_SCHEMA_TYPE_FAMILY
   | typeof SPEC_TYPE_ASYNCAPI_TYPE_FAMILY
-  | typeof SPEC_TYPE_GRAPH_API
+  | typeof SPEC_TYPE_GRAPH_API_TYPE_FAMILY
 
 interface OpenApiSpec {
   openapi: string

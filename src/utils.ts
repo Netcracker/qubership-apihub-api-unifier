@@ -12,7 +12,7 @@ import {
   RichReference,
 } from './types'
 import { JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
-import { resolveOrigins, setOriginsForArray } from './origins'
+import { copyOrigins, copyProperty, resolveOrigins, setOriginsForArray } from './origins'
 import { load, JSON_SCHEMA } from 'js-yaml'
 
 export class MapArray<K, V> extends Map<K, Array<V>> {
@@ -386,6 +386,48 @@ export const removeDuplicatesWithMergeOrigins = <T>(array: T[], originFlag: symb
   return uniqueItems
 }
 
-export function loadYaml(file: string){
-  return load(file, {schema:JSON_SCHEMA})
+/**
+ * Implements AsyncAPI JSON Merge Patch
+ * Logic is aligned with @asyncapi/parser
+ * Additional logic for handling origins is added
+* @param patch - The patch value to merge from
+* @param target - The target value to merge into
+* @param propertyKey - The property key to merge
+* @param originsFlag - The origins flag to use
+* @param rootLevel - Whether the merge is at the root level
+ * @returns The merged result
+ */
+export function mergePatchWithOrigins(patch: Jso, target: Jso, propertyKey: PropertyKey, originsFlag: symbol | undefined, rootLevel: boolean = true) {
+  // If the propertyKey value is null in patch, delete property from target
+  const patchValue = getJsoProperty(patch, propertyKey)
+  // for some reason @asyncapi/parser does not delete the property from target if it is at the root level
+  // see https://github.com/asyncapi/spec/issues/1178
+  if (patchValue === null && !rootLevel) {
+    delete (target as Record<PropertyKey, unknown>)[propertyKey]  //TODO: think about origins for this case
+    return
+  }
+
+  // If the patch property is not an object, it replaces the target property
+  if (!isObject(patchValue) && !isArray(patchValue)) {
+    copyProperty(patch, target, propertyKey, originsFlag)
+    return
+  }
+
+  // Patch property is object or array
+  const targetValue = getJsoProperty(target, propertyKey)
+  const blank = isArray(patchValue) ? [] : {}
+  const result = !isObject(targetValue) && !isArray(targetValue)
+    ? blank // Non objects are being replaced.
+    : Object.assign(blank, targetValue) // Make sure we never modify the target.
+
+  Object.keys(patchValue as Jso).forEach(key => {
+    mergePatchWithOrigins(patchValue as Jso, result, key, originsFlag, false)
+  })
+
+  setJsoProperty(target, propertyKey, result)
+  copyOrigins(patch, target, propertyKey, propertyKey, originsFlag)
+}
+
+export function loadYaml(file: string) {
+  return load(file, { schema: JSON_SCHEMA })
 }

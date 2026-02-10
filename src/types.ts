@@ -36,6 +36,10 @@ export interface MergeOptions {
   onMergeError?: (message: string, path: JsonPath, values: any[]) => void
 }
 
+export interface MergeTraitsOptions {
+  mergeTraits?: boolean  // execute merge traits for AsyncAPI Operation and Message objects
+}
+
 export interface LiftCombinersOptions {
   liftCombiners?: boolean         // enable lifting & re-combining combiners
 }
@@ -72,6 +76,10 @@ export interface InternalMergeOptions extends Omit<MergeOptions, never>, Omit<In
   spreadAllOfCache: PropertySpreadWithCacheService<PropertyKey, unknown>
   syntheticMetaDefinitions: MetaDefinitions
   mergeAllOf: boolean
+}
+
+export interface InternalMergeTraitsOptions extends Omit<MergeTraitsOptions, 'mergeTraits'>, Pick<ResolveOptions, 'originsFlag'>, HasInternalIgnoreSymbols {
+  mergeTraits: boolean
 }
 
 export interface HashOptions {
@@ -126,6 +134,7 @@ export interface MetaDefinitions {
 export type NormalizeOptions =
   ResolveOptions
   & MergeOptions
+  & MergeTraitsOptions
   & ValidateOptions
   & UnifyOptions
   & LiftCombinersOptions
@@ -135,6 +144,7 @@ export type NormalizeOptions =
 export type DenormalizeOptions =
   ResolveOptions
   & MergeOptions
+  & MergeTraitsOptions
   & ValidateOptions
   & DeUnifyOptions
   & LiftCombinersOptions
@@ -196,6 +206,9 @@ export type OriginsFactory = (ownerOrigins: OriginLeafs | undefined) => OriginLe
 export interface MergeAndLiftCombinersState extends HasIgnoreTreeUnderSymbols, HasSelfOriginsResolver {
 }
 
+export interface MergeTraitsState extends HasIgnoreTreeUnderSymbols, HasSelfOriginsResolver {
+}
+
 export type SelfOriginResolver = (key: PropertyKey) => OriginLeafs | undefined
 
 export type SelfOriginResolverFactory = (jso: unknown) => SelfOriginResolver
@@ -226,6 +239,7 @@ export type InclusionStrategy =
 
 export interface NormalizationRule {
   readonly merge?: MergeResolver<any>
+  readonly mergeTraits?: boolean  // flag to indicate this path triggers traits merging
   readonly validate?: ValidateFunction[] | ValidateFunction
   readonly canLiftCombiners?: boolean //rename to transform?
   readonly unify?: UnifyFunction[] | UnifyFunction
@@ -240,6 +254,7 @@ export interface NormalizationRule {
 }
 
 export type MergeAndLiftCombinersSyncCloneHook = SyncCloneHook<MergeAndLiftCombinersState, NormalizationRule>
+export type MergeTraitsSyncCloneHook = SyncCloneHook<MergeTraitsState, NormalizationRule>
 export type DefineOriginsAndResolveRefSyncCloneHook = SyncCloneHook<DefineOriginsAndResolveRefState, NormalizationRule>
 export type ValidateSyncCloneHook = SyncCloneHook<ValidateState, NormalizationRule>
 export type UnifySyncCloneHook = SyncCloneHook<UnifyState, NormalizationRule>
@@ -281,6 +296,7 @@ export const DEFAULT_OPTION_ORIGINS_ALREADY_DEFINED = false
 export const DEFAULT_OPTION_LIFT_COMBINERS = false
 export const DEFAULT_OPTION_RESOLVE_REF = true
 export const DEFAULT_OPTION_MERGE_ALL_OF = true
+export const DEFAULT_OPTION_MERGE_TRAITS = true
 export const DEFAULT_OPTION_UNIFY = false
 export const DEFAULT_OPTION_VALIDATE = false
 export const DEFAULT_OPTION_ORIGINS_FOR_DEFAULTS: OriginLeafs = [{ parent: undefined, value: '#defaults' }]

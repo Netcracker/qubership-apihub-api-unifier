@@ -118,6 +118,21 @@ interface OriginTreeItem {
   children: Record<PropertyKey, OriginTreeItem>
 }
 
+/**
+ * Helper function to check that origin references between two objects are the same.
+ * This verifies that both origins point to the same object reference (not just equal values).
+ *
+ * @param object1 - First object
+ * @param object2 - Second object
+ * @param propertyName - Name of the property whose origin to compare
+ * @param originsFlag - The origins flag to use
+ */
+export function checkOriginsAreTheSame(object1: any, object2: any, propertyName: string, originsFlag: symbol) {
+  const origin1Value = object1[originsFlag][propertyName];
+  const origin2Value = object2[originsFlag][propertyName];
+  expect(origin2Value).toBe(origin1Value);
+}
+
 export const commonOriginsCheck: (schema: unknown, options?: OriginsCheckOptions) => void = (schema, options = {}) => {
   const cycleGuard: Set<unknown> = new Set()
   const {

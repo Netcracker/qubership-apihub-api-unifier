@@ -270,3 +270,23 @@ export function countUniqueHashes(spec: unknown): number {
 
   return hashesSet.size
 }
+
+export function setValueAtPath(obj: any, path: JsonPath, value: any): void {
+  if (path.length === 0) { return }
+
+  let current = obj
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i]
+    const nextKey = path[i + 1]
+    if (!(key in current)) {
+      current[key] = typeof nextKey === 'number' ? [] : {}
+    }
+    current = current[key]
+  }
+  if (value !== undefined) {
+    current[path[path.length - 1]] = value
+  }
+}
+
+export const getValueByPath = (value: any, path: JsonPath) => path.reduce((data, key) => data?.[key], value)
+

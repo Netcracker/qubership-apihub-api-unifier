@@ -18,6 +18,33 @@ import { RULES } from './rules'
 import { createSelfOriginsCloneHook } from './origins'
 import { ASYNCAPI_PROPERTY_TRAITS } from './rules/asyncapi.const'
 
+/* Problems with traits merge
+
+1. Behaviour for some of the cases is not clear from the definition in the specification:
+ "Traits MUST be merged with the target object using the JSON Merge Patch algorithm
+ in the same order they are defined. A property on a trait MUST NOT override the same property
+ on the target object.". It is not clear how to interpret the last statement related
+ to the special `null` value semantics of the JSON Merge Patch algorithm.
+ https://github.com/asyncapi/spec/issues/1178
+
+2. JSON Merge Patch replaces array values, which could be not what you expect
+ e.g. for required or allOf properties in JSON schemas (see 'arrays handling' test cases)
+
+3. Traits merge implementation in reference @asyncapi/parser implementation
+ basically follows proposal from https://github.com/asyncapi/spec/issues/505
+ (`_.merge({}, trait1, trait2, targetObject);`) and merges root object at the end,
+ which applies patch merge `null` values special semantics to the targetObject,
+ which results in some funny behaviour (e.g. specification with and without `traits[{}]`
+ could yield different result in target object after parsing). See different results
+ for top level and nested properties in 'null handling check' group of tests.
+
+4. In api-unifier for correct implementation of traits merge for cases when
+ JSON schemas are merged in the process, we need to get rid of synthetic allOfs
+ that are created in earlier normalization phases (synthetic titles, description overrides),
+ since they are changing the structure of JSON schema and could yield unexpected results
+ after traits merge. See 'arrays are copied without merging (allOf array)' test.
+ */
+
 export const mergeTraits = (value: unknown, options?: MergeTraitsOptions & ResolveOptions) => {
   const spec = resolveSpec(value)
 

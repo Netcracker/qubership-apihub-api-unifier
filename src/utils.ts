@@ -411,13 +411,14 @@ export function copySymbolProperties(source: Jso, target: Jso, skipSymbols: Set<
 
 /**
  * Implements AsyncAPI JSON Merge Patch
- * Logic is aligned with @asyncapi/parser
+ * Logic is aligned with @asyncapi/parser as much as possible
  * Additional logic for handling origins is added
 * @param patch - The patch value to merge from
 * @param target - The target value to merge into
 * @param propertyKey - The property key to merge
 * @param originsFlag - The origins flag to use
 * @param skipSymbols - Set of symbols to skip when copying symbol properties
+* @param visited - Map of visited objects to avoid cyclic references
 * @param rootLevel - Whether the merge is at the root level
  * @returns The merged result
  */
@@ -427,6 +428,7 @@ export function mergePatchWithOrigins(
   propertyKey: PropertyKey,
   originsFlag: symbol | undefined,
   skipSymbols: Set<symbol> = new Set(),
+  visited: Map<Jso, Jso> = new Map(),
   rootLevel: boolean = true
 ) {
   // If the propertyKey value is null in patch, delete property from target
@@ -445,7 +447,15 @@ export function mergePatchWithOrigins(
     return
   }
 
-  // Patch property is object or array
+  // Patch property is object
+
+  if (visited.has(patchValue)) {
+    // cyclic reference found, use the value from the visited map
+    setJsoProperty(target, propertyKey, visited.get(patchValue))
+    copyOrigins(patch, target, propertyKey, propertyKey, originsFlag)
+    return
+  }
+
   const targetValue = getJsoProperty(target, propertyKey)
   const blank = {}
   const result = !isObject(targetValue)
@@ -455,8 +465,9 @@ export function mergePatchWithOrigins(
   // Symbols are just copied, without applying merge patch logic
   copySymbolProperties(patchValue as Jso, result, skipSymbols)
 
+  visited.set(patchValue, result)
   Object.keys(patchValue as Jso).forEach(key => {
-    mergePatchWithOrigins(patchValue as Jso, result, key, originsFlag, skipSymbols, false)
+    mergePatchWithOrigins(patchValue as Jso, result, key, originsFlag, skipSymbols, visited, false)
   })
 
   setJsoProperty(target, propertyKey, result)

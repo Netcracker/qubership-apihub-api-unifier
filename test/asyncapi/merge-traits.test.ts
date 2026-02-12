@@ -303,6 +303,132 @@ describe('AsyncAPI: merge traits', () => {
 
       expect(unifierResult.components.messages.someMessage1.headers).toBe(unifierResult.components.schemas.MessageHeadersSchema)
     })
+
+    it('should handle cyclic references in messages during merge traits', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        components: {
+          schemas: {
+            CycledSchema: {
+              type: 'object',
+              properties: {
+                messageHeaderProperty: {
+                  type: 'string',
+                },
+                cycle: {
+                  $ref: '#/components/schemas/CycledSchema',
+                },
+              },
+            }
+          }
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                headers: {
+                  $ref: '#/components/schemas/CycledSchema',
+                },
+                traits: [
+                  {
+                    headers: {
+                      type: 'object',
+                      properties: {
+                        messageTraitHeaderProperty: {
+                          type: 'string'
+                        }
+                      },
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+      }
+
+      const parserResult = await parseAsyncApiAndAssertValid(spec)
+
+      const unifierResult: any = normalize(spec)
+
+      for (const result of [unifierResult, parserResult]) {
+        // Verify that the headers schema was merged into the message
+        const messageHeaders = result.channels.channel1.messages.msg1.headers
+        expect(messageHeaders.properties.messageHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.cycle).toBeDefined()
+        expect(messageHeaders.properties.messageTraitHeaderProperty).toBeDefined()
+        // second level of cycle should be merged
+        expect(messageHeaders.properties.cycle.properties.messageHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.cycle.properties.cycle).toBeDefined()
+      }
+    })
+
+    it('should handle cyclic references in message traits during merge traits', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        components: {
+          schemas: {
+            CycledSchema: {
+              type: 'object',
+              properties: {
+                messageTraitHeaderProperty: {
+                  type: 'string',
+                },
+                cycle: {
+                  $ref: '#/components/schemas/CycledSchema',
+                },
+              },
+            }
+          }
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                headers: {
+                  type: 'object',
+                  properties: {
+                    messageHeaderProperty: {
+                      type: 'string'
+                    }
+                  },
+                },
+                traits: [
+                  {
+                    headers: {
+                      $ref: '#/components/schemas/CycledSchema',
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+      }
+
+      const parserResult = await parseAsyncApiAndAssertValid(spec)
+
+      const unifierResult: any = normalize(spec)
+
+      for (const result of [unifierResult]) { // parser does not resolve $ref in this case for some reason
+        // Verify that the headers schema was merged into the message
+        const messageHeaders = result.channels.channel1.messages.msg1.headers
+        expect(messageHeaders.properties.messageHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.messageTraitHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.cycle).toBeDefined()
+        // second level of cycle should be merged
+        expect(messageHeaders.properties.cycle.properties.messageTraitHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.cycle.properties.cycle).toBeDefined()
+      }
+    })
   })
 
   describe('origins tracking', () => {

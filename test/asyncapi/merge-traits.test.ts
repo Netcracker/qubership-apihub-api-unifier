@@ -263,6 +263,46 @@ describe('AsyncAPI: merge traits', () => {
         expect(result.components.messages.someMessage2.description).toBe('root description')
       }
     })
+
+    it('should keep reference equality for objects defined via ref if they are not patched during traits merge', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        components: {
+          schemas: {
+            MessageHeadersSchema: {
+              type: 'object',
+              properties: {
+                messageHeaderProperty: {
+                  type: 'string'
+                }
+              }
+            }
+          },
+          messages: {
+            someMessage1: {
+              headers: {
+                $ref: '#/components/schemas/MessageHeadersSchema'
+              },
+              traits: [
+                {
+                  summary: 'trait summary',
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      const parserResult = await parseAsyncApiAndAssertValid(spec)
+
+      const unifierResult: any = normalize(spec)
+
+      expect(unifierResult.components.messages.someMessage1.headers).toBe(unifierResult.components.schemas.MessageHeadersSchema)
+    })
   })
 
   describe('origins tracking', () => {

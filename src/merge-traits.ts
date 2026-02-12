@@ -98,19 +98,40 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
       return { value }
     }
 
-    // Apply traits merging - exact logic from applyTraitsToObjectV3 in parser-js
-    // Step 1: Create shallow copy of the object
-    const copy = { ...value }
-
-    // Step 2: Reset the object but preserve the reference
-    for (const k in value) {
-      delete value[k]
+    // Apply traits merging - optimized to only process properties that appear in traits
+    // Merge traits disrupts reference equality on the objects, so some properties of the original object
+    // are not in traits- we want them intact
+    // Step 1: Collect all top-level properties from all trait objects
+    const traitProperties = new Set<string>()
+    for (const trait of traits) {
+      if (isObject(trait) && !isArray(trait)) {
+        for (const k in trait) {
+          traitProperties.add(k)
+        }
+      }
     }
 
-    // Step 3: Merge traits THEN root object (this ensures root properties override trait properties)
+    // Step 2: Create shallow copy (including symbols) and delete properties that are not in traits
+    // since they are kept on original object and need not to be processed by merge patch
+    const copy = { ...value }
+    for (const k in value) {
+      if (!traitProperties.has(k)) {
+        delete copy[k]
+      }
+    }
+
+    // Step 3: Delete ONLY properties that exist in traits from the original object
+    // Properties not in any trait stay intact on the base object
+    for (const k of traitProperties) {
+      if (k in value) {
+        delete value[k]
+      }
+    }
+
+    // Step 4: Merge traits THEN root object (this ensures root properties override trait properties)
     // This is the key part that ensures AsyncAPI spec compliance:
     // "A property on a trait MUST NOT override the same property on the target object"
-    const itemsToMerge = [...copy[ASYNCAPI_PROPERTY_TRAITS] as any[], copy]
+    const itemsToMerge = [...traits, copy]
 
     // Create a set of symbols to skip when copying symbol properties
     // originsFlag is managed by separate origins clone hooks and should not be copied here

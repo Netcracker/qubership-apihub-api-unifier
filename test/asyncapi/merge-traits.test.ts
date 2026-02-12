@@ -1,6 +1,6 @@
 
 import { normalize, convertOriginToHumanReadable } from '../../src'
-import { checkOriginsAreTheSame, commonOriginsCheck, setValueAtPath, TEST_ORIGINS_FLAG } from '../helpers'
+import { checkOriginsAreTheSame, commonOriginsCheck, setValueAtPath, TEST_ORIGINS_FLAG, TEST_INLINE_REFS_FLAG, TEST_REFERENCE_NAME_PROPERTY, TEST_SYNTHETIC_TITLE_FLAG } from '../helpers'
 import { parseAsyncApiAndAssertValid } from '../helpers/asyncapi'
 import type { Input } from '@asyncapi/parser/esm/types'
 import 'jest-extended'
@@ -708,6 +708,562 @@ describe('AsyncAPI: merge traits', () => {
         expect(result.operations.op1.description).toBe('trait description')
         expect(result.operations.op1.traits).toBeArray()
       }
+    })
+  })
+
+  describe('symbol properties handling', () => {
+    it('should preserve referenceNameProperty on operation when merging traits from component refs', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {}
+        },
+        operations: {
+          testOp: {
+            $ref: '#/components/operations/TestOperation'
+          }
+        },
+        components: {
+          operations: {
+            TestOperation: {
+              action: 'send',
+              channel: {
+                $ref: '#/channels/channel1'
+              },
+              traits: [
+                {
+                  $ref: '#/components/operationTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          operationTraits: {
+            CommonTrait: {
+              description: 'common trait description',
+              summary: 'common trait summary'
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+      })
+
+      // Operation should have referenceNameProperty preserved after trait merge
+      expect(result.operations.testOp[TEST_REFERENCE_NAME_PROPERTY]).toBe('TestOperation')
+
+      // Trait in the traits array should have referenceNameProperty preserved
+      expect(result.operations.testOp.traits).toBeArray()
+      expect(result.operations.testOp.traits).toHaveLength(1)
+      expect(result.operations.testOp.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('CommonTrait')
+
+      // Properties from trait should be merged to operation
+      expect(result.operations.testOp.description).toBe('common trait description')
+      expect(result.operations.testOp.summary).toBe('common trait summary')
+    })
+
+    it('should preserve referenceNameProperty on operation with multiple trait refs', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {}
+        },
+        operations: {
+          testOp: {
+            action: 'send',
+            channel: {
+              $ref: '#/channels/channel1'
+            },
+            traits: [
+              {
+                $ref: '#/components/operationTraits/Trait1'
+              },
+              {
+                $ref: '#/components/operationTraits/Trait2'
+              }
+            ]
+          }
+        },
+        components: {
+          operationTraits: {
+            Trait1: {
+              description: 'trait1 description'
+            },
+            Trait2: {
+              summary: 'trait2 summary'
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+      })
+
+      // Both traits should preserve their referenceNameProperty
+      expect(result.operations.testOp.traits).toHaveLength(2)
+      expect(result.operations.testOp.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('Trait1')
+      expect(result.operations.testOp.traits[1][TEST_REFERENCE_NAME_PROPERTY]).toBe('Trait2')
+
+      // Properties should be merged
+      expect(result.operations.testOp.description).toBe('trait1 description')
+      expect(result.operations.testOp.summary).toBe('trait2 summary')
+    })
+
+    it('should preserve inlineRefsFlag on operation when merging traits', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {}
+        },
+        operations: {
+          testOp: {
+            $ref: '#/components/operations/TestOperation'
+          }
+        },
+        components: {
+          operations: {
+            TestOperation: {
+              action: 'send',
+              channel: {
+                $ref: '#/channels/channel1'
+              },
+              traits: [
+                {
+                  $ref: '#/components/operationTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          operationTraits: {
+            CommonTrait: {
+              description: 'common trait description'
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        inlineRefsFlag: TEST_INLINE_REFS_FLAG,
+      })
+
+      // Operation should have inlineRefsFlag preserved after trait merge
+      expect(result.operations.testOp[TEST_INLINE_REFS_FLAG]).toBeArray()
+      expect(result.operations.testOp[TEST_INLINE_REFS_FLAG]).toContain('#/components/operations/TestOperation')
+
+      // Trait should have inlineRefsFlag preserved
+      expect(result.operations.testOp.traits[0][TEST_INLINE_REFS_FLAG]).toBeArray()
+      expect(result.operations.testOp.traits[0][TEST_INLINE_REFS_FLAG]).toContain('#/components/operationTraits/CommonTrait')
+    })
+
+    it('should preserve both referenceNameProperty and inlineRefsFlag on operation', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {}
+        },
+        operations: {
+          testOp: {
+            $ref: '#/components/operations/TestOperation'
+          }
+        },
+        components: {
+          operations: {
+            TestOperation: {
+              action: 'send',
+              channel: {
+                $ref: '#/channels/channel1'
+              },
+              traits: [
+                {
+                  $ref: '#/components/operationTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          operationTraits: {
+            CommonTrait: {
+              description: 'common trait description'
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+        inlineRefsFlag: TEST_INLINE_REFS_FLAG,
+      })
+
+      // Both symbol properties should be preserved on operation
+      expect(result.operations.testOp[TEST_REFERENCE_NAME_PROPERTY]).toBe('TestOperation')
+      expect(result.operations.testOp[TEST_INLINE_REFS_FLAG]).toBeArray()
+      expect(result.operations.testOp[TEST_INLINE_REFS_FLAG]).toContain('#/components/operations/TestOperation')
+
+      // Both symbol properties should be preserved on trait
+      expect(result.operations.testOp.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('CommonTrait')
+      expect(result.operations.testOp.traits[0][TEST_INLINE_REFS_FLAG]).toBeArray()
+      expect(result.operations.testOp.traits[0][TEST_INLINE_REFS_FLAG]).toContain('#/components/operationTraits/CommonTrait')
+    })
+
+    it('should preserve referenceNameProperty on message when merging traits from component refs', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                $ref: '#/components/messages/TestMessage'
+              }
+            }
+          }
+        },
+        components: {
+          messages: {
+            TestMessage: {
+              traits: [
+                {
+                  $ref: '#/components/messageTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          messageTraits: {
+            CommonTrait: {
+              contentType: 'application/json',
+              description: 'common message trait'
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+      })
+
+      // Message should have referenceNameProperty preserved after trait merge
+      expect(result.channels.channel1.messages.msg1[TEST_REFERENCE_NAME_PROPERTY]).toBe('TestMessage')
+
+      // Trait should have referenceNameProperty preserved
+      expect(result.channels.channel1.messages.msg1.traits).toBeArray()
+      expect(result.channels.channel1.messages.msg1.traits).toHaveLength(1)
+      expect(result.channels.channel1.messages.msg1.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('CommonTrait')
+
+      // Properties from trait should be merged to message
+      expect(result.channels.channel1.messages.msg1.contentType).toBe('application/json')
+      expect(result.channels.channel1.messages.msg1.description).toBe('common message trait')
+    })
+
+    it('should preserve symbol properties with inline traits (not refs)', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {}
+        },
+        operations: {
+          testOp: {
+            $ref: '#/components/operations/TestOperation'
+          }
+        },
+        components: {
+          operations: {
+            TestOperation: {
+              action: 'send',
+              channel: {
+                $ref: '#/channels/channel1'
+              },
+              traits: [
+                {
+                  description: 'inline trait description'
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+        inlineRefsFlag: TEST_INLINE_REFS_FLAG,
+      })
+
+      // Operation should have symbol properties preserved even with inline traits
+      expect(result.operations.testOp[TEST_REFERENCE_NAME_PROPERTY]).toBe('TestOperation')
+      expect(result.operations.testOp[TEST_INLINE_REFS_FLAG]).toBeArray()
+
+      // Inline trait should not have referenceNameProperty (it's not from a ref)
+      expect(result.operations.testOp.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBeUndefined()
+
+      // Properties should be merged
+      expect(result.operations.testOp.description).toBe('inline trait description')
+    })
+
+    it('should preserve symbol properties when operation has both traits and root properties', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {}
+        },
+        operations: {
+          testOp: {
+            $ref: '#/components/operations/TestOperation'
+          }
+        },
+        components: {
+          operations: {
+            TestOperation: {
+              action: 'send',
+              channel: {
+                $ref: '#/channels/channel1'
+              },
+              description: 'root description',
+              traits: [
+                {
+                  $ref: '#/components/operationTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          operationTraits: {
+            CommonTrait: {
+              description: 'trait description',
+              summary: 'trait summary'
+            }
+          }
+        }
+      }
+
+      await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+      })
+
+      // Operation should preserve referenceNameProperty
+      expect(result.operations.testOp[TEST_REFERENCE_NAME_PROPERTY]).toBe('TestOperation')
+
+      // Trait should preserve referenceNameProperty
+      expect(result.operations.testOp.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('CommonTrait')
+
+      // Root description should win over trait description
+      expect(result.operations.testOp.description).toBe('root description')
+      expect(result.operations.testOp.summary).toBe('trait summary')
+    })
+
+    it('should preserve deep symbol properties on nested objects (schema in message headers)', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                $ref: '#/components/messages/TestMessage'
+              }
+            }
+          }
+        },
+        components: {
+          messages: {
+            TestMessage: {
+              traits: [
+                {
+                  $ref: '#/components/messageTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          messageTraits: {
+            CommonTrait: {
+              headers: {
+                $ref: '#/components/schemas/TestSchema'
+              }
+            }
+          },
+          schemas: {
+            TestSchema: {
+              type: 'object',
+              properties: {
+                'my-app-header': {
+                  type: 'integer'
+                },
+                'internal-id': {
+                  $ref: '#/components/schemas/InternalSchema'
+                }
+              }
+            },
+            InternalSchema: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string'
+                }
+              }
+            }
+          }
+        },
+        operations: {
+          testOp: {
+            action: 'send',
+            channel: {
+              $ref: '#/channels/channel1'
+            },
+          }
+        }
+      }
+
+      const parsedSpec = await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
+      })
+
+      // Verify that the headers schema was merged into the message
+      const messageHeaders = result.channels.channel1.messages.msg1.headers
+      expect(messageHeaders.title).toBe('TestSchema')
+      expect(messageHeaders[TEST_SYNTHETIC_TITLE_FLAG]).toBe(true)
+
+      // Verify that the internal id schema was merged into the message
+      expect(messageHeaders.properties['internal-id'].title).toBe('InternalSchema')
+      expect(messageHeaders.properties['internal-id'][TEST_SYNTHETIC_TITLE_FLAG]).toBe(true)
+
+      // Verify that the headers schema in message trait has synthetic title flag preserved
+      const messageTraitHeaders = result.channels.channel1.messages.msg1.traits[0].headers
+      expect(messageTraitHeaders.title).toBe('TestSchema')
+      expect(messageTraitHeaders[TEST_SYNTHETIC_TITLE_FLAG]).toBe(true)
+
+      // Verify that the internal id schema in message trait has synthetic title flag preserved
+      expect(messageTraitHeaders.properties['internal-id'].title).toBe('InternalSchema')
+      expect(messageTraitHeaders.properties['internal-id'][TEST_SYNTHETIC_TITLE_FLAG]).toBe(true)
+    })
+
+    it('symbol properties on message object headers should be preserved after trait merge', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                $ref: '#/components/messages/TestMessage'
+              }
+            }
+          }
+        },
+        components: {
+          messages: {
+            TestMessage: {
+              headers: {
+                $ref: '#/components/schemas/MessageHeadersSchema'
+              },
+              traits: [
+                {
+                  $ref: '#/components/messageTraits/CommonTrait'
+                }
+              ]
+            }
+          },
+          messageTraits: {
+            CommonTrait: {
+              headers: {
+                $ref: '#/components/schemas/MessageTraitHeaderSchema'
+              }
+            }
+          },
+          schemas: {
+            MessageHeadersSchema: {
+              type: 'object',
+              properties: {
+                messageHeaderProperty: {
+                  type: 'integer'
+                },
+              }
+            },
+            MessageTraitHeaderSchema: {
+              type: 'object',
+              properties: {
+                messageTraitHeaderProperty: {
+                  type: 'string'
+                }
+              }
+            }
+          }
+        },
+        operations: {
+          testOp: {
+            action: 'send',
+            channel: {
+              $ref: '#/channels/channel1'
+            },
+          }
+        }
+      }
+
+      const parsedSpec = await parseAsyncApiAndAssertValid(spec)
+
+      const result: any = normalize(spec, {
+        syntheticTitleFlag: TEST_SYNTHETIC_TITLE_FLAG,
+      })
+
+      // Verify that the headers schema was merged into the message
+      const messageHeaders = result.channels.channel1.messages.msg1.headers
+
+      expect(messageHeaders.properties.messageHeaderProperty).toBeDefined()
+      expect(messageHeaders.properties.messageTraitHeaderProperty).toBeDefined()  // TODO missing due to allOf being and array which is just copied by patch merge
+
+      expect(messageHeaders.title).toBe('MessageHeadersSchema')
+      expect(messageHeaders[TEST_SYNTHETIC_TITLE_FLAG]).toBe(true)
+
+      // Verify that the headers schema in message trait has synthetic title flag preserved
+      const messageTraitHeaders = result.channels.channel1.messages.msg1.traits[0].headers
+      expect(messageTraitHeaders.title).toBe('MessageTraitHeaderSchema')
+      expect(messageTraitHeaders[TEST_SYNTHETIC_TITLE_FLAG]).toBe(true)
     })
   })
 

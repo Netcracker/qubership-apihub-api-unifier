@@ -24,8 +24,13 @@ export const normalize = (value: unknown, options: NormalizeOptions = {}) => {
   if (optionsWithDefaults.validate) { preValidate(spec, options) }
   if (optionsWithDefaults.resolveRef || (!optionsWithDefaults.originsAlreadyDefined && optionsWithDefaults.originsFlag)) {spec = defineOriginsAndResolveRef(spec, optionsWithDefaults)}
   if (optionsWithDefaults.validate) { spec = validate(spec, optionsWithDefaults) }
-  if (optionsWithDefaults.mergeTraits) { spec = mergeTraits(spec, optionsWithDefaults) }
   if (optionsWithDefaults.mergeAllOf) { spec = merge(spec, optionsWithDefaults) }
+
+  // we should really merge traits before mergeAllOf, since mergeAllOf changes structure
+  // of the specification and could disrupt desired result of traits merging
+  // but in order to do it, we should first get rid of the synthetic allOfs (synthetic titles, description overrides, etc.)
+  // for now mergeAllOf at least allows to get rid of synthetic titles allOf before traits merge
+  if (optionsWithDefaults.mergeTraits) { spec = mergeTraits(spec, optionsWithDefaults) }
   if (optionsWithDefaults.unify) { spec = unify(spec, optionsWithDefaults) }
   if (optionsWithDefaults.mergeAllOf && !optionsWithDefaults.unify && !optionsWithDefaults.allowNotValidSyntheticChanges) { spec = cleanUpSynthetic(spec, optionsWithDefaults) }
   if (optionsWithDefaults.removeOasExtensions) { spec = removeOasExtensions(spec, optionsWithDefaults) }

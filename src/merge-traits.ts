@@ -1,4 +1,4 @@
-import { isObject, JSON_ROOT_KEY, syncClone } from '@netcracker/qubership-apihub-json-crawl'
+import { isArray, isObject, JSON_ROOT_KEY, syncClone } from '@netcracker/qubership-apihub-json-crawl'
 
 import {
   DEFAULT_OPTION_MERGE_TRAITS,
@@ -11,7 +11,7 @@ import {
   NormalizationRules,
   ResolveOptions,
 } from './types'
-import { mergePatchWithOrigins } from './utils'
+import { mergePatchWithOrigins, copySymbolProperties } from './utils'
 import { resolveSpec, SPEC_TYPE_ASYNCAPI_3 } from './spec-type'
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { RULES } from './rules'
@@ -83,7 +83,7 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
     }
 
     // Skip if not object or array
-    if (!isObject(value) || Array.isArray(value)) {
+    if (!isObject(value) || isArray(value)) {
       return { value }
     }
 
@@ -94,7 +94,7 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
 
     // Check if the object has a traits array property
     const traits = value[ASYNCAPI_PROPERTY_TRAITS]
-    if (!Array.isArray(traits)) {
+    if (!isArray(traits)) {
       return { value }
     }
 
@@ -112,12 +112,26 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
     // "A property on a trait MUST NOT override the same property on the target object"
     const itemsToMerge = [...copy[ASYNCAPI_PROPERTY_TRAITS] as any[], copy]
 
-    // Merge values
+    // Create a set of symbols to skip when copying symbol properties
+    // originsFlag is managed by separate origins clone hooks and should not be copied here
+    const skipSymbols = new Set<symbol>()
+    if (options.originsFlag) {
+      skipSymbols.add(options.originsFlag)
+    }
+
+    // Merge values from traits and root object to the target
     itemsToMerge.forEach((item) => {
-      for (const k in item) { //TODO: handle symbol properties here and in mergePatchWithOrigins
-        mergePatchWithOrigins(item, value, String(k), options.originsFlag)
+      // First, copy symbol properties from the item to value (before merging regular properties)
+      // This ensures symbols at the root level of each trait/object are preserved
+      copySymbolProperties(item, value, skipSymbols)
+
+      // Then merge regular properties recursively
+      // The copySymbolProperties inside mergePatchWithOrigins will handle symbols at deeper levels
+      for (const k in item) {
+        mergePatchWithOrigins(item, value, String(k), options.originsFlag, skipSymbols)
       }
     })
+
     return { value }
   }
 

@@ -711,6 +711,141 @@ describe('AsyncAPI: merge traits', () => {
     })
   })
 
+  describe('arrays handling', () => {
+    it('arrays are copied without merging (required array)', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                headers: {
+                  type: 'object',
+                  properties: {
+                    messageHeaderProperty: {
+                      type: 'integer'
+                    },
+                  },
+                  required: ['messageHeaderProperty']
+                },
+                traits: [
+                  {
+                    headers: {
+                      type: 'object',
+                      properties: {
+                        messageTraitHeaderProperty: {
+                          type: 'string'
+                        }
+                      },
+                      required: ['messageTraitHeaderProperty']
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+      }
+
+      const parserResult = await parseAsyncApiAndAssertValid(spec)
+
+      const unifierResult: any = normalize(spec)
+
+      for (const result of [unifierResult, parserResult]) {
+
+        // Verify that the headers schema was merged into the message
+        const messageHeaders = result.channels.channel1.messages.msg1.headers
+        expect(messageHeaders.properties.messageHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.messageTraitHeaderProperty).toBeDefined()
+
+        // arrays are copied without merging according to merge patch spec
+        expect(result.channels.channel1.messages.msg1.headers.required).toEqual(['messageHeaderProperty'])
+      }
+    })
+
+    // need to have mergeTraits before mergeAllOf in normalize
+    // but to do it we need to first stop using synthetic allOfs
+    it.skip('arrays are copied without merging (allOf array)', async () => {
+      const spec = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test',
+          version: '1.0',
+        },
+        channels: {
+          channel1: {
+            messages: {
+              msg1: {
+                headers: {
+                  allOf: [
+                    {
+                      type: 'object',
+                      properties: {
+                        messageHeaderProperty1: {
+                          type: 'integer'
+                        },
+                      }
+                    },
+                    {
+                      type: 'object',
+                      properties: {
+                        messageHeaderProperty2: {
+                          type: 'string'
+                        }
+                      }
+                    }
+                  ]
+                },
+                traits: [
+                  {
+                    headers: {
+                      allOf: [
+                        {
+                          type: 'object',
+                          properties: {
+                            messageTraitHeaderProperty1: {
+                              type: 'integer'
+                            },
+                          }
+                        },
+                        {
+                          type: 'object',
+                          properties: {
+                            messageTraitHeaderProperty2: {
+                              type: 'string'
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+      }
+
+      const parserResult = await parseAsyncApiAndAssertValid(spec)
+
+      const unifierResult: any = normalize(spec)
+
+      for (const result of [unifierResult, parserResult]) {
+
+        // Verify that the headers schema was merged into the message
+        const messageHeaders = result.channels.channel1.messages.msg1.headers
+        expect(messageHeaders.properties.messageHeaderProperty1).toBeDefined()
+        expect(messageHeaders.properties.messageHeaderProperty2).toBeDefined()
+        expect(messageHeaders.properties.messageTraitHeaderProperty1).toBeUndefined() //not so in api-unifier
+        expect(messageHeaders.properties.messageTraitHeaderProperty2).toBeUndefined() //not so in api-unifier
+      }
+    })
+  })
+
   describe('symbol properties handling', () => {
     it('should preserve referenceNameProperty on operation when merging traits from component refs', async () => {
       const spec = {

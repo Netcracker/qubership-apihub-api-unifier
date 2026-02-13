@@ -260,7 +260,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           }
 
           const processReferenceWithChildren = (resolvedRefWithSibling: ResolvedRefWithSiblings) => {
-            const { refValue, origin, childrenOrigins } = resolvedRefWithSibling as ResolvedRefWithChildrenOrigins
+            const { refValue, origin, childrenOrigins, lastReferenceName } = resolvedRefWithSibling as ResolvedRefWithChildrenOrigins
             return {
               value: refValue,
               state: {
@@ -278,6 +278,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               exitHook: () => {
                 const node = state.node[safeKey]
                 options.inlineRefsFlag && isObject(node) && addRefInlineHistory(node, options.inlineRefsFlag, reference)
+                options.referenceNameProperty && isObject(node) && addReferenceNameProperty(node, options.referenceNameProperty, lastReferenceName)
                 if (options.originsFlag && isObject(node) && origin) {
                   state.originCollector[safeKey] = [originForObj]
                   const lazyOrigins = state.lazySourceOriginCollector.get(refValue) ?? {} //need proof for this rows
@@ -427,6 +428,16 @@ const addRefInlineHistory: (jso: Record<PropertyKey, unknown>, inlineRefsFlag: s
   }
   const normalized = reference.normalized
   if (!history.includes(normalized)) { history.push(normalized) }
+}
+
+function addReferenceNameProperty(
+  target: Record<PropertyKey, unknown>,
+  referenceNameProperty: symbol,
+  lastReferenceName: string | undefined,
+): void {
+  if (lastReferenceName !== undefined) {
+    target[referenceNameProperty] = lastReferenceName
+  }
 }
 
 const resolveRefNode = (

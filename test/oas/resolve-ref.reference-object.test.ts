@@ -796,6 +796,13 @@ describe('OAS Reference Object', () => {
                 },
               },
             },
+            post: {
+              responses: {
+                '200': {
+                  $ref: '#/components/responses/SuccessResponse',
+                },
+              },
+            },
           },
         },
         components: {
@@ -817,7 +824,7 @@ describe('OAS Reference Object', () => {
       expect(result.paths['/test'].get.responses['200']).not.toBe(result.components.responses.SuccessResponse)
       // But both should have the reference name property
       expect(result.paths['/test'].get.responses['200'][TEST_REFERENCE_NAME_PROPERTY]).toBe('SuccessResponse')
-      expect(result.components.responses.SuccessResponse[TEST_REFERENCE_NAME_PROPERTY]).toBe('SuccessResponse')
+      expect(result.paths['/test'].post.responses['200'][TEST_REFERENCE_NAME_PROPERTY]).toBe('SuccessResponse')
       // Override field should be present
       expect(result.paths['/test'].get.responses['200'].description).toBe('Custom description override')
       // Content should be shared from the base

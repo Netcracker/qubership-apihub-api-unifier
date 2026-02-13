@@ -87,15 +87,6 @@ export function notAllowedReferenceHandler({
   return { done: true }
 }
 
-function setReferenceNamePropertyIfConfigured(
-  target: Record<PropertyKey, unknown>,
-  referenceNameProperty: symbol | undefined,
-  lastReferenceName: string | undefined,
-) {
-  if (referenceNameProperty && lastReferenceName !== undefined) {
-    target[referenceNameProperty] = lastReferenceName
-  }
-}
 
 export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverrideField[]): ReferenceHandler {
   return ({ resolveDefaultReference }): ReferenceHandlerResponse => {
@@ -112,12 +103,9 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
 
       originsFlag && getOrReuseOrigin(referenceValue, originForObj, state.originCache)
 
-      // Add reference name property if configured
-      setReferenceNamePropertyIfConfigured(referenceValue, referenceNameProperty, lastReferenceName)
-
       const childrenOrigins: OriginsMetaRecord = {}
       if (!overrides?.length || !isObject(sibling) || Reflect.ownKeys(sibling).length === 0) {
-        return { refValue: referenceValue, origin, childrenOrigins }
+        return { refValue: referenceValue, origin, childrenOrigins, lastReferenceName }
       }
 
       const referenceValueWithSibling = { ...referenceValue }
@@ -130,10 +118,8 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
           }]
         }
       })
-      // Add reference name property to the copy with overrides as well
-      setReferenceNamePropertyIfConfigured(referenceValueWithSibling, referenceNameProperty, lastReferenceName)
       originsFlag && getOrReuseOrigin(sibling, originForObj, state.originCache)
-      return { refValue: referenceValueWithSibling, origin, childrenOrigins }
+      return { refValue: referenceValueWithSibling, origin, childrenOrigins, lastReferenceName }
     }
     return resolveDefaultReference(overrideFieldsWithSiblings)
   }

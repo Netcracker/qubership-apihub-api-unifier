@@ -275,5 +275,45 @@ describe('AsyncAPI Reference Object Resolver', () => {
       // Both should point to the same object
       expect(result.operations.testOperation.traits[0]).toBe(result.components.operationTraits.CommonTrait)
     })
+
+    it('should capture reference name for operation with channel ref and channel message ref in messages array', async () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        operations: {
+          'send-operation': {
+            action: 'send',
+            channel: {
+              $ref: '#/channels/test-channel',
+            },
+            messages: [
+              { $ref: '#/channels/test-channel/messages/MessageID' },
+            ],
+          },
+        },
+        channels: {
+          'test-channel': {
+            messages: {
+              MessageID: {
+              },
+            },
+          },
+        },
+      }
+
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+
+      // Channel reference name
+      expect(result.operations['send-operation'].channel[TEST_REFERENCE_NAME_PROPERTY]).toBe('test-channel')
+      expect(result.operations['send-operation'].channel).toBe(result.channels['test-channel'])
+      // Message reference in operation messages array (channel message by ID)
+      expect(result.operations['send-operation'].messages[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('MessageID')
+      expect(result.operations['send-operation'].messages[0]).toBe(result.channels['test-channel'].messages.MessageID)
+    })
   })
 })

@@ -212,7 +212,7 @@ export const TEST_ORIGINS_FLAG = Symbol('test-origin')
 export const TEST_ORIGINS_FOR_DEFAULTS: OriginLeafs = [{ parent: undefined, value: 'test-origins-defaults' }]
 export const TEST_DEFAULTS_FLAG = Symbol('test-defaults')
 export const TEST_HASH_FLAG = Symbol('test-hash')
-export const TEST_REFERENCE_NAME_PROPERTY = Symbol('test-reference-name')
+export const TEST_LAST_REFERENCE_KEY_PROPERTY = Symbol('test-reference-name')
 
 export const isSymbol = (value: unknown): value is symbol => {
   return typeof value === 'symbol'

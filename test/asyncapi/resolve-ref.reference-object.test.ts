@@ -1,9 +1,9 @@
 import { normalize } from '../../src/normalize'
-import { TEST_REFERENCE_NAME_PROPERTY } from '../helpers'
+import { TEST_LAST_REFERENCE_KEY_PROPERTY } from '../helpers'
 import { parseAsyncApiAndAssertValid } from '../helpers/asyncapi'
 
 const NORMALIZATION_OPTIONS = {
-  referenceNameProperty: TEST_REFERENCE_NAME_PROPERTY,
+  lastReferenceKeyProperty: TEST_LAST_REFERENCE_KEY_PROPERTY,
 }
 
 describe('AsyncAPI Reference Object Resolver', () => {
@@ -39,7 +39,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
-      expect(result.operations.testOperation.channel[TEST_REFERENCE_NAME_PROPERTY]).toBe('UserChannel')
+      expect(result.operations.testOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('UserChannel')
     })
 
     it('should capture last reference name in a reference chain', async () => {
@@ -77,8 +77,8 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
       // All references should have the last reference name from the chain
-      expect(result.operations.testOperation.channel[TEST_REFERENCE_NAME_PROPERTY]).toBe('FinalChannel')
-      expect(result.channels.IntermediateChannel[TEST_REFERENCE_NAME_PROPERTY]).toBe('FinalChannel')
+      expect(result.operations.testOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalChannel')
+      expect(result.channels.IntermediateChannel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalChannel')
       // All should point to the same final object
       expect(result.operations.testOperation.channel).toBe(result.channels.FinalChannel)
       expect(result.channels.IntermediateChannel).toBe(result.channels.FinalChannel)
@@ -120,8 +120,8 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
       // All references should have the same reference name
-      expect(result.operations.sendOperation.channel[TEST_REFERENCE_NAME_PROPERTY]).toBe('SharedChannel')
-      expect(result.operations.receiveOperation.channel[TEST_REFERENCE_NAME_PROPERTY]).toBe('SharedChannel')
+      expect(result.operations.sendOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('SharedChannel')
+      expect(result.operations.receiveOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('SharedChannel')
       // All should point to the same object
       expect(result.operations.sendOperation.channel).toBe(result.channels.SharedChannel)
       expect(result.operations.receiveOperation.channel).toBe(result.channels.SharedChannel)
@@ -159,8 +159,8 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source) as any
 
       // Should not have reference name property
-      expect(result.operations.testOperation.channel[TEST_REFERENCE_NAME_PROPERTY]).toBeUndefined()
-      expect(result.channels.UserChannel[TEST_REFERENCE_NAME_PROPERTY]).toBeUndefined()
+      expect(result.operations.testOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBeUndefined()
+      expect(result.channels.UserChannel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBeUndefined()
     })
 
     it('should capture reference name for message references', async () => {
@@ -199,7 +199,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
       // Check that reference name is captured for message
-      expect(result.channels.userChannel.messages.userCreatedMsg[TEST_REFERENCE_NAME_PROPERTY]).toBe('UserCreatedMessage')
+      expect(result.channels.userChannel.messages.userCreatedMsg[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('UserCreatedMessage')
       // Both should point to the same object
       expect(result.channels.userChannel.messages.userCreatedMsg).toBe(result.components.messages.UserCreatedMessage)
     })
@@ -232,7 +232,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
       // Check that reference name is captured for server
-      expect(result.channels.userChannel.servers[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('ProductionServer')
+      expect(result.channels.userChannel.servers[0][TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('ProductionServer')
       // Both should point to the same object
       expect(result.channels.userChannel.servers[0]).toBe(result.servers.ProductionServer)
     })
@@ -271,7 +271,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
       // Check that reference name is captured for operation trait
-      expect(result.operations.testOperation.traits[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('CommonTrait')
+      expect(result.operations.testOperation.traits[0][TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('CommonTrait')
       // Both should point to the same object
       expect(result.operations.testOperation.traits[0]).toBe(result.components.operationTraits.CommonTrait)
     })
@@ -309,10 +309,10 @@ describe('AsyncAPI Reference Object Resolver', () => {
       const result = normalize(source, NORMALIZATION_OPTIONS) as any
 
       // Channel reference name
-      expect(result.operations['send-operation'].channel[TEST_REFERENCE_NAME_PROPERTY]).toBe('test-channel')
+      expect(result.operations['send-operation'].channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('test-channel')
       expect(result.operations['send-operation'].channel).toBe(result.channels['test-channel'])
       // Message reference in operation messages array (channel message by ID)
-      expect(result.operations['send-operation'].messages[0][TEST_REFERENCE_NAME_PROPERTY]).toBe('MessageID')
+      expect(result.operations['send-operation'].messages[0][TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('MessageID')
       expect(result.operations['send-operation'].messages[0]).toBe(result.channels['test-channel'].messages.MessageID)
     })
   })

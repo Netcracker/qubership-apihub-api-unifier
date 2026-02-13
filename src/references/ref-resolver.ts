@@ -99,7 +99,7 @@ export function referenceObjectResolver(overrides?: ReferenceObjectResolverOverr
     }: ResolvedReferenceContext): ResolvedRefWithSiblings => {
       const { refValue, origin, lastReferenceName } = resolvedRef
       const referenceValue = refValue as Record<PropertyKey, unknown>
-      const { originsFlag, referenceNameProperty } = options
+      const { originsFlag, lastReferenceKeyProperty } = options
 
       originsFlag && getOrReuseOrigin(referenceValue, originForObj, state.originCache)
 
@@ -153,12 +153,12 @@ export function jsonSchemaReferenceResolver({ richRefAllowed }: JsonSchemaRefere
       let titleIndex = -1
       let refIndex = 0
       let siblingIndex = -1
-      if (options.syntheticTitleFlag && rules?.resolvedReferenceNamePropertyKey) {
+      if (options.syntheticTitleFlag && rules?.resolvedlastReferenceKeyPropertyKey) {
         let syntheticTitle = syntheticTitleCache?.get(reference.normalized)
         if (syntheticTitle === undefined) {
-          syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedReferenceNamePropertyKey)
+          syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedlastReferenceKeyPropertyKey)
           syntheticTitleCache.set(reference.normalized, syntheticTitle)
-          state.lazySourceOriginCollector.set(syntheticTitle, { [rules.resolvedReferenceNamePropertyKey]: origin ? [origin] : [] })
+          state.lazySourceOriginCollector.set(syntheticTitle, { [rules.resolvedlastReferenceKeyPropertyKey]: origin ? [origin] : [] })
         }
         wrap.allOf.push(syntheticTitle)
         titleIndex = 0

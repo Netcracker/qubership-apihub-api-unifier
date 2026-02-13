@@ -73,7 +73,7 @@ export const defineOriginsAndResolveRef = (value: unknown, options?: ResolveOpti
       ...(options?.inlineRefsFlag ? [options.inlineRefsFlag] : []),
       ...(options?.syntheticTitleFlag ? [options.syntheticTitleFlag] : []),
       ...(options?.syntheticAllOfFlag ? [options.syntheticAllOfFlag] : []),
-      ...(options?.referenceNameProperty ? [options.referenceNameProperty] : []),
+      ...(options?.lastReferenceKeyProperty ? [options.lastReferenceKeyProperty] : []),
       ...(options?.ignoreSymbols ? options.ignoreSymbols : []),
     ]),
   } satisfies InternalResolveOptions
@@ -278,7 +278,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
               exitHook: () => {
                 const node = state.node[safeKey]
                 options.inlineRefsFlag && isObject(node) && addRefInlineHistory(node, options.inlineRefsFlag, reference)
-                options.referenceNameProperty && isObject(node) && addReferenceNameProperty(node, options.referenceNameProperty, lastReferenceName)
+                options.lastReferenceKeyProperty && isObject(node) && addlastReferenceKeyProperty(node, options.lastReferenceKeyProperty, lastReferenceName)
                 if (options.originsFlag && isObject(node) && origin) {
                   state.originCollector[safeKey] = [originForObj]
                   const lazyOrigins = state.lazySourceOriginCollector.get(refValue) ?? {} //need proof for this rows
@@ -321,7 +321,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
                 ? (value, parentChain, parentValue, propertyKey) =>
                   getOrSimpleCreateOrigin(value, parentChain, propertyKey, state.originCache/*, item => updateLazyParentChainItem(item, parentValue, propertyKey) proof by test*/)
                 : undefined,
-              options.referenceNameProperty,
+              options.lastReferenceKeyProperty,
             )
             if (refInResultedJso?.refValue !== undefined && refInResultedJso?.refValue !== null) {
               const resolvedRefWithRules = referenceHandler({
@@ -360,7 +360,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
                     },
                     state.originCache)
                 : undefined,
-              options.referenceNameProperty,
+              options.lastReferenceKeyProperty,
             )
             if (refInSourceJso?.refValue !== undefined && refInSourceJso?.refValue !== null) {
               const resolvedRefWithRules = referenceHandler({
@@ -430,13 +430,13 @@ const addRefInlineHistory: (jso: Record<PropertyKey, unknown>, inlineRefsFlag: s
   if (!history.includes(normalized)) { history.push(normalized) }
 }
 
-function addReferenceNameProperty(
+function addlastReferenceKeyProperty(
   target: Record<PropertyKey, unknown>,
-  referenceNameProperty: symbol,
+  lastReferenceKeyProperty: symbol,
   lastReferenceName: string | undefined,
 ): void {
   if (lastReferenceName !== undefined) {
-    target[referenceNameProperty] = lastReferenceName
+    target[lastReferenceKeyProperty] = lastReferenceName
   }
 }
 
@@ -448,7 +448,7 @@ const resolveRefNode = (
   state: CloneState<DefineOriginsAndResolveRefState>,
   rules: CrawlRules<NormalizationRule> | undefined,
   originResolver?: (value: unknown, parentChain: ChainItem | undefined, parentValue: unknown | undefined, propertyKey: PropertyKey) => ChainItem,
-  referenceNameProperty?: symbol,
+  lastReferenceKeyProperty?: symbol,
 ): ResolvedRef | undefined => {
   if (!isObject(source)) {
     return undefined
@@ -490,8 +490,8 @@ const resolveRefNode = (
         return undefined
       }
       // If the resolved object has a reference name property set by nested resolution, use it
-      if (referenceNameProperty && isObject(value) && referenceNameProperty in value) {
-        lastReferenceName = value[referenceNameProperty]
+      if (lastReferenceKeyProperty && isObject(value) && lastReferenceKeyProperty in value) {
+        lastReferenceName = value[lastReferenceKeyProperty]
       }
       pathChain = originResolver?.(value, pathChain, parentValue, key)
       continue

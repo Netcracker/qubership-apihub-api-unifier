@@ -1,14 +1,22 @@
 import { normalize } from '../../src/normalize'
-import { TEST_LAST_REFERENCE_KEY_PROPERTY } from '../helpers'
+import { TEST_FIRST_REFERENCE_KEY_PROPERTY, TEST_LAST_REFERENCE_KEY_PROPERTY } from '../helpers'
 import { parseAsyncApiAndAssertValid } from '../helpers/asyncapi'
 
-const NORMALIZATION_OPTIONS = {
+const NORMALIZATION_OPTIONS_FIRST_REFERENCE_KEY = {
+  firstReferenceKeyProperty: TEST_FIRST_REFERENCE_KEY_PROPERTY,
+}
+
+const NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY = {
   lastReferenceKeyProperty: TEST_LAST_REFERENCE_KEY_PROPERTY,
 }
 
+const NORMALIZATION_OPTIONS_BOTH_REFERENCE_KEYS = {
+  firstReferenceKeyProperty: TEST_FIRST_REFERENCE_KEY_PROPERTY,
+  lastReferenceKeyProperty: TEST_LAST_REFERENCE_KEY_PROPERTY,
+}
 describe('AsyncAPI Reference Object Resolver', () => {
-  describe('Reference Name Property', () => {
-    it('should capture reference name for simple channel reference', async () => {
+  describe('Last Reference Key Property', () => {
+    it('should capture last reference key for simple channel reference', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -37,12 +45,12 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       expect(result.operations.testOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('UserChannel')
     })
 
-    it('should capture last reference name in a reference chain', async () => {
+    it('should capture last reference key in a reference chain', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -74,7 +82,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       // All references should have the last reference name from the chain
       expect(result.operations.testOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalChannel')
@@ -84,7 +92,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(result.channels.IntermediateChannel).toBe(result.channels.FinalChannel)
     })
 
-    it('should capture reference name for multiple references to same target', async () => {
+    it('should capture last reference key for multiple references to same target', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -117,7 +125,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       // All references should have the same reference name
       expect(result.operations.sendOperation.channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('SharedChannel')
@@ -127,7 +135,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(result.operations.receiveOperation.channel).toBe(result.channels.SharedChannel)
     })
 
-    it('should not add reference name property when option is not provided', async () => {
+    it('should not add last reference key property when option is not provided', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -163,7 +171,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(result.channels.UserChannel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBeUndefined()
     })
 
-    it('should capture reference name for message references', async () => {
+    it('should capture last reference key for message references', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -196,7 +204,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       // Check that reference name is captured for message
       expect(result.channels.userChannel.messages.userCreatedMsg[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('UserCreatedMessage')
@@ -204,7 +212,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(result.channels.userChannel.messages.userCreatedMsg).toBe(result.components.messages.UserCreatedMessage)
     })
 
-    it('should capture reference name for server references', async () => {
+    it('should capture last reference key for server references', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -229,7 +237,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       // Check that reference name is captured for server
       expect(result.channels.userChannel.servers[0][TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('ProductionServer')
@@ -237,7 +245,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(result.channels.userChannel.servers[0]).toBe(result.servers.ProductionServer)
     })
 
-    it('should capture reference name for operation trait references', async () => {
+    it('should capture last reference key for operation trait references', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -268,7 +276,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       // Check that reference name is captured for operation trait
       expect(result.operations.testOperation.traits[0][TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('CommonTrait')
@@ -276,7 +284,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(result.operations.testOperation.traits[0]).toBe(result.components.operationTraits.CommonTrait)
     })
 
-    it('should capture reference name for operation with channel ref and channel message ref in messages array', async () => {
+    it('should capture last reference key for operation with channel ref and channel message ref in messages array', async () => {
       const source = {
         asyncapi: '3.0.0',
         info: {
@@ -306,7 +314,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
 
       await parseAsyncApiAndAssertValid(source)
 
-      const result = normalize(source, NORMALIZATION_OPTIONS) as any
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
 
       // Channel reference name
       expect(result.operations['send-operation'].channel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('test-channel')
@@ -314,6 +322,322 @@ describe('AsyncAPI Reference Object Resolver', () => {
       // Message reference in operation messages array (channel message by ID)
       expect(result.operations['send-operation'].messages[0][TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('MessageID')
       expect(result.operations['send-operation'].messages[0]).toBe(result.channels['test-channel'].messages.MessageID)
+    })
+  })
+
+  describe('First Reference Key Property', () => {
+    function createSpecTwoOperationsSameFinalChannel() {
+      return {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        operations: {
+          sendFromDirectChannel: {
+            action: 'send',
+            channel: { $ref: '#/channels/DirectChannel' },
+          },
+          sendFromAliasChannel: {
+            action: 'send',
+            channel: { $ref: '#/channels/AliasChannel' },
+          },
+        },
+        channels: {
+          DirectChannel: {
+            $ref: '#/channels/FinalChannel',
+          },
+          AliasChannel: {
+            $ref: '#/channels/DirectChannel',
+          },
+          FinalChannel: {
+            address: 'final/address',
+            messages: {
+              finalMessage: {
+                payload: {
+                  type: 'object',
+                },
+              },
+            },
+          },
+        },
+      }
+    }
+
+    function createSpecTwoMessagesSameFinalMessage() {
+      return {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        channels: {
+          myChannel: {
+            messages: {
+              DirectMessage: {
+                $ref: '#/components/messages/FinalMessage',
+              },
+              AliasMessage: {
+                $ref: '#/channels/myChannel/messages/DirectMessage',
+              },
+            },
+          },
+        },
+        components: {
+          messages: {
+            FinalMessage: {
+              payload: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        operations: {
+          testOperation: {
+            action: 'send',
+            channel: { $ref: '#/channels/myChannel' },
+            messages: [
+              { $ref: '#/channels/myChannel/messages/DirectMessage' },
+              { $ref: '#/channels/myChannel/messages/AliasMessage' },
+            ],
+          },
+        },
+      }
+    }
+
+    it('should capture different first reference keys for root channel reached via different paths', async () => {
+      const source = createSpecTwoOperationsSameFinalChannel()
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_BOTH_REFERENCE_KEYS) as any
+
+      const sendFromDirectChannel = result.operations.sendFromDirectChannel.channel
+      const sendFromAliasChannel = result.operations.sendFromAliasChannel.channel
+
+      // First reference key should reflect the first key in the resolution chain
+      expect(sendFromDirectChannel[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('DirectChannel')
+      expect(sendFromAliasChannel[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('AliasChannel')
+
+      // Last reference key should be the same because both resolve to the same final channel
+      expect(sendFromDirectChannel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalChannel')
+      expect(sendFromAliasChannel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalChannel')
+
+      // Different first keys for the same final target should result in different instances
+      expect(sendFromDirectChannel).not.toBe(sendFromAliasChannel)
+    })
+
+    it('should resolve to same channel instance when firstReferenceKeyProperty is not provided', async () => {
+      const source = createSpecTwoOperationsSameFinalChannel()
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
+
+      const sendFromDirectChannel = result.operations.sendFromDirectChannel.channel
+      const sendFromAliasChannel = result.operations.sendFromAliasChannel.channel
+
+      // Without firstReferenceKeyProperty there is no need to copy; same final target => same instance
+      expect(sendFromDirectChannel).toBe(sendFromAliasChannel)
+      expect(sendFromDirectChannel[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalChannel')
+    })
+
+    it('should capture different first reference keys for messages in root operation messages array', async () => {
+      const source = createSpecTwoMessagesSameFinalMessage()
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_BOTH_REFERENCE_KEYS) as any
+
+      const [directMessage, aliasMessage] = result.operations.testOperation.messages
+
+      // First reference key should correspond to the first key in the ref-chain from the operation
+      expect(directMessage[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('DirectMessage')
+      expect(aliasMessage[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('AliasMessage')
+
+      // Last reference key should be the same for both, since both resolve to FinalMessage
+      expect(directMessage[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalMessage')
+      expect(aliasMessage[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalMessage')
+
+      // Different first keys for the same final target should produce different instances
+      expect(directMessage).not.toBe(aliasMessage)
+    })
+
+    it('should capture different first reference keys for messages in root operation messages array when only first reference key is captured', async () => {
+      const source = createSpecTwoMessagesSameFinalMessage()
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_FIRST_REFERENCE_KEY) as any
+
+      const [directMessage, aliasMessage] = result.operations.testOperation.messages
+
+      // First reference key should correspond to the first key in the ref-chain from the operation
+      expect(directMessage[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('DirectMessage')
+      expect(aliasMessage[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('AliasMessage')
+
+      // Different first keys for the same final target should produce different instances
+      expect(directMessage).not.toBe(aliasMessage)
+    })
+
+    it('should resolve to same message instance when firstReferenceKeyProperty is not provided', async () => {
+      const source = createSpecTwoMessagesSameFinalMessage()
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
+
+      const [directMessage, aliasMessage] = result.operations.testOperation.messages
+
+      // Without firstReferenceKeyProperty there is no need to copy; same final target => same instance
+      expect(directMessage).toBe(aliasMessage)
+      expect(directMessage[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('FinalMessage')
+    })
+
+    it('should reuse the same object when same first key is used in different operations', async () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        operations: {
+          sendFromDirectChannel: {
+            action: 'send',
+            channel: { $ref: '#/channels/DirectChannel' },
+          },
+          sendFromAliasChannel1: {
+            action: 'send',
+            channel: { $ref: '#/channels/AliasChannel' },
+          },
+          sendFromAliasChannel2: {
+            action: 'send',
+            channel: { $ref: '#/channels/AliasChannel' },
+          },
+        },
+        channels: {
+          DirectChannel: {
+            $ref: '#/channels/FinalChannel',
+          },
+          AliasChannel: {
+            $ref: '#/channels/DirectChannel',
+          },
+          FinalChannel: {
+            address: 'final/address',
+            messages: {
+              finalMessage: {
+                payload: {
+                  type: 'object',
+                },
+              },
+            },
+          },
+        },
+      }
+
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_BOTH_REFERENCE_KEYS) as any
+
+      const fromDirect = result.operations.sendFromDirectChannel.channel
+      const fromAlias1 = result.operations.sendFromAliasChannel1.channel
+      const fromAlias2 = result.operations.sendFromAliasChannel2.channel
+
+      expect(fromDirect[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('DirectChannel')
+      expect(fromAlias1[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('AliasChannel')
+      expect(fromAlias2[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('AliasChannel')
+      // Both AliasChannel refs must resolve to the same copy (cache hit in getOrCreateCopyForFirstKey)
+      expect(fromAlias1).toBe(fromAlias2)
+      expect(fromDirect).not.toBe(fromAlias1)
+    })
+
+    it('should reuse the same instance when resolving the same target through the same first reference key', async () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        channels: {
+          sharedChannel: {
+            messages: {
+              SharedMessage: {
+                $ref: '#/components/messages/FinalMessage',
+              },
+            },
+          },
+        },
+        components: {
+          messages: {
+            FinalMessage: {
+              payload: {
+                type: 'object',
+              },
+            },
+          },
+        },
+        operations: {
+          sendOperation: {
+            action: 'send',
+            channel: { $ref: '#/channels/sharedChannel' },
+            messages: [
+              { $ref: '#/channels/sharedChannel/messages/SharedMessage' },
+            ],
+          },
+          receiveOperation: {
+            action: 'receive',
+            channel: { $ref: '#/channels/sharedChannel' },
+            messages: [
+              { $ref: '#/channels/sharedChannel/messages/SharedMessage' },
+            ],
+          },
+        },
+      }
+
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_BOTH_REFERENCE_KEYS) as any
+
+      const sendMessage = result.operations.sendOperation.messages[0]
+      const receiveMessage = result.operations.receiveOperation.messages[0]
+
+      // Both paths start with the same first reference key, so they should share the same instance
+      expect(sendMessage[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('SharedMessage')
+      expect(receiveMessage[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBe('SharedMessage')
+      expect(sendMessage).toBe(receiveMessage)
+    })
+
+    it('should not capture first reference key where captureFirstReferenceKey rule is not specified', async () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        channels: {
+          mainChannel: {},
+        },
+        operations: {
+          myOp: {
+            $ref: '#/components/operations/SharedOperation',
+          },
+        },
+        components: {
+          operations: {
+            SharedOperation: {
+              action: 'send',
+              channel: { $ref: '#/channels/mainChannel' },
+              summary: 'Shared operation',
+            },
+          },
+        },
+      }
+
+      const parserResult = await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_BOTH_REFERENCE_KEYS) as any
+
+      const resolvedOperation = result.operations.myOp
+
+      // Last reference key is always captured when option is provided
+      expect(resolvedOperation[TEST_LAST_REFERENCE_KEY_PROPERTY]).toBe('SharedOperation')
+      // First reference key is only captured where captureFirstReferenceKey rule is set (e.g. root channel, root message); operation ref has no such rule
+      expect(resolvedOperation[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBeUndefined()
     })
   })
 })

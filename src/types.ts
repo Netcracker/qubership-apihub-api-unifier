@@ -27,6 +27,7 @@ export interface ResolveOptions {
   originsFlag?: symbol            // used in JSO as anchor to chained declaration path (contains link to parent in declarationPath)
   originsAlreadyDefined?: boolean // are there already origins in the spec
   lastReferenceKeyProperty?: symbol  // capture last reference name in chain for reference object resolver
+  firstReferenceKeyProperty?: symbol // capture first reference key in chain when rule has captureFirstReferenceKey
   ignoreSymbols?: symbol[],       // symbols to ignore scan
   onRefResolveError?: (message: string, path: JsonPath, ref: string, errorType: RefErrorType) => void
 }
@@ -221,6 +222,8 @@ export interface DefineOriginsAndResolveRefState extends HasIgnoreTreeUnderSymbo
   lazySourceOriginCollector: Map<unknown, OriginsMetaRecord>
   originCache: OriginCache
   syntheticsJumps: Map<unknown, () => unknown>
+  /** When set, nested ref resolution reuses this as first reference key (for captureFirstReferenceKey). */
+  firstReferenceKeyForCapture?: string
 }
 
 export interface ValidateState extends HasIgnoreTreeUnderSymbols {
@@ -251,6 +254,7 @@ export interface NormalizationRule {
   readonly deprecation?: DeprecationPolicy
   readonly isExtension?: boolean
   readonly referenceHandler?: ReferenceHandler
+  readonly captureFirstReferenceKey?: boolean
 }
 
 export type MergeAndLiftCombinersSyncCloneHook = SyncCloneHook<MergeAndLiftCombinersState, NormalizationRule>

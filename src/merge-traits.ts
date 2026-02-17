@@ -28,7 +28,7 @@ import { ASYNCAPI_PROPERTY_TRAITS } from './rules/asyncapi.const'
  https://github.com/asyncapi/spec/issues/1178
 
 2. JSON Merge Patch replaces array values, which could be not what you expect
- e.g. for required or allOf properties in JSON schemas (see 'arrays handling' test cases)
+ e.g. for 'required' or 'allOf' properties in JSON schemas (see 'arrays handling' test cases)
 
 3. Traits merge implementation in reference @asyncapi/parser implementation
  basically follows proposal from https://github.com/asyncapi/spec/issues/505

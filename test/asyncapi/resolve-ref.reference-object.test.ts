@@ -640,4 +640,98 @@ describe('AsyncAPI Reference Object Resolver', () => {
       expect(resolvedOperation[TEST_FIRST_REFERENCE_KEY_PROPERTY]).toBeUndefined()
     })
   })
+
+  describe('Broken Reference Handling', () => {
+    it('should keep unresolved server reference on channel when target server does not exist', () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        operations: {
+          'send-operation': {
+            action: 'send',
+            channel: {
+              $ref: '#/channels/ChannelID',
+            },
+            messages: [
+              { $ref: '#/channels/ChannelID/messages/MessageID' },
+            ],
+          },
+        },
+        channels: {
+          ChannelID: {
+            servers: [
+              {
+                // Broken reference: target server does not exist in components.servers
+                $ref: '#/components/servers/not-existing-server',
+              },
+            ],
+            messages: {
+              MessageID: {
+                name: 'Message Name',
+              },
+            },
+          },
+        },
+        // No components.servers defined on purpose to keep the reference broken
+      }
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
+
+      // Channel reference from operation should still resolve correctly
+      expect(result.operations['send-operation'].channel).toBe(result.channels.ChannelID)
+      // Message reference from operation messages array should still resolve correctly
+      expect(result.operations['send-operation'].messages[0]).toBe(result.channels.ChannelID.messages.MessageID)
+      // Broken server reference should remain unresolved (kept as $ref) in the final spec
+      expect(result.channels.ChannelID.servers[0].$ref).toBe('#/components/servers/not-existing-server')
+    })
+
+    it('should keep unresolved parameter reference on channel when target parameter does not exist', () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        operations: {
+          'send-operation': {
+            action: 'send',
+            channel: {
+              $ref: '#/channels/ChannelID',
+            },
+            messages: [
+              { $ref: '#/channels/ChannelID/messages/MessageID' },
+            ],
+          },
+        },
+        channels: {
+          ChannelID: {
+            parameters: {
+              notExistingParameter: {
+                // Broken reference: target parameter does not exist in components.parameters
+                $ref: '#/components/parameters/not-existing-parameter',
+              },
+            },
+            messages: {
+              MessageID: {
+                name: 'Message Name',
+              },
+            },
+          },
+        },
+        // No components.parameters defined on purpose to keep the reference broken
+      }
+
+      const result = normalize(source, NORMALIZATION_OPTIONS_LAST_REFERENCE_KEY) as any
+
+      // Channel reference from operation should still resolve correctly
+      expect(result.operations['send-operation'].channel).toBe(result.channels.ChannelID)
+      // Message reference from operation messages array should still resolve correctly
+      expect(result.operations['send-operation'].messages[0]).toBe(result.channels.ChannelID.messages.MessageID)
+      // Broken parameter reference should remain unresolved (kept as $ref) in the final spec
+      expect(result.channels.ChannelID.parameters.notExistingParameter.$ref).toBe('#/components/parameters/not-existing-parameter')
+    })
+  })
 })

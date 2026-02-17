@@ -149,9 +149,10 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
 
     // Step 3: Delete ONLY properties that exist in traits from the original object
     // Properties not in any trait stay intact on the base object
+    const targetValue = { ...value }
     for (const k of traitProperties) {
-      if (k in value) {
-        delete value[k]
+      if (k in targetValue) {
+        delete targetValue[k]
       }
     }
 
@@ -171,16 +172,16 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
     itemsToMerge.forEach((item) => {
       // First, copy symbol properties from the item to value (before merging regular properties)
       // This ensures symbols at the root level of each trait/object are preserved
-      copySymbolProperties(item, value, skipSymbols)
+      copySymbolProperties(item, targetValue, skipSymbols)
 
       // Then merge regular properties recursively
       // The copySymbolProperties inside mergePatchWithOrigins will handle symbols at deeper levels
       for (const k in item) {
-        mergePatchWithOrigins(item, value, String(k), options.originsFlag, skipSymbols)
+        mergePatchWithOrigins(item, targetValue, String(k), options.originsFlag, skipSymbols)
       }
     })
 
-    return { value }
+    return { value: targetValue }
   }
 
   return traitsResolver

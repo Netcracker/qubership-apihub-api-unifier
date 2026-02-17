@@ -518,10 +518,6 @@ const resolveRefNode = (
       if (isRefNode(value)) { //it possible only for broken refs
         return undefined
       }
-      // If the resolved object has a reference name property set by nested resolution, use it
-      if (lastReferenceKeyProperty && isObject(value) && lastReferenceKeyProperty in value) {
-        lastReferenceKey = value[lastReferenceKeyProperty]
-      }
       pathChain = originResolver?.(value, pathChain, parentValue, key)
       continue
     }

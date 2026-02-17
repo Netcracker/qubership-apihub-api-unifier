@@ -418,7 +418,7 @@ export function copySymbolProperties(source: Jso, target: Jso, skipSymbols: Set<
 * @param propertyKey - The property key to merge
 * @param originsFlag - The origins flag to use
 * @param skipSymbols - Set of symbols to skip when copying symbol properties
-* @param visited - Map of visited objects to avoid cyclic references
+* @param visited - Set of visited objects to avoid cyclic references
 * @param rootLevel - Whether the merge is at the root level
  * @returns The merged result
  */
@@ -428,7 +428,7 @@ export function mergePatchWithOrigins(
   propertyKey: PropertyKey,
   originsFlag: symbol | undefined,
   skipSymbols: Set<symbol> = new Set(),
-  visited: Map<Jso, Jso> = new Map(),
+  visited: Set<Jso> = new Set(),
   rootLevel: boolean = true
 ) {
   // If the propertyKey value is null in patch, delete property from target
@@ -450,8 +450,8 @@ export function mergePatchWithOrigins(
   // Patch property is object
 
   if (visited.has(patchValue)) {
-    // cyclic reference found, use the value from the visited map
-    setJsoProperty(target, propertyKey, visited.get(patchValue))
+    // cyclic reference found, set the patch value to keep reference identity
+    setJsoProperty(target, propertyKey, patchValue)
     copyOrigins(patch, target, propertyKey, propertyKey, originsFlag)
     return
   }
@@ -465,7 +465,7 @@ export function mergePatchWithOrigins(
   // Symbols are just copied, without applying merge patch logic
   copySymbolProperties(patchValue as Jso, result, skipSymbols)
 
-  visited.set(patchValue, result)
+  visited.add(patchValue)
   Object.keys(patchValue as Jso).forEach(key => {
     mergePatchWithOrigins(patchValue as Jso, result, key, originsFlag, skipSymbols, visited, false)
   })

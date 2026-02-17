@@ -297,11 +297,12 @@ describe('AsyncAPI: merge traits', () => {
         }
       }
 
-      const parserResult = await parseAsyncApiAndAssertValid(spec)
+      await parseAsyncApiAndAssertValid(spec)
 
       const unifierResult: any = normalize(spec)
 
       expect(unifierResult.components.messages.someMessage1.headers).toBe(unifierResult.components.schemas.MessageHeadersSchema)
+      // for parser result it is not so
     })
 
     it('should handle cyclic references in messages during merge traits', async () => {

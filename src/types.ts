@@ -247,7 +247,7 @@ export interface NormalizationRule {
   readonly canLiftCombiners?: boolean //rename to transform?
   readonly unify?: UnifyFunction[] | UnifyFunction
   readonly mandatoryUnify?: UnifyFunction[] | UnifyFunction
-  readonly resolvedlastReferenceKeyPropertyKey?: PropertyKey
+  readonly resolvedLastReferenceKeyPropertyKey?: PropertyKey
   readonly hashStrategy?: InclusionStrategy
   readonly hashOwner?: boolean
   readonly newDataLayer?: boolean

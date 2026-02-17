@@ -153,12 +153,12 @@ export function jsonSchemaReferenceResolver({ richRefAllowed }: JsonSchemaRefere
       let titleIndex = -1
       let refIndex = 0
       let siblingIndex = -1
-      if (options.syntheticTitleFlag && rules?.resolvedlastReferenceKeyPropertyKey) {
+      if (options.syntheticTitleFlag && rules?.resolvedLastReferenceKeyPropertyKey) {
         let syntheticTitle = syntheticTitleCache?.get(reference.normalized)
         if (syntheticTitle === undefined) {
-          syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedlastReferenceKeyPropertyKey)
+          syntheticTitle = evaluateSyntheticTitle(reference.jsonPath, options.syntheticTitleFlag, rules.resolvedLastReferenceKeyPropertyKey)
           syntheticTitleCache.set(reference.normalized, syntheticTitle)
-          state.lazySourceOriginCollector.set(syntheticTitle, { [rules.resolvedlastReferenceKeyPropertyKey]: origin ? [origin] : [] })
+          state.lazySourceOriginCollector.set(syntheticTitle, { [rules.resolvedLastReferenceKeyPropertyKey]: origin ? [origin] : [] })
         }
         wrap.allOf.push(syntheticTitle)
         titleIndex = 0

@@ -310,7 +310,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
           } else {
             cyclingGuard.add(reference.normalized)
           }
-          const previousfirstReferenceKeyForCapture = state.firstReferenceKeyForCapture
+          const previousFirstReferenceKeyForCapture = state.firstReferenceKeyForCapture
           try {
             if (rules?.captureFirstReferenceKey && options.firstReferenceKeyProperty) {
               state.firstReferenceKeyForCapture = state.firstReferenceKeyForCapture ?? reference.jsonPath.at(-1)?.toString()
@@ -396,7 +396,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
             return { done: true }
           } finally {
             cyclingGuard.delete(reference.normalized)
-            state.firstReferenceKeyForCapture = previousfirstReferenceKeyForCapture
+            state.firstReferenceKeyForCapture = previousFirstReferenceKeyForCapture
           }
         }
         return referenceHandler({ path, ref: $ref, safeKey, options, state, value, resolveDefaultReference })

@@ -176,8 +176,8 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
 
       // Then merge regular properties recursively
       // The copySymbolProperties inside mergePatchWithOrigins will handle symbols at deeper levels
-      for (const k in item) {
-        mergePatchWithOrigins(item, targetValue, String(k), options.originsFlag, skipSymbols)
+      for (const key in item) {
+        mergePatchWithOrigins(item, targetValue, key, options.originsFlag, skipSymbols)
       }
     })
 

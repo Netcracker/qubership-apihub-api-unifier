@@ -28,7 +28,7 @@ import { ASYNCAPI_PROPERTY_TRAITS } from './rules/asyncapi.const'
  https://github.com/asyncapi/spec/issues/1178
 
 2. JSON Merge Patch replaces array values, which could be not what you expect
- e.g. for required or allOf properties in JSON schemas (see 'arrays handling' test cases)
+ e.g. for 'required' or 'allOf' properties in JSON schemas (see 'arrays handling' test cases)
 
 3. Traits merge implementation in reference @asyncapi/parser implementation
  basically follows proposal from https://github.com/asyncapi/spec/issues/505
@@ -150,9 +150,10 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
 
     // Step 3: Delete ONLY properties that exist in traits from the original object
     // Properties not in any trait stay intact on the base object
-    for (const k of traitProperties) {
-      if (k in value) {
-        delete value[k]
+    const targetValue = { ...value }
+    for (const key of traitProperties) {
+      if (key in targetValue) {
+        delete targetValue[key]
       }
     }
 
@@ -172,16 +173,16 @@ const createMergeTraitsHook = (options: InternalMergeTraitsOptions): MergeTraits
     itemsToMerge.forEach((item) => {
       // First, copy symbol properties from the item to value (before merging regular properties)
       // This ensures symbols at the root level of each trait/object are preserved
-      copySymbolProperties(item, value, skipSymbols)
+      copySymbolProperties(item, targetValue, skipSymbols)
 
       // Then merge regular properties recursively
       // The copySymbolProperties inside mergePatchWithOrigins will handle symbols at deeper levels
-      for (const k in item) {
-        mergePatchWithOrigins(item, value, String(k), options.originsFlag, skipSymbols)
+      for (const key in item) {
+        mergePatchWithOrigins(item, targetValue, key, options.originsFlag, skipSymbols)
       }
     })
 
-    return { value }
+    return { value: targetValue }
   }
 
   return traitsResolver

@@ -1,11 +1,19 @@
-import { isArray, isObject, JSON_ROOT_KEY, SyncCloneHook, SyncCrawlHook, type JsonPath } from '@netcracker/qubership-apihub-json-crawl'
+import {
+  isArray,
+  isObject,
+  JSON_ROOT_KEY,
+  type JsonPath,
+  SyncCloneHook,
+  SyncCrawlHook,
+} from '@netcracker/qubership-apihub-json-crawl'
 
 import {
   ChainItem,
   DEFAULT_TYPE_FLAG_PURE,
   DEFAULT_TYPE_FLAG_SYNTHETIC,
   DefaultMetaRecord,
-  Jso, OriginLeafs,
+  Jso,
+  OriginLeafs,
   PureRefNode,
   type RawJsonSchema,
   RefNode,
@@ -13,7 +21,18 @@ import {
 } from './types'
 import { JSON_SCHEMA_PROPERTY_REF } from './rules/jsonschema.const'
 import { copyOrigins, copyProperty, resolveOrigins, setOriginsForArray } from './origins'
-import { load, JSON_SCHEMA } from 'js-yaml'
+import { JSON_SCHEMA, load } from 'js-yaml'
+import {
+  JSON_SCHEMA_SPEC_TYPES,
+  OPEN_API_SPEC_TYPES,
+  SPEC_TYPE_ASYNCAPI_3,
+  SPEC_TYPE_ASYNCAPI_TYPE_FAMILY,
+  SPEC_TYPE_GRAPH_API_TYPE_FAMILY,
+  SPEC_TYPE_JSON_SCHEMA_TYPE_FAMILY,
+  SPEC_TYPE_OPEN_API_TYPE_FAMILY,
+  SpecType,
+  SpecTypeFamily,
+} from './spec-type'
 
 export class MapArray<K, V> extends Map<K, Array<V>> {
   public add(key: K, value: V): this {
@@ -418,7 +437,7 @@ export function copySymbolProperties(source: Jso, target: Jso, skipSymbols: Set<
 * @param propertyKey - The property key to merge
 * @param originsFlag - The origins flag to use
 * @param skipSymbols - Set of symbols to skip when copying symbol properties
-* @param visited - Map of visited objects to avoid cyclic references
+* @param visited - Set of visited objects to avoid cyclic references
 * @param rootLevel - Whether the merge is at the root level
  * @returns The merged result
  */
@@ -428,7 +447,7 @@ export function mergePatchWithOrigins(
   propertyKey: PropertyKey,
   originsFlag: symbol | undefined,
   skipSymbols: Set<symbol> = new Set(),
-  visited: Map<Jso, Jso> = new Map(),
+  visited: Set<Jso> = new Set(),
   rootLevel: boolean = true
 ) {
   // If the propertyKey value is null in patch, delete property from target
@@ -450,8 +469,8 @@ export function mergePatchWithOrigins(
   // Patch property is object
 
   if (visited.has(patchValue)) {
-    // cyclic reference found, use the value from the visited map
-    setJsoProperty(target, propertyKey, visited.get(patchValue))
+    // cyclic reference found, set the patch value to keep reference identity
+    setJsoProperty(target, propertyKey, patchValue)
     copyOrigins(patch, target, propertyKey, propertyKey, originsFlag)
     return
   }
@@ -465,7 +484,7 @@ export function mergePatchWithOrigins(
   // Symbols are just copied, without applying merge patch logic
   copySymbolProperties(patchValue as Jso, result, skipSymbols)
 
-  visited.set(patchValue, result)
+  visited.add(patchValue)
   Object.keys(patchValue as Jso).forEach(key => {
     mergePatchWithOrigins(patchValue as Jso, result, key, originsFlag, skipSymbols, visited, false)
   })
@@ -476,4 +495,17 @@ export function mergePatchWithOrigins(
 
 export function loadYaml(file: string) {
   return load(file, { schema: JSON_SCHEMA })
+}
+
+export function determineSpecTypeFamily(specType: SpecType): SpecTypeFamily {
+  if (OPEN_API_SPEC_TYPES.has(specType)) {
+    return SPEC_TYPE_OPEN_API_TYPE_FAMILY
+  }
+  if (JSON_SCHEMA_SPEC_TYPES.has(specType)) {
+    return SPEC_TYPE_JSON_SCHEMA_TYPE_FAMILY
+  }
+  if (specType === SPEC_TYPE_ASYNCAPI_3) {
+    return SPEC_TYPE_ASYNCAPI_TYPE_FAMILY
+  }
+  return SPEC_TYPE_GRAPH_API_TYPE_FAMILY
 }

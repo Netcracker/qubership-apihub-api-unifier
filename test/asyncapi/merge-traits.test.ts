@@ -1046,11 +1046,14 @@ describe('AsyncAPI: merge traits', () => {
                     headers: {
                       type: 'object',
                       properties: {
-                        messageTraitHeaderProperty: {
+                        messageTraitHeaderProperty1: {
+                          type: 'string'
+                        },
+                        messageTraitHeaderProperty2: {
                           type: 'string'
                         }
                       },
-                      required: ['messageTraitHeaderProperty']
+                      required: ['messageTraitHeaderProperty1', 'messageTraitHeaderProperty2']
                     }
                   }
                 ]
@@ -1069,7 +1072,8 @@ describe('AsyncAPI: merge traits', () => {
         // Verify that the headers schema was merged into the message
         const messageHeaders = result.channels.channel1.messages.msg1.headers
         expect(messageHeaders.properties.messageHeaderProperty).toBeDefined()
-        expect(messageHeaders.properties.messageTraitHeaderProperty).toBeDefined()
+        expect(messageHeaders.properties.messageTraitHeaderProperty1).toBeDefined()
+        expect(messageHeaders.properties.messageTraitHeaderProperty2).toBeDefined()
 
         // arrays are copied without merging according to merge patch spec
         expect(result.channels.channel1.messages.msg1.headers.required).toEqual(['messageHeaderProperty'])

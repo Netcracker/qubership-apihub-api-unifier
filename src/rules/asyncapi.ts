@@ -25,6 +25,12 @@ import {
   specificationExtensionsRules,
 } from './asyncapi.jsonschema.common'
 import {
+  serverBindingsRules,
+  channelBindingsRules,
+  operationBindingsRules,
+  messageBindingsRules,
+} from './asyncapi.bindings'
+import {
   ASYNCAPI_TAG_DEFAULTS,
   ASYNCAPI_TAG_REPLACES,
   ASYNCAPI_SECURITY_SCHEME_DEFAULTS,
@@ -157,14 +163,6 @@ const serverVariableRules: NormalizationRules = {
   ],
 }
 
-const serverBindingsRules: NormalizationRules = {
-  ...specificationExtensionsRules,
-  '/*': { validate: checkType(...TYPE_JSON_ANY) },
-  '/**': { validate: checkType(...TYPE_JSON_ANY) },
-  referenceHandler: referenceObjectResolver(),
-  validate: checkType(TYPE_OBJECT),
-}
-
 const serverRules: NormalizationRules = {
   '/host': { validate: checkType(TYPE_STRING) },
   '/protocol': { validate: checkType(TYPE_STRING) },
@@ -196,14 +194,6 @@ const correlationIdRules: NormalizationRules = {
   '/description': { validate: checkType(TYPE_STRING) },
   '/location': { validate: checkType(TYPE_STRING) },
   ...specificationExtensionsRules,
-  referenceHandler: referenceObjectResolver(),
-  validate: checkType(TYPE_OBJECT),
-}
-
-const messageBindingsRules: NormalizationRules = {
-  ...specificationExtensionsRules,
-  '/*': { validate: checkType(...TYPE_JSON_ANY) },
-  '/**': { validate: checkType(...TYPE_JSON_ANY) },
   referenceHandler: referenceObjectResolver(),
   validate: checkType(TYPE_OBJECT),
 }
@@ -299,14 +289,6 @@ const parameterRules: NormalizationRules = {
   ],
 }
 
-const channelBindingsRules: NormalizationRules = {
-  ...specificationExtensionsRules,
-  '/*': { validate: checkType(...TYPE_JSON_ANY) },
-  '/**': { validate: checkType(...TYPE_JSON_ANY) },
-  referenceHandler: referenceObjectResolver(),
-  validate: checkType(TYPE_OBJECT),
-}
-
 const channelRules: NormalizationRules = {
   '/address': {
     validate: checkType(TYPE_STRING, TYPE_NULL),
@@ -366,14 +348,6 @@ const operationReplyRules: NormalizationRules = {
     valueDefaults(ASYNCAPI_OPERATION_REPLY_DEFAULTS),
     valueReplaces(ASYNCAPI_OPERATION_REPLY_REPLACES),
   ],
-}
-
-const operationBindingsRules: NormalizationRules = {
-  ...specificationExtensionsRules,
-  '/*': { validate: checkType(...TYPE_JSON_ANY) },
-  '/**': { validate: checkType(...TYPE_JSON_ANY) },
-  referenceHandler: referenceObjectResolver(),
-  validate: checkType(TYPE_OBJECT),
 }
 
 const operationTraitRules: NormalizationRules = {

@@ -182,6 +182,7 @@ const serverRules: NormalizationRules = {
   '/tags': tagsRules,
   '/externalDocs': externalDocumentationRules,
   '/bindings': serverBindingsRules,
+  ...specificationExtensionsRules,
   referenceHandler: referenceObjectResolver(),
   validate: checkType(TYPE_OBJECT),
   unify: [

@@ -47,7 +47,7 @@ export function checkContains(...allowedValues: (string | number)[]): ValidateFu
   return f
 }
 
-export const TYPE_JSON_ANY: ValueType[] = [TYPE_OBJECT, TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING]
+export const TYPE_JSON_ANY: ValueType[] = [TYPE_NULL, TYPE_OBJECT, TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING]
 
 export function checkNotEmptyType(): ValidateFunction {
   const f: ValidateFunction = (value) => {

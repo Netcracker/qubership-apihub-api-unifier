@@ -547,6 +547,14 @@ describe('validate', () => {
       },
     })
   })
+
+  it('null is a valid value in enum', () => {
+    const source = {
+      enum: [null, 'string'],
+    }
+    const result = validate(source, { validate: true })
+    expect(result).toEqual(source)
+  })
 })
 
 const schemaPath = ['paths', '/example', 'post', 'responses', '200', 'content', 'application/json', 'schema']

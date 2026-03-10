@@ -194,6 +194,11 @@ const serverRules: NormalizationRules = {
   ],
 }
 
+const rootServerRules: NormalizationRules = {
+  ...serverRules,
+  captureFirstReferenceKey: true,
+}
+
 const correlationIdRules: NormalizationRules = {
   '/description': { validate: checkType(TYPE_STRING) },
   '/location': { validate: checkType(TYPE_STRING) },
@@ -558,7 +563,7 @@ export const asyncApiRules = (): NormalizationRules => ({
   '/id': { validate: checkType(TYPE_STRING) },
   '/info': infoRules,
   '/servers': {
-    '/*': serverRules,
+    '/*': rootServerRules,
     validate: checkType(TYPE_OBJECT),
   },
   '/defaultContentType': { validate: checkType(TYPE_STRING) },

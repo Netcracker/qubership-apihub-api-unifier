@@ -194,11 +194,6 @@ const serverRules: NormalizationRules = {
   ],
 }
 
-const rootServerRules: NormalizationRules = {
-  ...serverRules,
-  captureFirstReferenceKey: true,
-}
-
 const correlationIdRules: NormalizationRules = {
   '/description': { validate: checkType(TYPE_STRING) },
   '/location': { validate: checkType(TYPE_STRING) },
@@ -314,6 +309,11 @@ const channelBindingsRules: NormalizationRules = {
   validate: checkType(TYPE_OBJECT),
 }
 
+const channelServerRules: NormalizationRules = {
+  ...serverRules,
+  captureFirstReferenceKey: true,
+}
+
 const channelRules: NormalizationRules = {
   '/address': {
     validate: checkType(TYPE_STRING, TYPE_NULL),
@@ -327,7 +327,7 @@ const channelRules: NormalizationRules = {
   '/summary': { validate: checkType(TYPE_STRING) },
   '/description': { validate: checkType(TYPE_STRING) },
   '/servers': {
-    '/*': serverRules, //TODO: think how to enforce [Reference Object] here as per specification
+    '/*': channelServerRules, //TODO: think how to enforce [Reference Object] here as per specification
     validate: checkType(TYPE_ARRAY),
   },
   '/parameters': {
@@ -563,7 +563,7 @@ export const asyncApiRules = (): NormalizationRules => ({
   '/id': { validate: checkType(TYPE_STRING) },
   '/info': infoRules,
   '/servers': {
-    '/*': rootServerRules,
+    '/*': serverRules,
     validate: checkType(TYPE_OBJECT),
   },
   '/defaultContentType': { validate: checkType(TYPE_STRING) },

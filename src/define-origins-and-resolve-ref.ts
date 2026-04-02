@@ -268,7 +268,7 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
             // Compute expected inline refs for this chain: merge live-captured inner refs,
             // existing refs already on the target (from prior processing), and the outer ref.
             const existingTargetInlineRefs = captureInlineRefs && isObject(refValue)
-              ? ((refValue as Record<PropertyKey, unknown>)[options.inlineRefsFlag!] as string[] | undefined) ?? []
+              ? refValue[options.inlineRefsFlag!] as string[] | undefined ?? []
               : []
             const expectedInlineRefs = captureInlineRefs
               ? buildInlineRefsChain(inlineRefsChainCapture!, existingTargetInlineRefs, reference.normalized)
@@ -277,19 +277,19 @@ const createDefineOriginsAndResolveRefHook: (rootJso: unknown, options: Internal
             let refValueToUse: typeof refValue = refValue
             if ((captureFirstKey || captureInlineRefs) && isObject(refValue)) {
               const firstKeyDiffers = captureFirstKey
-                && (refValue as Record<PropertyKey, unknown>)[options.firstReferenceKeyProperty!] !== undefined
-                && (refValue as Record<PropertyKey, unknown>)[options.firstReferenceKeyProperty!] !== firstReferenceKey
+                && refValue[options.firstReferenceKeyProperty!] !== undefined
+                && refValue[options.firstReferenceKeyProperty!] !== firstReferenceKey
               const inlineRefsDiffer = captureInlineRefs
-                && (refValue as Record<PropertyKey, unknown>)[options.inlineRefsFlag!] !== undefined
-                && !inlineRefsEqual((refValue as Record<PropertyKey, unknown>)[options.inlineRefsFlag!] as string[], expectedInlineRefs!)
+                && refValue[options.inlineRefsFlag!] !== undefined
+                && !inlineRefsEqual(refValue[options.inlineRefsFlag!] as string[], expectedInlineRefs!)
 
               if (firstKeyDiffers || inlineRefsDiffer) {
-                refValueToUse = { ...(refValue as Record<PropertyKey, unknown>) }
+                refValueToUse = { ...refValue }
                 if (captureFirstKey) {
                   (refValueToUse as Record<PropertyKey, unknown>)[options.firstReferenceKeyProperty!] = firstReferenceKey
                 }
-              } else if (captureFirstKey && (refValue as Record<PropertyKey, unknown>)[options.firstReferenceKeyProperty!] === undefined) {
-                (refValue as Record<PropertyKey, unknown>)[options.firstReferenceKeyProperty!] = firstReferenceKey
+              } else if (captureFirstKey && refValue[options.firstReferenceKeyProperty!] === undefined) {
+                refValue[options.firstReferenceKeyProperty!] = firstReferenceKey
               }
             }
 

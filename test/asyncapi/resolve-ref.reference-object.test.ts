@@ -1108,6 +1108,7 @@ describe('AsyncAPI Reference Object Resolver', () => {
         inlineRefsFlag: TEST_INLINE_REFS_FLAG,
       }) as any
 
+      expect(result.operations.operation1.messages[0][TEST_INLINE_REFS_FLAG]).not.toEqual(result.operations.operation2.messages[0][TEST_INLINE_REFS_FLAG])
       expect(result.operations.operation1.messages[0][TEST_INLINE_REFS_FLAG]).toEqual(['#/components/messages/SharedMessage', '#/channels/channel1/messages/SharedMessage'])
       expect(result.operations.operation2.messages[0][TEST_INLINE_REFS_FLAG]).toEqual(['#/components/messages/SharedMessage', '#/channels/channel2/messages/SharedMessage'])
     })

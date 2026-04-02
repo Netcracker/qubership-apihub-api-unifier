@@ -496,15 +496,11 @@ const addRefInlineHistory: (jso: Record<PropertyKey, unknown>, inlineRefsFlag: s
  * Deduplicates while preserving order (live inner first, then existing, then outer).
  */
 function buildInlineRefsChain(liveCapture: string[], existingRefs: string[], outerNormalized: string): string[] {
-  const result: string[] = []
-  for (const ref of liveCapture) {
-    if (!result.includes(ref)) { result.push(ref) }
-  }
-  for (const ref of existingRefs) {
-    if (!result.includes(ref)) { result.push(ref) }
-  }
-  if (!result.includes(outerNormalized)) { result.push(outerNormalized) }
-  return result
+  const result = new Set<string>()
+  liveCapture.forEach((ref) => result.add(ref))
+  existingRefs.forEach((ref) => result.add(ref))
+  result.add(outerNormalized)
+  return Array.from(result)
 }
 
 function inlineRefsEqual(existing: string[], expected: string[]): boolean {

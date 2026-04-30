@@ -3,6 +3,7 @@ import {
   DEFAULT_OPTION_LIFT_COMBINERS,
   DEFAULT_OPTION_MERGE_ALL_OF,
   DEFAULT_OPTION_ORIGINS_ALREADY_DEFINED,
+  DEFAULT_OPTION_REMOVE_REDUNDANT_CONSTRAINTS,
   DEFAULT_OPTION_ORIGINS_FOR_DEFAULTS,
   DEFAULT_OPTION_RESOLVE_REF,
   DeUnifyOptions,
@@ -32,6 +33,7 @@ import {
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
 import { determineSpecTypeFamily } from './utils'
+import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from './unifies/exclusive-bounds'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward
@@ -172,6 +174,7 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
     mergeAllOf: DEFAULT_OPTION_MERGE_ALL_OF,
     liftCombiners: DEFAULT_OPTION_LIFT_COMBINERS,
     allowNotValidSyntheticChanges: DEFAULT_OPTION_ALLOW_NOT_VALID_SYNTHETIC_CHANGES,
+    removeRedundantConstraints: DEFAULT_OPTION_REMOVE_REDUNDANT_CONSTRAINTS,
     createOriginsForDefaults: (() => DEFAULT_OPTION_ORIGINS_FOR_DEFAULTS),
     ...options,
     source,
@@ -185,6 +188,7 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
       ...(options?.syntheticTitleFlag ? [options.syntheticTitleFlag] : []),
       ...(options?.defaultsFlag ? [options.defaultsFlag] : []),
       ...(options?.syntheticAllOfFlag ? [options.syntheticAllOfFlag] : []),
+      JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL,
       ...(options?.ignoreSymbols ? options.ignoreSymbols : []),
     ]),
   } satisfies InternalUnifyOptions
@@ -225,6 +229,7 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
     mergeAllOf: DEFAULT_OPTION_MERGE_ALL_OF,
     liftCombiners: DEFAULT_OPTION_LIFT_COMBINERS,
     allowNotValidSyntheticChanges: DEFAULT_OPTION_ALLOW_NOT_VALID_SYNTHETIC_CHANGES,
+    removeRedundantConstraints: DEFAULT_OPTION_REMOVE_REDUNDANT_CONSTRAINTS,
     createOriginsForDefaults: (() => DEFAULT_OPTION_ORIGINS_FOR_DEFAULTS),
     ...options,
     source,
@@ -238,6 +243,7 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
       ...(options?.syntheticTitleFlag ? [options.syntheticTitleFlag] : []),
       ...(options?.defaultsFlag ? [options.defaultsFlag] : []),
       ...(options?.syntheticAllOfFlag ? [options.syntheticAllOfFlag] : []),
+      JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL,
       ...(options?.ignoreSymbols ? options.ignoreSymbols : []),
     ]),
   } satisfies InternalUnifyOptions

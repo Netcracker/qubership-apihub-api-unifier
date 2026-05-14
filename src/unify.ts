@@ -33,7 +33,7 @@ import {
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
 import { determineSpecTypeFamily } from './utils'
-import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from './unifies/exclusive-bounds'
+import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from './unifies/redundant-numeric-bounds'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward

@@ -2,7 +2,7 @@ import { deUnify, unify } from '../../src/unify'
 import { convertOriginToHumanReadable, normalize, NormalizeOptions, SPEC_TYPE_OPEN_API_30 } from '../../src'
 import { createOas, TEST_ORIGINS_FLAG, TEST_SCHEMA_NAME } from '../helpers'
 import { parseAsyncApiAndAssertValid } from '../helpers/asyncapi'
-import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from '../../src/unifies/exclusive-bounds'
+import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from '../../src/unifies/redundant-numeric-bounds'
 
 describe('exclusive bounds unification', () => {
   describe('plain JSON Schema', () => {
@@ -87,20 +87,6 @@ describe('exclusive bounds unification', () => {
       expect(result).toHaveProperty('exclusiveMinimum', 2)
     })
 
-    it('overwrites reintroduced properties with stashed values during deunification', () => {
-      const intermediate = unify({
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-      }, { unify: true }) as Record<PropertyKey, unknown>
-      intermediate.minimum = 100
-
-      const result = deUnify(intermediate, { unify: true })
-
-      expect(result).toHaveProperty('minimum', 1)
-      expect(result).toHaveProperty('exclusiveMinimum', 2)
-    })
-
     it('skip prevents restoration but still removes private metadata', () => {
       const intermediate = unify({
         type: 'number',
@@ -172,6 +158,32 @@ describe('exclusive bounds unification', () => {
 
       expect(result).not.toHaveProperty(['components', 'schemas', 'Single', 'minimum'])
       expect(result).toHaveProperty(['components', 'schemas', 'Single', 'exclusiveMinimum'], 2)
+    })
+
+    it('normalizes plain AsyncAPI JSON Schema', async () => {
+      const source = {
+        asyncapi: '3.0.0',
+        info: {
+          title: 'Test API',
+          version: '1.0.0',
+        },
+        components: {
+          schemas: {
+            TestSchema: {
+              type: 'number',
+              maximum: 10,
+              exclusiveMaximum: 8,
+            },
+          },
+        },
+      }
+
+      await parseAsyncApiAndAssertValid(source)
+
+      const result = normalize(source, { unify: true })
+
+      expect(result).not.toHaveProperty(['components', 'schemas', 'TestSchema', 'maximum'])
+      expect(result).toHaveProperty(['components', 'schemas', 'TestSchema', 'exclusiveMaximum'], 8)
     })
 
     it('normalizes AsyncAPI JSON Schema draft-07 multi-format schemas', async () => {

@@ -5,17 +5,12 @@ import {
   JSON_SCHEMA_PROPERTY_EXCLUSIVE_MINIMUM,
   JSON_SCHEMA_PROPERTY_MAXIMUM,
   JSON_SCHEMA_PROPERTY_MINIMUM,
+  JsonSchemaNumericValidationKeywordsType,
 } from '../rules/jsonschema.const'
 import { cleanOrigins, resolveOrigins, setOrigins } from '../origins'
 import { isBroken, isPureCombiner } from './type'
 
-type ConstraintProperty =
-  typeof JSON_SCHEMA_PROPERTY_MINIMUM
-  | typeof JSON_SCHEMA_PROPERTY_EXCLUSIVE_MINIMUM
-  | typeof JSON_SCHEMA_PROPERTY_MAXIMUM
-  | typeof JSON_SCHEMA_PROPERTY_EXCLUSIVE_MAXIMUM
-
-type RemovedConstraints = Partial<Record<ConstraintProperty, number>>
+type RemovedConstraints = Partial<Record<JsonSchemaNumericValidationKeywordsType , number>>
 
 interface RedundantConstraintsMeta {
   removed: RemovedConstraints
@@ -24,6 +19,10 @@ interface RedundantConstraintsMeta {
 
 // Internal metadata for lossless deunification. It is intentionally not exported from the package entrypoint.
 export const JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL = Symbol('redundant-constraints')
+
+function isRedundantConstraintsMeta(value: unknown): value is RedundantConstraintsMeta {
+  return typeof value === 'object' && value !== null && 'removed' in value
+}
 
 function isString(value: unknown): value is string {
   return typeof value === 'string'
@@ -35,7 +34,7 @@ function isNumber(value: unknown): value is number {
 
 function removeConstraint(
   jso: Record<PropertyKey, unknown>,
-  propertyKey: ConstraintProperty,
+  propertyKey: JsonSchemaNumericValidationKeywordsType,
   meta: RedundantConstraintsMeta,
   ctx: UnifyContext<InternalUnifyOptions>,
 ): Record<PropertyKey, unknown> {
@@ -56,7 +55,7 @@ function removeConstraint(
 
 function restoreConstraint(
   jso: Record<PropertyKey, unknown>,
-  propertyKey: ConstraintProperty,
+  propertyKey: JsonSchemaNumericValidationKeywordsType,
   value: number,
   meta: RedundantConstraintsMeta,
   ctx: UnifyContext<InternalDeUnifyOptions>,
@@ -90,13 +89,12 @@ export const unifyJsonSchemaExclusiveBounds: UnifyFunction = {
     }
 
     let result: Record<PropertyKey, unknown> | null = null
+    const prevMeta = isRedundantConstraintsMeta(jso[JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL])
+      ? jso[JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL]
+      : undefined
     const meta: RedundantConstraintsMeta = {
-      removed: {
-        ...((jso[JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL] as RedundantConstraintsMeta | undefined)?.removed ?? {}),
-      },
-      origins: {
-        ...((jso[JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL] as RedundantConstraintsMeta | undefined)?.origins ?? {}),
-      },
+      removed: { ...(prevMeta?.removed ?? {}) },
+      origins: { ...(prevMeta?.origins ?? {}) },
     }
 
     const minimum = jso[JSON_SCHEMA_PROPERTY_MINIMUM]
@@ -139,7 +137,8 @@ export const unifyJsonSchemaExclusiveBounds: UnifyFunction = {
       return
     }
 
-    const meta = jso[JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL] as RedundantConstraintsMeta | undefined
+    const rawMeta = jso[JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL]
+    const meta = isRedundantConstraintsMeta(rawMeta) ? rawMeta : undefined
     if (!meta) {
       return
     }
@@ -149,8 +148,15 @@ export const unifyJsonSchemaExclusiveBounds: UnifyFunction = {
       return
     }
 
-    Object.entries(meta.removed).forEach(([propertyKey, value]) => {
-      restoreConstraint(jso, propertyKey as ConstraintProperty, value, meta, ctx)
-    })
+    for (const [propertyKey, value] of Object.entries(meta.removed)) {
+      if (
+        propertyKey === JSON_SCHEMA_PROPERTY_MINIMUM ||
+        propertyKey === JSON_SCHEMA_PROPERTY_MAXIMUM ||
+        propertyKey === JSON_SCHEMA_PROPERTY_EXCLUSIVE_MINIMUM ||
+        propertyKey === JSON_SCHEMA_PROPERTY_EXCLUSIVE_MAXIMUM
+      ) {
+        restoreConstraint(jso, propertyKey, value, meta, ctx)
+      }
+    }
   },
 }

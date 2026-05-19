@@ -33,7 +33,6 @@ import {
 import { createSelfOriginsCloneHook } from './origins'
 import { JSON_SCHEMA_PROPERTY_ALL_OF } from './rules/jsonschema.const'
 import { determineSpecTypeFamily } from './utils'
-import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from './unifies/redundant-numeric-bounds'
 
 function toForwardMutationFunction(value: UnifyFunction): TransformFunction {
   return typeof value === 'function' ? value : value.forward
@@ -188,7 +187,6 @@ const unifyImpl = (value: unknown, mandatoryOnly: boolean, options?: UnifyOption
       ...(options?.syntheticTitleFlag ? [options.syntheticTitleFlag] : []),
       ...(options?.defaultsFlag ? [options.defaultsFlag] : []),
       ...(options?.syntheticAllOfFlag ? [options.syntheticAllOfFlag] : []),
-      JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL,
       ...(options?.ignoreSymbols ? options.ignoreSymbols : []),
     ]),
   } satisfies InternalUnifyOptions
@@ -243,7 +241,6 @@ const deUnifyImpl = (value: unknown, mandatoryOnly: boolean, options?: DeUnifyOp
       ...(options?.syntheticTitleFlag ? [options.syntheticTitleFlag] : []),
       ...(options?.defaultsFlag ? [options.defaultsFlag] : []),
       ...(options?.syntheticAllOfFlag ? [options.syntheticAllOfFlag] : []),
-      JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL,
       ...(options?.ignoreSymbols ? options.ignoreSymbols : []),
     ]),
   } satisfies InternalUnifyOptions

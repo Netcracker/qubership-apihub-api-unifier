@@ -1,8 +1,7 @@
-import { deUnify, unify } from '../../src/unify'
-import { convertOriginToHumanReadable, normalize, NormalizeOptions, SPEC_TYPE_OPEN_API_30 } from '../../src'
-import { createOas, TEST_ORIGINS_FLAG, TEST_SCHEMA_NAME } from '../helpers'
+import { unify } from '../../src/unify'
+import { normalize } from '../../src'
+import { createOas } from '../helpers'
 import { parseAsyncApiAndAssertValid } from '../helpers/asyncapi'
-import { JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL } from '../../src/unifies/redundant-numeric-bounds'
 
 describe('exclusive bounds unification', () => {
   describe('plain JSON Schema', () => {
@@ -56,24 +55,6 @@ describe('exclusive bounds unification', () => {
       expect(result).not.toHaveProperty(expectedRemoved)
     })
 
-    it('restores removed bounds and cleans private metadata during deunification', () => {
-      const source = {
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-        maximum: 10,
-        exclusiveMaximum: 8,
-      }
-      const intermediate = unify(source, { unify: true }) as Record<PropertyKey, unknown>
-
-      expect(Object.getOwnPropertySymbols(intermediate)).toContain(JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL)
-
-      const result = deUnify(intermediate, { unify: true }) as Record<PropertyKey, unknown>
-
-      expect(result).toMatchObject(source)
-      expect(Object.getOwnPropertySymbols(result)).not.toContain(JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL)
-    })
-
     it('does not remove redundant pairs when removeRedundantConstraints is false', () => {
       const source = {
         type: 'number',
@@ -85,55 +66,6 @@ describe('exclusive bounds unification', () => {
 
       expect(result).toHaveProperty('minimum', 1)
       expect(result).toHaveProperty('exclusiveMinimum', 2)
-    })
-
-    it('skip prevents restoration but still removes private metadata', () => {
-      const intermediate = unify({
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-      }, { unify: true }) as Record<PropertyKey, unknown>
-
-      const result = deUnify(intermediate, {
-        unify: true,
-        skip: (_value, path) => path.at(-1) === 'minimum',
-      }) as Record<PropertyKey, unknown>
-
-      expect(result).not.toHaveProperty('minimum')
-      expect(result).toHaveProperty('exclusiveMinimum', 2)
-      expect(Object.getOwnPropertySymbols(result)).not.toContain(JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL)
-    })
-
-    it('restores values without inventing origins when removed value had no origin entry', () => {
-      const source = {
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-        [TEST_ORIGINS_FLAG]: {
-          type: [{ value: 'type' }],
-          exclusiveMinimum: [{ value: 'exclusiveMinimum' }],
-        },
-      }
-      const intermediate = unify(source, { unify: true, originsFlag: TEST_ORIGINS_FLAG }) as Record<PropertyKey, unknown>
-
-      const result = deUnify(intermediate, { unify: true, originsFlag: TEST_ORIGINS_FLAG }) as Record<PropertyKey, unknown>
-
-      expect(result).toHaveProperty('minimum', 1)
-      expect(result[TEST_ORIGINS_FLAG]).not.toHaveProperty('minimum')
-    })
-
-    it('does not restore private metadata when removeRedundantConstraints is false', () => {
-      const intermediate = unify({
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-      }, { unify: true }) as Record<PropertyKey, unknown>
-
-      const result = deUnify(intermediate, { unify: true, removeRedundantConstraints: false }) as Record<PropertyKey, unknown>
-
-      expect(result).not.toHaveProperty('minimum')
-      expect(result).toHaveProperty('exclusiveMinimum', 2)
-      expect(Object.getOwnPropertySymbols(result)).not.toContain(JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL)
     })
   })
 
@@ -213,48 +145,6 @@ describe('exclusive bounds unification', () => {
 
       expect(result).not.toHaveProperty(['components', 'schemas', 'TestSchema', 'schema', 'maximum'])
       expect(result).toHaveProperty(['components', 'schemas', 'TestSchema', 'schema', 'exclusiveMaximum'], 8)
-    })
-
-    it('does not restore metadata when forced to OpenAPI 3.0 draft-04 semantics', () => {
-      const intermediate = normalize(createOas({
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-      }, '3.1.0'), { unify: true }) as Record<PropertyKey, unknown>
-
-      const result = deUnify(intermediate, {
-        unify: true,
-        forceRulesForSpecVersion: SPEC_TYPE_OPEN_API_30,
-      }) as Record<PropertyKey, unknown>
-
-      const schema = (result as any).components.schemas.Single as object
-      expect(schema).not.toHaveProperty('minimum')
-      expect(schema).toHaveProperty('exclusiveMinimum', 2)
-      // The draft-04/OpenAPI 3.0 deunify pipeline does not include this unifier, so its private metadata remains opaque.
-      expect(Object.getOwnPropertySymbols(schema)).toContain(JSON_SCHEMA_REDUNDANT_CONSTRAINTS_SYMBOL)
-    })
-  })
-
-  describe('origins', () => {
-    const OPTIONS: NormalizeOptions = {
-      originsFlag: TEST_ORIGINS_FLAG,
-      unify: true,
-    }
-
-    it('restores captured origins for removed constraints during deunification', () => {
-      const source = createOas({
-        type: 'number',
-        minimum: 1,
-        exclusiveMinimum: 2,
-      }, '3.1.0')
-      const intermediate = normalize(source, OPTIONS)
-
-      const result = deUnify(intermediate, OPTIONS)
-      const resultWithHmr = convertOriginToHumanReadable(result, TEST_ORIGINS_FLAG)
-
-      expect(resultWithHmr).toHaveProperty(['components', 'schemas', TEST_SCHEMA_NAME, 'minimum'], 1)
-      expect(resultWithHmr).toHaveProperty(['components', 'schemas', TEST_SCHEMA_NAME, TEST_ORIGINS_FLAG, 'minimum'], ['components/schemas/Single/minimum'])
-      expect(resultWithHmr).toHaveProperty(['components', 'schemas', TEST_SCHEMA_NAME, TEST_ORIGINS_FLAG, 'exclusiveMinimum'], ['components/schemas/Single/exclusiveMinimum'])
     })
   })
 })

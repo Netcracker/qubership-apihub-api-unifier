@@ -35,7 +35,7 @@ The choice between `TransformFunction` and a forward/backward pair depends on th
 
 **Unification** transforms API specifications into a normalized form so that specifications that express the same semantics differently can be compared correctly in api-diff. The goal is semantic equivalence, not human readability.
 
-**De-unification** exists for end-user consumption. Normalized form is often less readable than the original: for example, a schema with all specification-mandated defaults filled in is correct for diffing but overwhelming to read. De-unification strips synthetic additions so the output is as concise and comprehensible as the original.
+**De-unification** exists for end user consumption. Normalized form is often less readable than the original: for example, a schema with all specification-mandated defaults filled in is correct for diffing but overwhelming to read. De-unification strips synthetic additions so the output is as concise and comprehensible as the original.
 
 **Use `TransformFunction` (forward-only) when:**
 - The transformation produces a strictly better or more correct normalized form — one where reversing it would reintroduce noise rather than restore meaningful information. Example: removing a redundant `minimum` when `exclusiveMinimum` is already stricter. The result is cleaner; there is nothing useful to restore.
@@ -741,13 +741,13 @@ const EXTENDED_DEFAULTS = {
 
 ## ValueReplaces Pattern Deep Dive
 
-### Purpose
+### Overview
 Replaces specific values (usually primitives or markers) with more complex objects. Common uses:
 1. Replace marker symbols with actual empty arrays/objects
 2. Replace boolean values with schema objects
 3. Replace sentinel values with generated structures
 
-### Structure
+### Replace Mapping Structure
 
 ```typescript
 interface ReplaceMapping {
@@ -988,7 +988,7 @@ unify: [
 3. Clean separation of concerns
 4. Reversible for de-unification
 
-### Best Practices
+### Best Practices for ValueReplaces
 
 #### 1. Use Symbols for Markers
 ```typescript

@@ -741,7 +741,7 @@ const EXTENDED_DEFAULTS = {
 
 ## ValueReplaces Pattern Deep Dive
 
-### Overview
+### Role
 Replaces specific values (usually primitives or markers) with more complex objects. Common uses:
 1. Replace marker symbols with actual empty arrays/objects
 2. Replace boolean values with schema objects

@@ -9,14 +9,7 @@ import {
 } from '../rules/jsonschema.const'
 import { cleanOrigins } from '../origins'
 import { isBroken, isPureCombiner } from './type'
-
-function isString(value: unknown): value is string {
-  return typeof value === 'string'
-}
-
-function isNumber(value: unknown): value is number {
-  return typeof value === 'number' || isString(value) && !Number.isNaN(+value)
-}
+import { isNumber } from '../utils'
 
 function removeConstraint(
   jso: Record<PropertyKey, unknown>,

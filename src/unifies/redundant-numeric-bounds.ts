@@ -5,10 +5,8 @@ import {
   JSON_SCHEMA_PROPERTY_EXCLUSIVE_MINIMUM,
   JSON_SCHEMA_PROPERTY_MAXIMUM,
   JSON_SCHEMA_PROPERTY_MINIMUM,
-} from '../rules/jsonschema.const'
-import {
   JsonSchemaNumericValidationKeywordsType,
-} from '../rules/jsonschema.types'
+} from '../rules/jsonschema.const'
 import { cleanOrigins } from '../origins'
 import { isBroken, isPureCombiner } from './type'
 import { isNumber } from '../utils'

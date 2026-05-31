@@ -2,10 +2,8 @@ import { Realm } from '@netcracker/qubership-apihub-ddlapi'
 import { denormalize, normalize, DDL_API_NORMALIZE_OPTIONS } from '../../src'
 import { buildRealmAndAssertValid } from '../helpers/ddlapi'
 import {
-  checkHashesNotEqualByPath,
   commonOriginsCheck,
   TEST_DEFAULTS_FLAG,
-  TEST_HASH_FLAG,
   TEST_ORIGINS_FLAG,
   TEST_ORIGINS_FOR_DEFAULTS,
 } from '../helpers'
@@ -18,7 +16,6 @@ describe('ddlapi e2e', () => {
     originsFlag: TEST_ORIGINS_FLAG,
     defaultsFlag: TEST_DEFAULTS_FLAG,
     createOriginsForDefaults: () => TEST_ORIGINS_FOR_DEFAULTS,
-    hashFlag: TEST_HASH_FLAG,
   }
 
   const DDL = `
@@ -78,19 +75,6 @@ describe('ddlapi e2e', () => {
     const realm = await buildRealmAndAssertValid(DDL)
     const result = normalize(realm, baseOptions)
     commonOriginsCheck(result, { originsFlag: TEST_ORIGINS_FLAG })
-  })
-
-  it('produces distinct per-entity hashes for the two tables and a column', async () => {
-    const realm = await buildRealmAndAssertValid(DDL)
-    const result = normalize(realm, baseOptions) as Realm
-    const usersIdx = result.schemas[0].tables!.findIndex((t) => t.name === 'users')
-    const ordersIdx = result.schemas[0].tables!.findIndex((t) => t.name === 'orders')
-
-    checkHashesNotEqualByPath(result, result, ['schemas', 0, 'tables', usersIdx], ['schemas', 0, 'tables', ordersIdx])
-    // every entity exposes a callable hash
-    const usersTable: any = result.schemas[0].tables![usersIdx]
-    expect(typeof usersTable[TEST_HASH_FLAG]()).toBe('string')
-    expect(typeof usersTable.columns![0][TEST_HASH_FLAG as any]()).toBe('string')
   })
 
   it('round-trips: shared references preserved and re-normalization is stable', async () => {

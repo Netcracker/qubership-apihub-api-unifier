@@ -1,5 +1,5 @@
 import { CrawlRulesContext, isObject } from '@netcracker/qubership-apihub-json-crawl'
-import { BEFORE_SECOND_DATA_LEVEL, CURRENT_DATA_LEVEL, NormalizationRules, NormalizeOptions, UnifyFunction } from '../types'
+import { NormalizationRules, NormalizeOptions, UnifyFunction } from '../types'
 import { SPEC_TYPE_DDL_API_1 } from '../spec-type'
 import {
   checkContains,
@@ -50,23 +50,11 @@ export const DDL_API_NORMALIZE_OPTIONS: Readonly<NormalizeOptions> = {
   resolveRef: false,
 }
 
-// hashStrategy: CURRENT_DATA_LEVEL marks a key as part of its owner entity's hash. A
-// rule WITHOUT a hashStrategy is excluded from the hash, so every content key carries it;
-// nested entities instead get a newDataLayer boundary (see hashBoundary) and so contribute
-// only structurally to the parent's hash while owning their own.
-const HASHED = { hashStrategy: CURRENT_DATA_LEVEL } as const
-
-const STRING_RULE: NormalizationRules = { validate: checkType(TYPE_STRING), ...HASHED }
-const BOOLEAN_RULE: NormalizationRules = { validate: checkType(TYPE_BOOLEAN), ...HASHED }
-const NUMBER_RULE: NormalizationRules = { validate: checkType(TYPE_NUMBER), ...HASHED }
-const STRING_ARRAY_RULE: NormalizationRules = { '/*': STRING_RULE, validate: checkType(TYPE_ARRAY), ...HASHED }
-
 const REFERENCE_OPTION_VALUES = Object.values(ReferenceOption)
 
 // Validates the discriminant `kind` carries exactly the expected union-member string.
 const kindRule = (kindValue: string): NormalizationRules => ({
   validate: [checkType(TYPE_STRING), checkContains(kindValue)],
-  ...HASHED,
 })
 
 const readKind = (value: unknown): string | undefined =>
@@ -89,28 +77,6 @@ const collectionUnify = (arrayKeys: string[], primitiveDefaults: DefaultValueMap
 
 const emptyArrayUnify = (...keys: string[]): UnifyFunction[] => collectionUnify(keys)
 
-// Hashing. Each independently-comparable entity owns its hash; nested entities are
-// captured shallowly in the parent's hash via a newDataLayer boundary while owning their
-// own deeper hash (mirrors JSON Schema). No whole-realm/schema hash — only entities.
-const ENTITY_HASH = { hashOwner: true, hashStrategy: CURRENT_DATA_LEVEL } as const
-// Wrap an entity rule where it is referenced/contained so the enclosing entity's hash sees
-// it one data level deeper (shallow capture). Lazy so cyclic entity rules resolve at crawl.
-const hashBoundary = (rulesFn: () => NormalizationRules) => () => ({
-  ...rulesFn(),
-  newDataLayer: true,
-  hashStrategy: BEFORE_SECOND_DATA_LEVEL,
-})
-// Same boundary for a union kind-dispatcher (objects can hold any SchemaObject kind).
-const hashBoundaryDispatcher = (fn: (ctx: CrawlRulesContext) => NormalizationRules) =>
-  (ctx: CrawlRulesContext): NormalizationRules => ({
-    ...fn(ctx),
-    newDataLayer: true,
-    hashStrategy: BEFORE_SECOND_DATA_LEVEL,
-  })
-// Container for an entity array: recursed at the owner's level so its boundaried elements
-// are captured shallowly in the owner's hash.
-const ENTITY_ARRAY_HASH = { hashStrategy: CURRENT_DATA_LEVEL } as const
-
 /**
  * Core, driver-neutral ddlapi rules factory. Parameterized by version (one today —
  * the seam for future stamps) and a `DdlApiDialect` that supplies dialect-specific rules
@@ -119,10 +85,10 @@ const ENTITY_ARRAY_HASH = { hashStrategy: CURRENT_DATA_LEVEL } as const
  * `exprRules`, `objectRules`) and the cyclic edges (`fk.refTable`, `enum.schema`) are
  * resolved lazily at crawl time, so declaration order only matters for eager references.
  *
- * Covers structural + value validation (`checkType`/`checkContains`), empty-collection and
- * primitive defaults (`unify`), and per-entity hashing markers. Dialect-specific kinds and
- * primitive defaults come from the injected `dialect`; kinds it does not recognise fall
- * through to the generic `Unknown*` passthrough.
+ * Covers structural + value validation (`checkType`/`checkContains`) and empty-collection
+ * and primitive defaults (`unify`). Dialect-specific kinds and primitive defaults come from
+ * the injected `dialect`; kinds it does not recognise fall through to the generic
+ * `Unknown*` passthrough.
  */
 export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect): NormalizationRules => {
   // Pick the dialect-provided primitive defaults (e.g. `unsigned`,
@@ -141,10 +107,9 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   // Driver-neutral or future kinds we do not model: validate only that `kind` is a
   // string and let arbitrary nested content pass. Used as the shared fallback.
   const unknownPassthroughRules: NormalizationRules = {
-    '/kind': STRING_RULE,
-    '/**': { validate: checkType(...TYPE_JSON_ANY), ...HASHED },
+    '/kind': { validate: checkType(TYPE_STRING) },
+    '/**': { validate: checkType(...TYPE_JSON_ANY) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED, // unknown escape-hatch kinds are hashed opaquely
   }
 
   // --- union kind-dispatchers (lazy bodies; default branch → dialect lookup → fallback) ---
@@ -210,213 +175,180 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     }
   }
 
-  // --- collection rules (arrays of union members) ---
-  // attrs are entity content (not nested entities) → included in the owner's hash.
-  const attrsArrayRule: NormalizationRules = { '/*': attrRules, validate: checkType(TYPE_ARRAY), ...HASHED }
-  // objects hold entity SchemaObjects (Table/EnumType/PG named types), so each element is a
-  // hash boundary and the container is recursed at the owner's level.
-  const objectsArrayRule: NormalizationRules = {
-    '/*': hashBoundaryDispatcher(objectRules),
-    validate: checkType(TYPE_ARRAY),
-    ...ENTITY_ARRAY_HASH,
-  }
-  // `deps`: minimal defensive rule — route each entry through the object dispatcher.
+  // --- collection rules ---
+  const attrsArrayRule: NormalizationRules = { '/*': attrRules, validate: checkType(TYPE_ARRAY) }
+  const objectsArrayRule: NormalizationRules = { '/*': objectRules, validate: checkType(TYPE_ARRAY) }
   const depsArrayRule: NormalizationRules = objectsArrayRule
 
   // --- SchemaType members ---
   // Bool/JSON/Spatial/UUID/Unsupported: just { kind, t }.
   const scalarTypeRules = (kindValue: string): NormalizationRules => ({
     '/kind': kindRule(kindValue),
-    '/t': STRING_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   })
   const integerTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.IntegerType),
-    '/t': STRING_RULE,
-    '/unsigned': BOOLEAN_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // unsigned is a dialect concept (MySQL); PG defaults it to false.
     unify: collectionUnify([DDL_API_PROPERTY_ATTRS], dialectPrimitive(DDL_API_PROPERTY_UNSIGNED)),
-    ...HASHED,
   }
   const decimalTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.DecimalType),
-    '/t': STRING_RULE,
-    '/precision': NUMBER_RULE,
-    '/scale': NUMBER_RULE,
-    '/unsigned': BOOLEAN_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/precision': { validate: checkType(TYPE_NUMBER) },
+    '/scale': { validate: checkType(TYPE_NUMBER) },
+    '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
     validate: checkType(TYPE_OBJECT),
     unify: collectionUnify([], dialectPrimitive(DDL_API_PROPERTY_UNSIGNED)),
-    ...HASHED,
   }
   const floatTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.FloatType),
-    '/t': STRING_RULE,
-    '/unsigned': BOOLEAN_RULE,
-    '/precision': NUMBER_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
+    '/precision': { validate: checkType(TYPE_NUMBER) },
     validate: checkType(TYPE_OBJECT),
     unify: collectionUnify([], dialectPrimitive(DDL_API_PROPERTY_UNSIGNED)),
-    ...HASHED,
   }
   const stringTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.StringType),
-    '/t': STRING_RULE,
-    '/size': NUMBER_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/size': { validate: checkType(TYPE_NUMBER) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
-    ...HASHED,
   }
   const binaryTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.BinaryType),
-    '/t': STRING_RULE,
-    '/size': NUMBER_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/size': { validate: checkType(TYPE_NUMBER) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   const timeTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.TimeType),
-    '/t': STRING_RULE,
-    '/precision': NUMBER_RULE,
-    '/scale': NUMBER_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/precision': { validate: checkType(TYPE_NUMBER) },
+    '/scale': { validate: checkType(TYPE_NUMBER) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
-    ...HASHED,
   }
   const enumTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.EnumType),
-    '/t': STRING_RULE,
-    '/values': STRING_ARRAY_RULE,
+    '/t': { validate: checkType(TYPE_STRING) },
+    '/values': { '/*': { validate: checkType(TYPE_STRING) }, validate: checkType(TYPE_ARRAY) },
     // back-reference to the owning Schema (reference edge / cycle) — resolved lazily.
     '/schema': () => schemaRules,
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
-    ...ENTITY_HASH,
   }
 
   // --- Attr members ---
   const commentRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.Comment),
-    '/text': STRING_RULE,
+    '/text': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   const charsetRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.Charset),
-    '/v': STRING_RULE,
+    '/v': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   const collationRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.Collation),
-    '/v': STRING_RULE,
+    '/v': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   // Check is both an Attr and a SchemaObject (same `kind` string) — one rule serves both.
   const checkRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.Check),
-    '/name': STRING_RULE,
-    '/expr': STRING_RULE,
+    '/name': { validate: checkType(TYPE_STRING) },
+    '/expr': { validate: checkType(TYPE_STRING) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
-    ...HASHED,
   }
   const generatedExprRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.GeneratedExpr),
-    '/expr': STRING_RULE,
-    '/type': STRING_RULE,
+    '/expr': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
     // PG only supports STORED generated columns → default GeneratedExpr.type.
     unify: collectionUnify([], dialectPrimitive(DDL_API_PROPERTY_TYPE)),
-    ...HASHED,
   }
 
   // --- Expr members ---
   const literalRules: NormalizationRules = {
     '/kind': kindRule(ExprKind.Literal),
-    '/v': STRING_RULE,
+    '/v': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   const rawExprRules: NormalizationRules = {
     '/kind': kindRule(ExprKind.RawExpr),
-    '/x': STRING_RULE,
+    '/x': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   const namedDefaultRules: NormalizationRules = {
     '/kind': kindRule(ObjectKind.NamedDefault),
-    '/name': STRING_RULE,
+    '/name': { validate: checkType(TYPE_STRING) },
     '/expr': exprRules, // Literal | RawExpr
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
-    ...HASHED,
   }
 
   // --- Column / ColumnType ---
-  // ColumnType is column content (not a nested entity) → fully part of the column's hash.
   const columnTypeRules: NormalizationRules = {
     '/type': schemaTypeRules,
-    '/raw': STRING_RULE,
-    '/null': BOOLEAN_RULE,
+    '/raw': { validate: checkType(TYPE_STRING) },
+    '/null': { validate: checkType(TYPE_BOOLEAN) },
     validate: checkType(TYPE_OBJECT),
-    ...HASHED,
   }
   const columnRules: NormalizationRules = {
-    '/name': STRING_RULE,
+    '/name': { validate: checkType(TYPE_STRING) },
     '/type': columnTypeRules,
     '/default': exprRules,
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
-    ...ENTITY_HASH,
   }
 
   // --- Index / IndexPart ---
-  // IndexPart is index content (which column/expr, order) → included in the index's hash so
-  // an index over column a differs from one over column b. The referenced column is included
-  // (not boundaried): conservative — a column change also perturbs its index's hash.
   const indexPartRules: NormalizationRules = {
-    '/seqNo': NUMBER_RULE,
-    '/desc': BOOLEAN_RULE,
+    '/seqNo': { validate: checkType(TYPE_NUMBER) },
+    '/desc': { validate: checkType(TYPE_BOOLEAN) },
     '/x': exprRules,
-    '/c': () => columnRules, // reference edge to a table column (same instance)
+    '/c': columnRules, // reference edge to a table column (same instance)
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // desc:false — ascending is the SQL default.
     unify: collectionUnify([DDL_API_PROPERTY_ATTRS], { [DDL_API_PROPERTY_DESC]: false }),
-    ...HASHED,
   }
   const indexRules: NormalizationRules = {
     '/kind': kindRule(ObjectKind.Index),
-    '/name': STRING_RULE,
-    '/unique': BOOLEAN_RULE,
+    '/name': { validate: checkType(TYPE_STRING) },
+    '/unique': { validate: checkType(TYPE_BOOLEAN) },
     '/attrs': attrsArrayRule,
-    '/parts': { '/*': indexPartRules, validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
+    '/parts': { '/*': indexPartRules, validate: checkType(TYPE_ARRAY) },
     validate: checkType(TYPE_OBJECT),
     // unique:false — an unmarked index is non-unique.
     unify: collectionUnify([DDL_API_PROPERTY_ATTRS, DDL_API_PROPERTY_PARTS], { [DDL_API_PROPERTY_UNIQUE]: false }),
-    ...ENTITY_HASH,
   }
 
   // --- ForeignKey ---
   const foreignKeyRules: NormalizationRules = {
     '/kind': kindRule(ObjectKind.ForeignKey),
-    '/symbol': STRING_RULE,
-    // FK columns/refColumns are part of the FK's identity → included in its hash.
-    '/columns': { '/*': () => columnRules, validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
-    // refTable is boundaried: shallow capture cuts the table↔fk cycle for object-hash.
-    '/refTable': hashBoundary(() => tableRules),
-    '/refColumns': { '/*': () => columnRules, validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
-    '/onUpdate': { validate: [checkType(TYPE_STRING), checkContains(...REFERENCE_OPTION_VALUES)], ...HASHED },
-    '/onDelete': { validate: [checkType(TYPE_STRING), checkContains(...REFERENCE_OPTION_VALUES)], ...HASHED },
+    '/symbol': { validate: checkType(TYPE_STRING) },
+    '/columns': { '/*': columnRules, validate: checkType(TYPE_ARRAY) },
+    // refTable resolved lazily: tableRules is declared after foreignKeyRules.
+    '/refTable': () => tableRules,
+    '/refColumns': { '/*': columnRules, validate: checkType(TYPE_ARRAY) },
+    '/onUpdate': { validate: [checkType(TYPE_STRING), checkContains(...REFERENCE_OPTION_VALUES)] },
+    '/onDelete': { validate: [checkType(TYPE_STRING), checkContains(...REFERENCE_OPTION_VALUES)] },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // onUpdate/onDelete default to ANSI 'NO ACTION'; dangling-refTable reporter.
@@ -427,30 +359,28 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
       }),
       reportDanglingForeignKey,
     ],
-    ...ENTITY_HASH,
   }
 
   // --- View: minimal defensive rule until a producer emits views ---
   const viewRules: NormalizationRules = {
     '/kind': kindRule(ObjectKind.View),
-    '/name': STRING_RULE,
-    '/def': STRING_RULE,
-    '/columns': { '/*': hashBoundary(() => columnRules), validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
+    '/name': { validate: checkType(TYPE_STRING) },
+    '/def': { validate: checkType(TYPE_STRING) },
+    '/columns': { '/*': columnRules, validate: checkType(TYPE_ARRAY) },
     '/attrs': attrsArrayRule,
     '/deps': depsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DDL_API_PROPERTY_COLUMNS, DDL_API_PROPERTY_ATTRS, DDL_API_PROPERTY_DEPS),
-    ...ENTITY_HASH,
   }
 
   // --- Table ---
   const tableRules: NormalizationRules = {
     '/kind': kindRule(ObjectKind.Table),
-    '/name': STRING_RULE,
-    '/columns': { '/*': hashBoundary(() => columnRules), validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
-    '/indexes': { '/*': hashBoundary(() => indexRules), validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
-    '/primaryKey': hashBoundary(() => indexRules),
-    '/foreignKeys': { '/*': hashBoundary(() => foreignKeyRules), validate: checkType(TYPE_ARRAY), ...ENTITY_ARRAY_HASH },
+    '/name': { validate: checkType(TYPE_STRING) },
+    '/columns': { '/*': columnRules, validate: checkType(TYPE_ARRAY) },
+    '/indexes': { '/*': indexRules, validate: checkType(TYPE_ARRAY) },
+    '/primaryKey': indexRules,
+    '/foreignKeys': { '/*': foreignKeyRules, validate: checkType(TYPE_ARRAY) },
     '/attrs': attrsArrayRule,
     '/objects': objectsArrayRule,
     '/deps': depsArrayRule,
@@ -469,12 +399,11 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
       ]),
       ddlApiNullabilityDefault,
     ],
-    ...ENTITY_HASH,
   }
 
   // --- Schema ---
   const schemaRules: NormalizationRules = {
-    '/name': STRING_RULE,
+    '/name': { validate: checkType(TYPE_STRING) },
     '/tables': { '/*': tableRules, validate: checkType(TYPE_ARRAY) },
     '/attrs': attrsArrayRule,
     '/objects': objectsArrayRule,
@@ -484,7 +413,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
 
   // --- Realm (root) ---
   return {
-    '/ddlapi': STRING_RULE,
+    '/ddlapi': { validate: checkType(TYPE_STRING) },
     '/schemas': { '/*': schemaRules, validate: checkType(TYPE_ARRAY) },
     '/attrs': attrsArrayRule,
     '/objects': objectsArrayRule,

@@ -10,6 +10,7 @@ import {
   newSchema,
   newTable,
   ReferenceOption,
+  PgAttrKind,
 } from '@netcracker/qubership-apihub-ddlapi'
 import { normalize, DDL_API_NORMALIZE_OPTIONS } from '../../src'
 import { buildRealmAndAssertValid } from '../helpers/ddlapi'
@@ -63,7 +64,7 @@ describe('ddlapi validate', () => {
 
   it('passes unknown escape-hatch kinds through untouched (validated only as { kind: string })', () => {
     // PostgreSQL escape-hatch attr handled by the PG dialect rules — it must survive intact.
-    const identity = { kind: 'Identity', generation: 'ALWAYS', seqStart: 1 } as never
+    const identity = { kind: PgAttrKind.Identity, generation: 'ALWAYS', seqStart: 1 } as never
     const id = newColumn('id', { type: columnType(integerType('bigint'), { null: false }), attrs: [identity] })
     const realm = newRealm([newSchema('public', { tables: [newTable('t', { columns: [id] })] })])
 
@@ -72,7 +73,7 @@ describe('ddlapi validate', () => {
 
     expect(errors).toBeEmpty()
     expect(result.schemas[0].tables![0].columns![0].attrs).toEqual([
-      { kind: 'Identity', generation: 'ALWAYS', seqStart: 1 },
+      { kind: PgAttrKind.Identity, generation: 'ALWAYS', seqStart: 1 },
     ])
   })
 

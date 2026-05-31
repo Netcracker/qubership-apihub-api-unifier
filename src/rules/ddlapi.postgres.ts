@@ -1,27 +1,8 @@
+import { PgAttrKind, PgObjectKind, PgTypeKind } from '@netcracker/qubership-apihub-ddlapi'
 import { CURRENT_DATA_LEVEL, NormalizationRules } from '../types'
 import { checkContains, checkType, TYPE_ARRAY, TYPE_BOOLEAN, TYPE_JSON_ANY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../validate/checker'
 import { DdlApiDialect, DIALECT_ID_POSTGRES } from './ddlapi.dialect'
 import { DDL_API_PROPERTY_TYPE, DDL_API_PROPERTY_UNSIGNED } from './ddlapi.const'
-
-// PostgreSQL escape-hatch `kind` discriminants emitted by buildFromDdl. These are not part
-// of ddlapi's core unions (TypeKind/AttrKind/ObjectKind), so they are declared here — the
-// dialect overlay is their only owner.
-export const PG_KIND_IDENTITY = 'Identity'
-export const PG_KIND_PARTITION = 'Partition'
-export const PG_KIND_INHERITS = 'Inherits'
-export const PG_KIND_STORAGE_PARAMS = 'StorageParams'
-export const PG_KIND_TRIGGER = 'Trigger'
-export const PG_KIND_INDEX_INCLUDE = 'IndexInclude'
-export const PG_KIND_INDEX_NULLS_DISTINCT = 'IndexNullsDistinct'
-export const PG_KIND_INDEX_TYPE = 'IndexType'
-export const PG_KIND_INDEX_PREDICATE = 'IndexPredicate'
-export const PG_KIND_CONCURRENTLY = 'Concurrently'
-export const PG_KIND_INDEX_COLUMN_PROP = 'IndexColumnProp'
-export const PG_KIND_INDEX_OP_CLASS = 'IndexOpClass'
-export const PG_KIND_EXCLUDE_CONSTRAINT = 'ExcludeConstraint'
-export const PG_KIND_COMPOSITE_TYPE = 'CompositeType'
-export const PG_KIND_RANGE_TYPE = 'RangeType'
-export const PG_KIND_DOMAIN = 'pg:domain'
 
 // hashStrategy: CURRENT_DATA_LEVEL includes a key in its owner entity's hash (see ddlapi.ts).
 // PG kind fields are content (opaque) so every leaf carries it.
@@ -50,7 +31,7 @@ const ENTITY_HASH = { hashOwner: true, hashStrategy: CURRENT_DATA_LEVEL } as con
 // ANY_RULE, and keeps a `/**` catch-all so unforeseen fields pass through (escape-hatch
 // resilience). The model-aware origins walk decorates these generically.
 const identityRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_IDENTITY),
+  '/kind': pgKind(PgAttrKind.Identity),
   '/generation': STRING_RULE,
   '/seqStart': NUMBER_RULE,
   '/seqIncrement': NUMBER_RULE,
@@ -59,7 +40,7 @@ const identityRules: NormalizationRules = {
   ...HASHED,
 }
 const partitionRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_PARTITION),
+  '/kind': pgKind(PgAttrKind.Partition),
   '/T': STRING_RULE,
   '/parts': ANY_RULE,
   '/**': ANY_DESCENDANT,
@@ -67,21 +48,21 @@ const partitionRules: NormalizationRules = {
   ...HASHED,
 }
 const inheritsRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INHERITS),
+  '/kind': pgKind(PgAttrKind.Inherits),
   '/parents': STRING_ARRAY_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const storageParamsRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_STORAGE_PARAMS),
+  '/kind': pgKind(PgAttrKind.StorageParams),
   '/params': ANY_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const triggerRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_TRIGGER),
+  '/kind': pgKind(PgAttrKind.Trigger),
   '/name': STRING_RULE,
   '/timing': STRING_RULE,
   '/events': ANY_RULE,
@@ -96,41 +77,41 @@ const triggerRules: NormalizationRules = {
   ...HASHED,
 }
 const indexIncludeRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INDEX_INCLUDE),
+  '/kind': pgKind(PgAttrKind.IndexInclude),
   '/columns': STRING_ARRAY_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const indexNullsDistinctRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INDEX_NULLS_DISTINCT),
+  '/kind': pgKind(PgAttrKind.IndexNullsDistinct),
   '/V': BOOLEAN_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const indexTypeRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INDEX_TYPE),
+  '/kind': pgKind(PgAttrKind.IndexType),
   '/T': STRING_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const indexPredicateRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INDEX_PREDICATE),
+  '/kind': pgKind(PgAttrKind.IndexPredicate),
   '/P': STRING_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const concurrentlyRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_CONCURRENTLY),
+  '/kind': pgKind(PgAttrKind.Concurrently),
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const indexColumnPropRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INDEX_COLUMN_PROP),
+  '/kind': pgKind(PgAttrKind.IndexColumnProp),
   '/nullsFirst': BOOLEAN_RULE,
   '/nullsLast': BOOLEAN_RULE,
   '/**': ANY_DESCENDANT,
@@ -138,14 +119,14 @@ const indexColumnPropRules: NormalizationRules = {
   ...HASHED,
 }
 const indexOpClassRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_INDEX_OP_CLASS),
+  '/kind': pgKind(PgAttrKind.IndexOpClass),
   '/name': STRING_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
   ...HASHED,
 }
 const excludeConstraintRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_EXCLUDE_CONSTRAINT),
+  '/kind': pgKind(PgObjectKind.ExcludeConstraint),
   '/name': STRING_RULE,
   '/method': STRING_RULE,
   '/exclusions': ANY_RULE,
@@ -154,7 +135,7 @@ const excludeConstraintRules: NormalizationRules = {
   ...ENTITY_HASH,
 }
 const compositeTypeRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_COMPOSITE_TYPE),
+  '/kind': pgKind(PgObjectKind.CompositeType),
   '/name': STRING_RULE,
   '/schema': STRING_RULE, // schema *name* string (not a Schema back-ref)
   '/fields': ANY_RULE,
@@ -163,7 +144,7 @@ const compositeTypeRules: NormalizationRules = {
   ...ENTITY_HASH,
 }
 const rangeTypeRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_RANGE_TYPE),
+  '/kind': pgKind(PgObjectKind.RangeType),
   '/name': STRING_RULE,
   '/schema': STRING_RULE, // schema *name* string
   '/subtype': STRING_RULE,
@@ -172,9 +153,9 @@ const rangeTypeRules: NormalizationRules = {
   validate: checkType(TYPE_OBJECT),
   ...ENTITY_HASH,
 }
-// pg:domain is dual-role: a SchemaObject in schema.objects AND a SchemaType at column.type.type.
+// Domain is dual-role: a SchemaObject in schema.objects AND a SchemaType at column.type.type.
 const pgDomainRules: NormalizationRules = {
-  '/kind': pgKind(PG_KIND_DOMAIN),
+  '/kind': pgKind(PgObjectKind.Domain),
   '/t': STRING_RULE,
   '/baseType': ANY_RULE, // a SchemaType, compared opaquely
   '/null': BOOLEAN_RULE,
@@ -186,29 +167,29 @@ const pgDomainRules: NormalizationRules = {
 }
 
 const ATTR_RULES: Record<string, NormalizationRules> = {
-  [PG_KIND_IDENTITY]: identityRules,
-  [PG_KIND_PARTITION]: partitionRules,
-  [PG_KIND_INHERITS]: inheritsRules,
-  [PG_KIND_STORAGE_PARAMS]: storageParamsRules,
-  [PG_KIND_TRIGGER]: triggerRules,
-  [PG_KIND_INDEX_INCLUDE]: indexIncludeRules,
-  [PG_KIND_INDEX_NULLS_DISTINCT]: indexNullsDistinctRules,
-  [PG_KIND_INDEX_TYPE]: indexTypeRules,
-  [PG_KIND_INDEX_PREDICATE]: indexPredicateRules,
-  [PG_KIND_CONCURRENTLY]: concurrentlyRules,
-  [PG_KIND_INDEX_COLUMN_PROP]: indexColumnPropRules,
-  [PG_KIND_INDEX_OP_CLASS]: indexOpClassRules,
+  [PgAttrKind.Identity]: identityRules,
+  [PgAttrKind.Partition]: partitionRules,
+  [PgAttrKind.Inherits]: inheritsRules,
+  [PgAttrKind.StorageParams]: storageParamsRules,
+  [PgAttrKind.Trigger]: triggerRules,
+  [PgAttrKind.IndexInclude]: indexIncludeRules,
+  [PgAttrKind.IndexNullsDistinct]: indexNullsDistinctRules,
+  [PgAttrKind.IndexType]: indexTypeRules,
+  [PgAttrKind.IndexPredicate]: indexPredicateRules,
+  [PgAttrKind.Concurrently]: concurrentlyRules,
+  [PgAttrKind.IndexColumnProp]: indexColumnPropRules,
+  [PgAttrKind.IndexOpClass]: indexOpClassRules,
 }
 
 const OBJECT_RULES: Record<string, NormalizationRules> = {
-  [PG_KIND_EXCLUDE_CONSTRAINT]: excludeConstraintRules,
-  [PG_KIND_COMPOSITE_TYPE]: compositeTypeRules,
-  [PG_KIND_RANGE_TYPE]: rangeTypeRules,
-  [PG_KIND_DOMAIN]: pgDomainRules,
+  [PgObjectKind.ExcludeConstraint]: excludeConstraintRules,
+  [PgObjectKind.CompositeType]: compositeTypeRules,
+  [PgObjectKind.RangeType]: rangeTypeRules,
+  [PgObjectKind.Domain]: pgDomainRules,
 }
 
 const TYPE_RULES: Record<string, NormalizationRules> = {
-  [PG_KIND_DOMAIN]: pgDomainRules,
+  [PgTypeKind.Domain]: pgDomainRules,
 }
 
 /**

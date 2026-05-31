@@ -74,9 +74,9 @@ const orderedKeys = (node: object): PropertyKey[] => {
 // follow these, or it would home the target at the referencing site.
 const isReferenceObjectChild = (node: Record<PropertyKey, unknown>, key: PropertyKey, child: object): boolean => {
   // A `schema` property is always a back-reference to the owning Schema (EnumType /
-  // CompositeType / RangeType / pg:domain), never a containment home.
+  // CompositeType / RangeType / Domain), never a containment home.
   if (key === DDL_API_PROPERTY_SCHEMA) { return true }
-  // `ColumnType.type` is a SchemaType (carries a `kind`). For a *named* type (enum / pg:domain)
+  // `ColumnType.type` is a SchemaType (carries a `kind`). For a *named* type (enum / Domain)
   // it is the same instance held in schema.objects — a reference whose home is there. Treating
   // it as a reference (rather than relying on objects-before-tables ordering) homes named types
   // at their definition site regardless of walk order, incl. cross-schema. Inline (unnamed)

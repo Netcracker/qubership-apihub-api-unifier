@@ -1,4 +1,4 @@
-import { Realm } from '@netcracker/qubership-apihub-ddlapi'
+import { Realm, PgAttrKind, PgObjectKind, PgTypeKind } from '@netcracker/qubership-apihub-ddlapi'
 import { denormalize, normalize, DDL_API_NORMALIZE_OPTIONS } from '../../src'
 import { buildRealmAndAssertValid } from '../helpers/ddlapi'
 import { commonOriginsCheck, TEST_DEFAULTS_FLAG, TEST_ORIGINS_FLAG, TEST_ORIGINS_FOR_DEFAULTS } from '../helpers'
@@ -31,17 +31,17 @@ describe('ddlapi PostgreSQL overlay', () => {
 
   // [kind, ddl, assertion on the normalized kind object]
   const cases: Array<[string, string, (obj: any) => void]> = [
-    ['Identity', 'CREATE TABLE t (id bigint GENERATED ALWAYS AS IDENTITY)', (o) => expect(o.generation).toBe('ALWAYS')],
-    ['Partition', 'CREATE TABLE t (id int) PARTITION BY RANGE (id)', (o) => expect(o.T).toBe('RANGE')],
-    ['Inherits', 'CREATE TABLE p (id int); CREATE TABLE c (x int) INHERITS (p)', (o) => expect(o.parents).toContain('p')],
-    ['StorageParams', 'CREATE TABLE t (id int) WITH (fillfactor=70)', (o) => expect(o.params).toBeDefined()],
-    ['ExcludeConstraint', 'CREATE TABLE t (id int, c circle, EXCLUDE USING gist (c WITH &&))', (o) => expect(o.method).toBeDefined()],
-    ['CompositeType', 'CREATE TYPE ct AS (a int, b text)', (o) => expect(o.name).toBe('ct')],
-    ['RangeType', 'CREATE TYPE rt AS RANGE (subtype = int4)', (o) => expect(o.name).toBe('rt')],
-    ['pg:domain', 'CREATE DOMAIN d AS integer CHECK (VALUE > 0)', (o) => expect(o.baseType).toBeDefined()],
-    ['IndexInclude', 'CREATE TABLE t (id int, a int); CREATE INDEX i ON t (id) INCLUDE (a)', (o) => expect(o.columns).toContain('a')],
-    ['IndexType', 'CREATE TABLE t (id int, j jsonb); CREATE INDEX i ON t USING gin (j)', (o) => expect(o.T).toBe('gin')],
-    ['IndexPredicate', 'CREATE TABLE t (id int); CREATE INDEX i ON t (id) WHERE id > 0', (o) => expect(o.P).toBeDefined()],
+    [PgAttrKind.Identity, 'CREATE TABLE t (id bigint GENERATED ALWAYS AS IDENTITY)', (o) => expect(o.generation).toBe('ALWAYS')],
+    [PgAttrKind.Partition, 'CREATE TABLE t (id int) PARTITION BY RANGE (id)', (o) => expect(o.T).toBe('RANGE')],
+    [PgAttrKind.Inherits, 'CREATE TABLE p (id int); CREATE TABLE c (x int) INHERITS (p)', (o) => expect(o.parents).toContain('p')],
+    [PgAttrKind.StorageParams, 'CREATE TABLE t (id int) WITH (fillfactor=70)', (o) => expect(o.params).toBeDefined()],
+    [PgObjectKind.ExcludeConstraint, 'CREATE TABLE t (id int, c circle, EXCLUDE USING gist (c WITH &&))', (o) => expect(o.method).toBeDefined()],
+    [PgObjectKind.CompositeType, 'CREATE TYPE ct AS (a int, b text)', (o) => expect(o.name).toBe('ct')],
+    [PgObjectKind.RangeType, 'CREATE TYPE rt AS RANGE (subtype = int4)', (o) => expect(o.name).toBe('rt')],
+    [PgObjectKind.Domain, 'CREATE DOMAIN d AS integer CHECK (VALUE > 0)', (o) => expect(o.baseType).toBeDefined()],
+    [PgAttrKind.IndexInclude, 'CREATE TABLE t (id int, a int); CREATE INDEX i ON t (id) INCLUDE (a)', (o) => expect(o.columns).toContain('a')],
+    [PgAttrKind.IndexType, 'CREATE TABLE t (id int, j jsonb); CREATE INDEX i ON t USING gin (j)', (o) => expect(o.T).toBe('gin')],
+    [PgAttrKind.IndexPredicate, 'CREATE TABLE t (id int); CREATE INDEX i ON t (id) WHERE id > 0', (o) => expect(o.P).toBeDefined()],
   ]
 
   it.each(cases)('normalizes, validates and round-trips %s', async (kind, ddl, assertObj) => {
@@ -86,15 +86,15 @@ describe('ddlapi PostgreSQL overlay', () => {
     expect(findByKind(back, 'GeneratedExpr')).not.toHaveProperty('type')
   })
 
-  it('shares a dual-role pg:domain instance between schema.objects and the column type', async () => {
+  it('shares a dual-role Domain instance between schema.objects and the column type', async () => {
     const realm = await buildRealmAndAssertValid(`
       CREATE DOMAIN positive AS integer CHECK (VALUE > 0);
       CREATE TABLE t (x positive);
     `)
     const result = normalize(realm, baseOptions) as Realm
-    const schemaObjectDomain = result.schemas[0].objects!.find((o: any) => o.kind === 'pg:domain')
+    const schemaObjectDomain = result.schemas[0].objects!.find((o: any) => o.kind === PgObjectKind.Domain)
     const columnType: any = result.schemas[0].tables!.find((t) => t.name === 't')!.columns![0].type!.type
-    expect(columnType.kind).toBe('pg:domain')
+    expect(columnType.kind).toBe(PgTypeKind.Domain)
     expect(columnType).toBe(schemaObjectDomain)
     commonOriginsCheck(result, { originsFlag: TEST_ORIGINS_FLAG })
   })

@@ -1,5 +1,5 @@
 lockfile_version: '1'
-generated_at: '2026-05-29T13:06:37.811622+00:00'
+generated_at: '2026-05-31T13:59:00.051373+00:00'
 apm_version: 0.14.2
 dependencies:
 - repo_url: _local/api-unifier-authoring
@@ -11,9 +11,9 @@ dependencies:
   - .cursor/rules/api-unifier-authoring.mdc
   - .github/instructions/api-unifier-authoring.instructions.md
   deployed_file_hashes:
-    .claude/rules/api-unifier-authoring.md: sha256:ffc502c9999ceecb5f70a1c0a0d1945c6e9c4efa5c74384cdce511b84e854b99
-    .cursor/rules/api-unifier-authoring.mdc: sha256:78b484611411290272faf2f87afaaa4923e4649fc97eedf5e1392692254935ea
-    .github/instructions/api-unifier-authoring.instructions.md: sha256:53f72b77b2c0471e57391a250eb1e3c907b29beae771461b0a2213c1cab045cc
+    .claude/rules/api-unifier-authoring.md: sha256:66330dbc6292b6e58b14c71a8b76bea5443f9bfa6a0483063081841b8c541a3f
+    .cursor/rules/api-unifier-authoring.mdc: sha256:d4fb184eaea383f038274a84c4d8dd859e0e9e76e390da23542c38ceb7debaa1
+    .github/instructions/api-unifier-authoring.instructions.md: sha256:1c8f98f1d5295b8f659d46a4c6ac9e35e6642888bb5a1f5a30676d6eb14a92ad
   source: local
   local_path: ./agent-packages/api-unifier-authoring
 - repo_url: _local/api-unifier-testing
@@ -27,6 +27,20 @@ dependencies:
   deployed_file_hashes:
     .claude/rules/api-unifier-testing.md: sha256:d99e03cb75b69fae37d7d54b89ed0594232c12b958cc9c90c58803fad17b4b46
     .cursor/rules/api-unifier-testing.mdc: sha256:ce42a22b125ef1f4afd564ebed702ab87539fa0280dd5fe8f138e4c86b496740
-    .github/instructions/api-unifier-testing.instructions.md: sha256:b1d11c70d27c782d80e1accd296a5301db642e095095ff129569697f93e1ae10
+    .github/instructions/api-unifier-testing.instructions.md: sha256:3b54473fcd48774d71dee3928f449a020fd6ba09a66084ecf2d72bcf21f78b99
   source: local
   local_path: ./agent-packages/api-unifier-testing
+- repo_url: _local/ddlapi-using
+  package_type: apm_package
+  deployed_files:
+  - .agents/skills/ddlapi-using
+  - .claude/rules/ddlapi-using.md
+  - .claude/skills/ddlapi-using
+  - .cursor/rules/ddlapi-using.mdc
+  - .github/instructions/ddlapi-using.instructions.md
+  deployed_file_hashes:
+    .claude/rules/ddlapi-using.md: sha256:339a7086fb5cfd6df1374345ff577321f96197deb217d482fd9f36f4f9021584
+    .cursor/rules/ddlapi-using.mdc: sha256:90554d14dcea6999074084c82cdabe92c9049452d6291ecc1570344c630a64f7
+    .github/instructions/ddlapi-using.instructions.md: sha256:a12f9f14d89ba48e3ef6631e1727f9f26c908d573c7ea836c3b44873672be558
+  source: local
+  local_path: ../ddlapi/agent-packages/ddlapi-using

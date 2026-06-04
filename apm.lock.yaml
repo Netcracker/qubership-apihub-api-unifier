@@ -1,5 +1,5 @@
 lockfile_version: '1'
-generated_at: '2026-05-31T13:59:00.051373+00:00'
+generated_at: '2026-06-04T08:47:40.983036+00:00'
 apm_version: 0.14.2
 dependencies:
 - repo_url: _local/api-unifier-authoring
@@ -27,7 +27,7 @@ dependencies:
   deployed_file_hashes:
     .claude/rules/api-unifier-testing.md: sha256:d99e03cb75b69fae37d7d54b89ed0594232c12b958cc9c90c58803fad17b4b46
     .cursor/rules/api-unifier-testing.mdc: sha256:ce42a22b125ef1f4afd564ebed702ab87539fa0280dd5fe8f138e4c86b496740
-    .github/instructions/api-unifier-testing.instructions.md: sha256:3b54473fcd48774d71dee3928f449a020fd6ba09a66084ecf2d72bcf21f78b99
+    .github/instructions/api-unifier-testing.instructions.md: sha256:b1d11c70d27c782d80e1accd296a5301db642e095095ff129569697f93e1ae10
   source: local
   local_path: ./agent-packages/api-unifier-testing
 - repo_url: _local/ddlapi-using

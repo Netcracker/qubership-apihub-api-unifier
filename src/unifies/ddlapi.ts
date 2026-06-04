@@ -12,7 +12,7 @@ import { cleanOrigins, resolveOrigins, setOrigins } from '../origins'
 import { getJsoProperty, setJsoProperty } from '../utils'
 import { ErrorMessage } from '../errors'
 import {
-  DDL_API_PROPERTY_C,
+  DDL_API_PROPERTY_COLUMN,
   DDL_API_PROPERTY_COLUMNS,
   DDL_API_PROPERTY_NULL,
   DDL_API_PROPERTY_PARTS,
@@ -23,7 +23,7 @@ import {
 } from '../rules/ddlapi.const'
 
 // The set of Column instances participating in the table's primary key, keyed by
-// reference identity against primaryKey.parts[].c (the very same Column instances).
+// reference identity against primaryKey.parts[].column (the very same Column instances).
 const primaryKeyColumns = (table: Record<PropertyKey, unknown>): Set<unknown> => {
   const set = new Set<unknown>()
   const pk = table[DDL_API_PROPERTY_PRIMARY_KEY]
@@ -32,7 +32,7 @@ const primaryKeyColumns = (table: Record<PropertyKey, unknown>): Set<unknown> =>
   if (!isArray(parts)) { return set }
   for (const part of parts) {
     if (isObject(part)) {
-      const column = (part as Record<PropertyKey, unknown>)[DDL_API_PROPERTY_C]
+      const column = (part as Record<PropertyKey, unknown>)[DDL_API_PROPERTY_COLUMN]
       if (isObject(column)) { set.add(column) }
     }
   }

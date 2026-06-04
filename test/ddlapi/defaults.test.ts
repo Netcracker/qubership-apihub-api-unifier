@@ -151,7 +151,7 @@ describe('ddlapi PK-aware nullability', () => {
     const realm = await buildRealmAndAssertValid('CREATE TABLE t (id bigint PRIMARY KEY);')
     const result = normalize(realm, baseOptions) as Realm
     const table = result.schemas[0].tables![0]
-    const pkColumn = table.primaryKey!.parts![0].c!
+    const pkColumn = table.primaryKey!.parts![0].column!
     expect(pkColumn).toBe(table.columns![0])
     expect(pkColumn.type!.null).toBe(false)
   })

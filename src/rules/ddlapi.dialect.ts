@@ -17,8 +17,7 @@ export type DialectId = typeof DIALECT_ID_POSTGRES
  * `undefined` lets the core fall back to its generic `Unknown*` passthrough, so every
  * dialect shares one fallback.
  *
- * NOTE: returns `NormalizationRules` (not the bare `NormalizationRule` sketched in the
- * plan) so a dialect kind can carry nested child-path rules (e.g. Partition.parts).
+ * Returns `NormalizationRules`  so a dialect kind can carry nested child-path rules (e.g. Partition.parts).
  */
 export interface DdlApiDialect {
   readonly id: DialectId

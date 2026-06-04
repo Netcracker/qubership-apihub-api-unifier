@@ -39,8 +39,8 @@ describe('ddlapi denormalize (round-trip)', () => {
 
     const table = result.schemas[0].tables![0] as Table
     const index = table.indexes![0]
-    expect(index.parts![0].c).toBe(table.columns!.find((c) => c.name === 'id'))
-    expect(index.parts![1].c).toBe(table.columns!.find((c) => c.name === 'name'))
+    expect(index.parts![0].column).toBe(table.columns!.find((c) => c.name === 'id'))
+    expect(index.parts![1].column).toBe(table.columns!.find((c) => c.name === 'name'))
   })
 
   it('round-trips a cyclic FK graph back to the source', async () => {

@@ -126,9 +126,9 @@ const rangeTypeRules: NormalizationRules = {
   validate: checkType(TYPE_OBJECT),
 }
 // Domain is dual-role: a SchemaObject in schema.objects AND a SchemaType at column.type.type.
-const pgDomainRules: NormalizationRules = {
+const domainRules: NormalizationRules = {
   '/kind': pgKind(PgObjectKind.Domain),
-  '/t': { validate: checkType(TYPE_STRING) },
+  '/type': { validate: checkType(TYPE_STRING) },
   '/baseType': ANY_RULE, // a SchemaType, compared opaquely
   '/null': { validate: checkType(TYPE_BOOLEAN) },
   '/default': ANY_RULE, // an Expr
@@ -156,11 +156,11 @@ const OBJECT_RULES: Record<string, NormalizationRules> = {
   [PgObjectKind.ExcludeConstraint]: excludeConstraintRules,
   [PgObjectKind.CompositeType]: compositeTypeRules,
   [PgObjectKind.RangeType]: rangeTypeRules,
-  [PgObjectKind.Domain]: pgDomainRules,
+  [PgObjectKind.Domain]: domainRules,
 }
 
 const TYPE_RULES: Record<string, NormalizationRules> = {
-  [PgTypeKind.Domain]: pgDomainRules,
+  [PgTypeKind.Domain]: domainRules,
 }
 
 /**

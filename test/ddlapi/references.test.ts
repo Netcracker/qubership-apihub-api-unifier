@@ -81,8 +81,8 @@ describe('ddlapi references', () => {
     const t = tableByName(result, 't')
     const index = t.indexes![0]
     expect(index.parts).toHaveLength(2)
-    expect(index.parts![0].c).toBe(t.columns!.find((c) => c.name === 'id'))
-    expect(index.parts![1].c).toBe(t.columns!.find((c) => c.name === 'name'))
+    expect(index.parts![0].column).toBe(t.columns!.find((c) => c.name === 'id'))
+    expect(index.parts![1].column).toBe(t.columns!.find((c) => c.name === 'name'))
 
     commonOriginsCheck(result, { originsFlag: TEST_ORIGINS_FLAG })
   })

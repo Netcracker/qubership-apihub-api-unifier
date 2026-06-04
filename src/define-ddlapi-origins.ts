@@ -4,7 +4,7 @@ import { ChainItem, OriginCache, OriginsMetaRecord, ResolveOptions } from './typ
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { setJsoProperty } from './utils'
 import {
-  DDL_API_PROPERTY_C,
+  DDL_API_PROPERTY_COLUMN,
   DDL_API_PROPERTY_COLUMNS,
   DDL_API_PROPERTY_KIND,
   DDL_API_PROPERTY_OBJECTS,
@@ -86,7 +86,7 @@ const isReferenceObjectChild = (node: Record<PropertyKey, unknown>, key: Propert
   const kind = node.kind
   if (kind === ObjectKind.ForeignKey) { return key === DDL_API_PROPERTY_REF_TABLE }
   // IndexPart has no `kind`; identify it structurally by its required `seqNo`.
-  if (kind === undefined && DDL_API_PROPERTY_SEQ_NO in node) { return key === DDL_API_PROPERTY_C }
+  if (kind === undefined && DDL_API_PROPERTY_SEQ_NO in node) { return key === DDL_API_PROPERTY_COLUMN }
   return false
 }
 

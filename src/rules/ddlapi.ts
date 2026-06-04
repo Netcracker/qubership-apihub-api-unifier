@@ -58,8 +58,8 @@ const kindRule = (kindValue: string): NormalizationRules => ({
 })
 
 const readKind = (value: unknown): string | undefined =>
-  isObject(value) && typeof (value as Record<string, unknown>).kind === 'string'
-    ? (value as Record<string, string>).kind
+  isObject(value) && 'kind' in value && typeof value.kind === 'string'
+    ? value.kind
     : undefined
 
 // Empty-collection normalization + reversible primitive defaults. Absent array
@@ -181,15 +181,15 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   const depsArrayRule: NormalizationRules = objectsArrayRule
 
   // --- SchemaType members ---
-  // Bool/JSON/Spatial/UUID/Unsupported: just { kind, t }.
+  // Bool/JSON/Spatial/UUID/Unsupported: just { kind, type }.
   const scalarTypeRules = (kindValue: string): NormalizationRules => ({
     '/kind': kindRule(kindValue),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
   })
   const integerTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.IntegerType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
@@ -198,7 +198,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   }
   const decimalTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.DecimalType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/precision': { validate: checkType(TYPE_NUMBER) },
     '/scale': { validate: checkType(TYPE_NUMBER) },
     '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
@@ -207,7 +207,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   }
   const floatTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.FloatType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
     '/precision': { validate: checkType(TYPE_NUMBER) },
     validate: checkType(TYPE_OBJECT),
@@ -215,7 +215,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   }
   const stringTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.StringType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/size': { validate: checkType(TYPE_NUMBER) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
@@ -223,13 +223,13 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   }
   const binaryTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.BinaryType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/size': { validate: checkType(TYPE_NUMBER) },
     validate: checkType(TYPE_OBJECT),
   }
   const timeTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.TimeType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/precision': { validate: checkType(TYPE_NUMBER) },
     '/scale': { validate: checkType(TYPE_NUMBER) },
     '/attrs': attrsArrayRule,
@@ -238,7 +238,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   }
   const enumTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.EnumType),
-    '/t': { validate: checkType(TYPE_STRING) },
+    '/type': { validate: checkType(TYPE_STRING) },
     '/values': { '/*': { validate: checkType(TYPE_STRING) }, validate: checkType(TYPE_ARRAY) },
     // back-reference to the owning Schema (reference edge / cycle) — resolved lazily.
     '/schema': () => schemaRules,
@@ -255,12 +255,12 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   }
   const charsetRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.Charset),
-    '/v': { validate: checkType(TYPE_STRING) },
+    '/value': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
   }
   const collationRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.Collation),
-    '/v': { validate: checkType(TYPE_STRING) },
+    '/value': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
   }
   // Check is both an Attr and a SchemaObject (same `kind` string) — one rule serves both.
@@ -284,12 +284,12 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   // --- Expr members ---
   const literalRules: NormalizationRules = {
     '/kind': kindRule(ExprKind.Literal),
-    '/v': { validate: checkType(TYPE_STRING) },
+    '/value': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
   }
   const rawExprRules: NormalizationRules = {
     '/kind': kindRule(ExprKind.RawExpr),
-    '/x': { validate: checkType(TYPE_STRING) },
+    '/expr': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
   }
   const namedDefaultRules: NormalizationRules = {
@@ -321,8 +321,8 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
   const indexPartRules: NormalizationRules = {
     '/seqNo': { validate: checkType(TYPE_NUMBER) },
     '/desc': { validate: checkType(TYPE_BOOLEAN) },
-    '/x': exprRules,
-    '/c': columnRules, // reference edge to a table column (same instance)
+    '/expr': exprRules,
+    '/column': columnRules, // reference edge to a table column (same instance)
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // desc:false — ascending is the SQL default.

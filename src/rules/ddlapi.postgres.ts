@@ -1,8 +1,7 @@
-import { PgAttrKind, PgObjectKind, PgTypeKind } from '@netcracker/qubership-apihub-ddlapi'
+import { DdlapiProperties, PgAttrKind, PgGeneratedExprType, PgObjectKind, PgTypeKind } from '@netcracker/qubership-apihub-ddlapi'
 import { NormalizationRules } from '../types'
 import { checkContains, checkType, TYPE_ARRAY, TYPE_BOOLEAN, TYPE_JSON_ANY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../validate/checker'
 import { DdlApiDialect, DIALECT_ID_POSTGRES } from './ddlapi.dialect'
-import { DDL_API_PROPERTY_TYPE, DDL_API_PROPERTY_UNSIGNED } from './ddlapi.const'
 
 // Accept any JSON value (and any nested content) without stripping — used for opaque,
 // PG-specific data blobs (partition spec, exclusions, composite fields, base type, …)
@@ -175,7 +174,7 @@ export const DIALECT_POSTGRES: DdlApiDialect = {
   objectRulesFor: (kind) => OBJECT_RULES[kind],
   typeRulesFor: (kind) => TYPE_RULES[kind],
   primitiveDefaults: {
-    [DDL_API_PROPERTY_UNSIGNED]: false,
-    [DDL_API_PROPERTY_TYPE]: 'STORED', // GeneratedExpr.type
+    [DdlapiProperties.Unsigned]: false,
+    [DdlapiProperties.Type]: PgGeneratedExprType.Stored,
   },
 }

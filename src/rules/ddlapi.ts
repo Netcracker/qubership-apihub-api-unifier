@@ -11,26 +11,10 @@ import {
   TYPE_OBJECT,
   TYPE_STRING,
 } from '../validate/checker'
-import { AttrKind, ExprKind, ObjectKind, ReferenceOption, TypeKind } from '@netcracker/qubership-apihub-ddlapi'
+import { AttrKind, DdlapiProperties, ExprKind, ObjectKind, ReferenceOption, TypeKind } from '@netcracker/qubership-apihub-ddlapi'
 import { DefaultValueMapping, valueDefaults } from '../unifies/defaults'
 import { EMPTY_MARKER, ReplaceMapping, TO_EMPTY_ARRAY_MAPPING, valueReplaces } from '../unifies/replaces'
 import { ddlApiNullabilityDefault, reportDanglingForeignKey } from '../unifies/ddlapi'
-import {
-  DDL_API_PROPERTY_ATTRS,
-  DDL_API_PROPERTY_COLUMNS,
-  DDL_API_PROPERTY_DEPS,
-  DDL_API_PROPERTY_DESC,
-  DDL_API_PROPERTY_FOREIGN_KEYS,
-  DDL_API_PROPERTY_INDEXES,
-  DDL_API_PROPERTY_OBJECTS,
-  DDL_API_PROPERTY_ON_DELETE,
-  DDL_API_PROPERTY_ON_UPDATE,
-  DDL_API_PROPERTY_PARTS,
-  DDL_API_PROPERTY_TABLES,
-  DDL_API_PROPERTY_TYPE,
-  DDL_API_PROPERTY_UNIQUE,
-  DDL_API_PROPERTY_UNSIGNED,
-} from './ddlapi.const'
 import { DdlApiDialect } from './ddlapi.dialect'
 
 export type DdlApiSpecVersion = typeof SPEC_TYPE_DDL_API_1
@@ -194,7 +178,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // unsigned is a dialect concept (MySQL); PG defaults it to false.
-    unify: collectionUnify([DDL_API_PROPERTY_ATTRS], dialectPrimitive(DDL_API_PROPERTY_UNSIGNED)),
+    unify: collectionUnify([DdlapiProperties.Attrs], dialectPrimitive(DdlapiProperties.Unsigned)),
   }
   const decimalTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.DecimalType),
@@ -203,7 +187,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/scale': { validate: checkType(TYPE_NUMBER) },
     '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
     validate: checkType(TYPE_OBJECT),
-    unify: collectionUnify([], dialectPrimitive(DDL_API_PROPERTY_UNSIGNED)),
+    unify: collectionUnify([], dialectPrimitive(DdlapiProperties.Unsigned)),
   }
   const floatTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.FloatType),
@@ -211,7 +195,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/unsigned': { validate: checkType(TYPE_BOOLEAN) },
     '/precision': { validate: checkType(TYPE_NUMBER) },
     validate: checkType(TYPE_OBJECT),
-    unify: collectionUnify([], dialectPrimitive(DDL_API_PROPERTY_UNSIGNED)),
+    unify: collectionUnify([], dialectPrimitive(DdlapiProperties.Unsigned)),
   }
   const stringTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.StringType),
@@ -219,7 +203,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/size': { validate: checkType(TYPE_NUMBER) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs),
   }
   const binaryTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.BinaryType),
@@ -234,7 +218,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/scale': { validate: checkType(TYPE_NUMBER) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs),
   }
   const enumTypeRules: NormalizationRules = {
     '/kind': kindRule(TypeKind.EnumType),
@@ -244,7 +228,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/schema': () => schemaRules,
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs),
   }
 
   // --- Attr members ---
@@ -270,7 +254,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/expr': { validate: checkType(TYPE_STRING) },
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs),
   }
   const generatedExprRules: NormalizationRules = {
     '/kind': kindRule(AttrKind.GeneratedExpr),
@@ -278,7 +262,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/type': { validate: checkType(TYPE_STRING) },
     validate: checkType(TYPE_OBJECT),
     // PG only supports STORED generated columns → default GeneratedExpr.type.
-    unify: collectionUnify([], dialectPrimitive(DDL_API_PROPERTY_TYPE)),
+    unify: collectionUnify([], dialectPrimitive(DdlapiProperties.Type)),
   }
 
   // --- Expr members ---
@@ -298,7 +282,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/expr': exprRules, // Literal | RawExpr
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs),
   }
 
   // --- Column / ColumnType ---
@@ -314,7 +298,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/default': exprRules,
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs),
   }
 
   // --- Index / IndexPart ---
@@ -326,7 +310,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // desc:false — ascending is the SQL default.
-    unify: collectionUnify([DDL_API_PROPERTY_ATTRS], { [DDL_API_PROPERTY_DESC]: false }),
+    unify: collectionUnify([DdlapiProperties.Attrs], { [DdlapiProperties.Desc]: false }),
   }
   const indexRules: NormalizationRules = {
     '/kind': kindRule(ObjectKind.Index),
@@ -336,7 +320,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/parts': { '/*': indexPartRules, validate: checkType(TYPE_ARRAY) },
     validate: checkType(TYPE_OBJECT),
     // unique:false — an unmarked index is non-unique.
-    unify: collectionUnify([DDL_API_PROPERTY_ATTRS, DDL_API_PROPERTY_PARTS], { [DDL_API_PROPERTY_UNIQUE]: false }),
+    unify: collectionUnify([DdlapiProperties.Attrs, DdlapiProperties.Parts], { [DdlapiProperties.Unique]: false }),
   }
 
   // --- ForeignKey ---
@@ -353,9 +337,9 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     validate: checkType(TYPE_OBJECT),
     // onUpdate/onDelete default to ANSI 'NO ACTION'; dangling-refTable reporter.
     unify: [
-      ...collectionUnify([DDL_API_PROPERTY_ATTRS], {
-        [DDL_API_PROPERTY_ON_UPDATE]: ReferenceOption.NoAction,
-        [DDL_API_PROPERTY_ON_DELETE]: ReferenceOption.NoAction,
+      ...collectionUnify([DdlapiProperties.Attrs], {
+        [DdlapiProperties.OnUpdate]: ReferenceOption.NoAction,
+        [DdlapiProperties.OnDelete]: ReferenceOption.NoAction,
       }),
       reportDanglingForeignKey,
     ],
@@ -370,7 +354,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/attrs': attrsArrayRule,
     '/deps': depsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_COLUMNS, DDL_API_PROPERTY_ATTRS, DDL_API_PROPERTY_DEPS),
+    unify: emptyArrayUnify(DdlapiProperties.Columns, DdlapiProperties.Attrs, DdlapiProperties.Deps),
   }
 
   // --- Table ---
@@ -390,12 +374,12 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     // table scope; it owns ColumnType.null and mutates shared types in place.
     unify: [
       ...collectionUnify([
-        DDL_API_PROPERTY_COLUMNS,
-        DDL_API_PROPERTY_INDEXES,
-        DDL_API_PROPERTY_FOREIGN_KEYS,
-        DDL_API_PROPERTY_ATTRS,
-        DDL_API_PROPERTY_OBJECTS,
-        DDL_API_PROPERTY_DEPS,
+        DdlapiProperties.Columns,
+        DdlapiProperties.Indexes,
+        DdlapiProperties.ForeignKeys,
+        DdlapiProperties.Attrs,
+        DdlapiProperties.Objects,
+        DdlapiProperties.Deps,
       ]),
       ddlApiNullabilityDefault,
     ],
@@ -408,7 +392,7 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/attrs': attrsArrayRule,
     '/objects': objectsArrayRule,
     validate: checkType(TYPE_OBJECT),
-    unify: emptyArrayUnify(DDL_API_PROPERTY_TABLES, DDL_API_PROPERTY_ATTRS, DDL_API_PROPERTY_OBJECTS),
+    unify: emptyArrayUnify(DdlapiProperties.Tables, DdlapiProperties.Attrs, DdlapiProperties.Objects),
   }
 
   // --- Realm (root) ---
@@ -419,6 +403,6 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/objects': objectsArrayRule,
     validate: checkType(TYPE_OBJECT),
     // schemas is required — present, not defaulted.
-    unify: emptyArrayUnify(DDL_API_PROPERTY_ATTRS, DDL_API_PROPERTY_OBJECTS),
+    unify: emptyArrayUnify(DdlapiProperties.Attrs, DdlapiProperties.Objects),
   }
 }

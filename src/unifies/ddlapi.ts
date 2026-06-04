@@ -11,28 +11,19 @@ import { isBroken, isPureCombiner } from './type'
 import { cleanOrigins, resolveOrigins, setOrigins } from '../origins'
 import { getJsoProperty, setJsoProperty } from '../utils'
 import { ErrorMessage } from '../errors'
-import {
-  DDL_API_PROPERTY_COLUMN,
-  DDL_API_PROPERTY_COLUMNS,
-  DDL_API_PROPERTY_NULL,
-  DDL_API_PROPERTY_PARTS,
-  DDL_API_PROPERTY_PRIMARY_KEY,
-  DDL_API_PROPERTY_REF_TABLE,
-  DDL_API_PROPERTY_SYMBOL,
-  DDL_API_PROPERTY_TYPE,
-} from '../rules/ddlapi.const'
+import { DdlapiProperties } from '@netcracker/qubership-apihub-ddlapi'
 
 // The set of Column instances participating in the table's primary key, keyed by
 // reference identity against primaryKey.parts[].column (the very same Column instances).
 const primaryKeyColumns = (table: Record<PropertyKey, unknown>): Set<unknown> => {
   const set = new Set<unknown>()
-  const pk = table[DDL_API_PROPERTY_PRIMARY_KEY]
+  const pk = table[DdlapiProperties.PrimaryKey]
   if (!isObject(pk)) { return set }
-  const parts = (pk as Record<PropertyKey, unknown>)[DDL_API_PROPERTY_PARTS]
+  const parts = (pk as Record<PropertyKey, unknown>)[DdlapiProperties.Parts]
   if (!isArray(parts)) { return set }
   for (const part of parts) {
     if (isObject(part)) {
-      const column = (part as Record<PropertyKey, unknown>)[DDL_API_PROPERTY_COLUMN]
+      const column = (part as Record<PropertyKey, unknown>)[DdlapiProperties.Column]
       if (isObject(column)) { set.add(column) }
     }
   }
@@ -51,10 +42,10 @@ const nullabilityDefaultFor = (isPrimaryKeyMember: boolean): boolean => !isPrima
 export const reportDanglingForeignKey: TransformFunction = (value, { options, path }) => {
   if (!isObject(value) || isArray(value)) { return value }
   const fk = value as Record<PropertyKey, unknown>
-  const columns = fk[DDL_API_PROPERTY_COLUMNS]
+  const columns = fk[DdlapiProperties.Columns]
   const hasSourceColumns = isArray(columns) && columns.length > 0
-  if (hasSourceColumns && !isObject(fk[DDL_API_PROPERTY_REF_TABLE])) {
-    const symbol = typeof fk[DDL_API_PROPERTY_SYMBOL] === 'string' ? (fk[DDL_API_PROPERTY_SYMBOL] as string) : undefined
+  if (hasSourceColumns && !isObject(fk[DdlapiProperties.RefTable])) {
+    const symbol = typeof fk[DdlapiProperties.Symbol] === 'string' ? (fk[DdlapiProperties.Symbol] as string) : undefined
     options.onUnifyError?.(ErrorMessage.ddlApiDanglingForeignKey(symbol), path, value)
   }
   return value
@@ -63,13 +54,13 @@ export const reportDanglingForeignKey: TransformFunction = (value, { options, pa
 const columnTypesWithDefault = (
   table: Record<PropertyKey, unknown>,
 ): Array<{ colType: Record<PropertyKey, unknown>; column: Record<PropertyKey, unknown>; def: boolean }> => {
-  const columns = table[DDL_API_PROPERTY_COLUMNS]
+  const columns = table[DdlapiProperties.Columns]
   if (!isArray(columns)) { return [] }
   const pkColumns = primaryKeyColumns(table)
   const result: Array<{ colType: Record<PropertyKey, unknown>; column: Record<PropertyKey, unknown>; def: boolean }> = []
   for (const column of columns) {
     if (!isObject(column)) { continue }
-    const colType = (column as Record<PropertyKey, unknown>)[DDL_API_PROPERTY_TYPE]
+    const colType = (column as Record<PropertyKey, unknown>)[DdlapiProperties.Type]
     if (!isObject(colType)) { continue } // no type clause → no nullability to default
     result.push({
       colType: colType as Record<PropertyKey, unknown>,
@@ -98,21 +89,21 @@ export const ddlApiNullabilityDefault: UnifyFunction = {
     const { originsFlag, defaultsFlag, createOriginsForDefaults } = options
 
     for (const { colType, column, def } of columnTypesWithDefault(value as Record<PropertyKey, unknown>)) {
-      const present = DDL_API_PROPERTY_NULL in colType
-      if (present && colType[DDL_API_PROPERTY_NULL] !== def) {
+      const present = DdlapiProperties.Null in colType
+      if (present && colType[DdlapiProperties.Null] !== def) {
         continue // explicit, non-default nullability — leave untouched
       }
       const flag: DefaultTypeFlag = present ? DEFAULT_TYPE_FLAG_PURE : DEFAULT_TYPE_FLAG_SYNTHETIC
       if (!present) {
-        colType[DDL_API_PROPERTY_NULL] = def // in-place mutation (documented exception)
+        colType[DdlapiProperties.Null] = def // in-place mutation (documented exception)
         if (originsFlag) {
-          const colTypeOrigins = resolveOrigins(column, DDL_API_PROPERTY_TYPE, originsFlag)
-          setOrigins(colType, DDL_API_PROPERTY_NULL, originsFlag, createOriginsForDefaults(colTypeOrigins))
+          const colTypeOrigins = resolveOrigins(column, DdlapiProperties.Type, originsFlag)
+          setOrigins(colType, DdlapiProperties.Null, originsFlag, createOriginsForDefaults(colTypeOrigins))
         }
       }
       if (defaultsFlag) {
         const meta: DefaultMetaRecord = { ...((getJsoProperty(colType, defaultsFlag) as DefaultMetaRecord) ?? {}) }
-        meta[DDL_API_PROPERTY_NULL] = flag
+        meta[DdlapiProperties.Null] = flag
         setJsoProperty(colType, defaultsFlag, meta)
       }
     }
@@ -124,11 +115,11 @@ export const ddlApiNullabilityDefault: UnifyFunction = {
     const { originsFlag, defaultsFlag, skip } = options
 
     for (const { colType, def } of columnTypesWithDefault(value as Record<PropertyKey, unknown>)) {
-      if (!(DDL_API_PROPERTY_NULL in colType)) { continue }
-      if (colType[DDL_API_PROPERTY_NULL] !== def) { continue } // explicit non-default — keep
-      if (skip && skip(colType[DDL_API_PROPERTY_NULL], [...path, DDL_API_PROPERTY_NULL])) { continue }
-      delete colType[DDL_API_PROPERTY_NULL]
-      cleanOrigins(colType, DDL_API_PROPERTY_NULL, originsFlag)
+      if (!(DdlapiProperties.Null in colType)) { continue }
+      if (colType[DdlapiProperties.Null] !== def) { continue } // explicit non-default — keep
+      if (skip && skip(colType[DdlapiProperties.Null], [...path, DdlapiProperties.Null])) { continue }
+      delete colType[DdlapiProperties.Null]
+      cleanOrigins(colType, DdlapiProperties.Null, originsFlag)
       // This unify is the sole writer of the ColumnType's defaults flag (only `null`), so
       // remove it wholesale, as valueDefaults.backward does for the nodes it owns.
       if (defaultsFlag) { delete colType[defaultsFlag] }

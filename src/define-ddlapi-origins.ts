@@ -1,19 +1,8 @@
 import { anyArrayKeys, isArray, isObject, syncClone } from '@netcracker/qubership-apihub-json-crawl'
-import { ObjectKind } from '@netcracker/qubership-apihub-ddlapi'
+import { DdlapiProperties, ObjectKind } from '@netcracker/qubership-apihub-ddlapi'
 import { ChainItem, OriginCache, OriginsMetaRecord, ResolveOptions } from './types'
 import { createCycledJsoHandlerHook } from './cycle-jso'
 import { setJsoProperty } from './utils'
-import {
-  DDL_API_PROPERTY_COLUMN,
-  DDL_API_PROPERTY_COLUMNS,
-  DDL_API_PROPERTY_KIND,
-  DDL_API_PROPERTY_OBJECTS,
-  DDL_API_PROPERTY_REF_COLUMNS,
-  DDL_API_PROPERTY_REF_TABLE,
-  DDL_API_PROPERTY_SCHEMA,
-  DDL_API_PROPERTY_SEQ_NO,
-  DDL_API_PROPERTY_TYPE,
-} from './rules/ddlapi.const'
 
 /**
  * Model-aware, definition-first origins walk for ddlapi `Realm`s. It replaces the
@@ -67,7 +56,7 @@ const getOrCreateOrigin = (cache: OriginCache, instance: unknown, make: () => Ch
 // natural, stable order.
 const orderedKeys = (node: object): PropertyKey[] => {
   const keys = (isArray(node) ? anyArrayKeys(node) : Reflect.ownKeys(node)).filter((k) => typeof k !== 'symbol')
-  return keys.sort((a, b) => (a === DDL_API_PROPERTY_OBJECTS ? 0 : 1) - (b === DDL_API_PROPERTY_OBJECTS ? 0 : 1))
+  return keys.sort((a, b) => (a === DdlapiProperties.Objects ? 0 : 1) - (b === DdlapiProperties.Objects ? 0 : 1))
 }
 
 // Reference edges to a *single* instance whose home is elsewhere. Pass A must not
@@ -75,25 +64,25 @@ const orderedKeys = (node: object): PropertyKey[] => {
 const isReferenceObjectChild = (node: Record<PropertyKey, unknown>, key: PropertyKey, child: object): boolean => {
   // A `schema` property is always a back-reference to the owning Schema (EnumType /
   // CompositeType / RangeType / Domain), never a containment home.
-  if (key === DDL_API_PROPERTY_SCHEMA) { return true }
+  if (key === DdlapiProperties.Schema) { return true }
   // `ColumnType.type` is a SchemaType (carries a `kind`). For a *named* type (enum / Domain)
   // it is the same instance held in schema.objects — a reference whose home is there. Treating
   // it as a reference (rather than relying on objects-before-tables ordering) homes named types
   // at their definition site regardless of walk order, incl. cross-schema. Inline (unnamed)
   // types have no other home, so pass B homes them at this site (cache miss) — also correct.
   // (Column.type → ColumnType has no `kind`, so it stays containment.)
-  if (key === DDL_API_PROPERTY_TYPE && DDL_API_PROPERTY_KIND in (child as Record<PropertyKey, unknown>)) { return true }
+  if (key === DdlapiProperties.Type && DdlapiProperties.Kind in (child as Record<PropertyKey, unknown>)) { return true }
   const kind = node.kind
-  if (kind === ObjectKind.ForeignKey) { return key === DDL_API_PROPERTY_REF_TABLE }
+  if (kind === ObjectKind.ForeignKey) { return key === DdlapiProperties.RefTable }
   // IndexPart has no `kind`; identify it structurally by its required `seqNo`.
-  if (kind === undefined && DDL_API_PROPERTY_SEQ_NO in node) { return key === DDL_API_PROPERTY_COLUMN }
+  if (kind === undefined && DdlapiProperties.SeqNo in node) { return key === DdlapiProperties.Column }
   return false
 }
 
 // Reference edges to an array of shared instances (FK column lists). The array itself is
 // owned by the FK, but its elements are shared table columns homed under table.columns.
 const isReferenceArrayChild = (node: Record<PropertyKey, unknown>, key: PropertyKey): boolean =>
-  node.kind === ObjectKind.ForeignKey && (key === DDL_API_PROPERTY_COLUMNS || key === DDL_API_PROPERTY_REF_COLUMNS)
+  node.kind === ObjectKind.ForeignKey && (key === DdlapiProperties.Columns || key === DdlapiProperties.RefColumns)
 
 const internHomes = (node: object, chain: ChainItem | undefined, cache: OriginCache): void => {
   const objectNode = !isArray(node) ? (node as Record<PropertyKey, unknown>) : undefined

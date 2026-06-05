@@ -66,8 +66,8 @@ const emptyArrayUnify = (...keys: string[]): UnifyFunction[] => collectionUnify(
  * the seam for future stamps) and a `DdlApiDialect` that supplies dialect-specific rules
  * for the four open `kind`-unions. All rule nodes are declared inside this closure so
  * they capture `dialect`; the kind-dispatchers (`schemaTypeRules`, `attrRules`,
- * `exprRules`, `objectRules`) and the cyclic edges (`fk.refTable`, `enum.schema`) are
- * resolved lazily at crawl time, so declaration order only matters for eager references.
+ * `exprRules`, `objectRules`) and the cyclic edge (`fk.refTable`) are resolved lazily
+ * at crawl time, so declaration order only matters for eager references.
  *
  * Covers structural + value validation (`checkType`/`checkContains`) and empty-collection
  * and primitive defaults (`unify`). Dialect-specific kinds and primitive defaults come from
@@ -224,8 +224,6 @@ export const ddlApiRules = (_version: DdlApiSpecVersion, dialect: DdlApiDialect)
     '/kind': kindRule(TypeKind.EnumType),
     '/type': { validate: checkType(TYPE_STRING) },
     '/values': { '/*': { validate: checkType(TYPE_STRING) }, validate: checkType(TYPE_ARRAY) },
-    // back-reference to the owning Schema (reference edge / cycle) — resolved lazily.
-    '/schema': () => schemaRules,
     '/attrs': attrsArrayRule,
     validate: checkType(TYPE_OBJECT),
     unify: emptyArrayUnify(DdlapiProperties.Attrs),

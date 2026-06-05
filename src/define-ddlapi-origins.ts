@@ -62,9 +62,6 @@ const orderedKeys = (node: object): PropertyKey[] => {
 // Reference edges to a *single* instance whose home is elsewhere. Pass A must not
 // follow these, or it would home the target at the referencing site.
 const isReferenceObjectChild = (node: Record<PropertyKey, unknown>, key: PropertyKey, child: object): boolean => {
-  // A `schema` property is always a back-reference to the owning Schema (EnumType /
-  // CompositeType / RangeType / Domain), never a containment home.
-  if (key === DdlapiProperties.Schema) { return true }
   // `ColumnType.type` is a SchemaType (carries a `kind`). For a *named* type (enum / Domain)
   // it is the same instance held in schema.objects — a reference whose home is there. Treating
   // it as a reference (rather than relying on objects-before-tables ordering) homes named types

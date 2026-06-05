@@ -110,7 +110,6 @@ const excludeConstraintRules: NormalizationRules = {
 const compositeTypeRules: NormalizationRules = {
   '/kind': pgKind(PgObjectKind.CompositeType),
   '/name': { validate: checkType(TYPE_STRING) },
-  '/schema': { validate: checkType(TYPE_STRING) }, // schema *name* string (not a Schema back-ref)
   '/fields': ANY_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
@@ -118,7 +117,6 @@ const compositeTypeRules: NormalizationRules = {
 const rangeTypeRules: NormalizationRules = {
   '/kind': pgKind(PgObjectKind.RangeType),
   '/name': { validate: checkType(TYPE_STRING) },
-  '/schema': { validate: checkType(TYPE_STRING) }, // schema *name* string
   '/subtype': { validate: checkType(TYPE_STRING) },
   '/params': ANY_RULE,
   '/**': ANY_DESCENDANT,

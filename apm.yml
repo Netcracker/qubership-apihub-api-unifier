@@ -12,4 +12,4 @@ dependencies:
   apm:
     - ./agent-packages/api-unifier-authoring
     - ./agent-packages/api-unifier-testing
-    - ../ddlapi/agent-packages/ddlapi-using
+    - Netcracker/qubership-apihub-ddlapi/agent-packages/ddlapi-using

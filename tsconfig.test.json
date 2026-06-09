@@ -1,9 +1,3 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    // ddlapi source is transformed by ts-jest (see jest.config.ts moduleNameMapper)
-    // but resolves modules from ddlapi/node_modules, which has no tslib. Inline the
-    // TypeScript helpers instead of importing them so the transform needs no tslib.
-    "importHelpers": false
-  }
+  "extends": "./tsconfig.json"
 }

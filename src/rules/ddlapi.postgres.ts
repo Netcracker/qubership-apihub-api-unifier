@@ -26,7 +26,7 @@ const identityRules: NormalizationRules = {
 }
 const partitionRules: NormalizationRules = {
   '/kind': pgKind(PgAttrKind.Partition),
-  '/T': { validate: checkType(TYPE_STRING) },
+  '/type': { validate: checkType(TYPE_STRING) },
   '/parts': ANY_RULE,
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
@@ -65,19 +65,19 @@ const indexIncludeRules: NormalizationRules = {
 }
 const indexNullsDistinctRules: NormalizationRules = {
   '/kind': pgKind(PgAttrKind.IndexNullsDistinct),
-  '/V': { validate: checkType(TYPE_BOOLEAN) },
+  '/value': { validate: checkType(TYPE_BOOLEAN) },
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
 }
 const indexTypeRules: NormalizationRules = {
   '/kind': pgKind(PgAttrKind.IndexType),
-  '/T': { validate: checkType(TYPE_STRING) },
+  '/type': { validate: checkType(TYPE_STRING) },
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
 }
 const indexPredicateRules: NormalizationRules = {
   '/kind': pgKind(PgAttrKind.IndexPredicate),
-  '/P': { validate: checkType(TYPE_STRING) },
+  '/predicate': { validate: checkType(TYPE_STRING) },
   '/**': ANY_DESCENDANT,
   validate: checkType(TYPE_OBJECT),
 }

@@ -1,8 +1,8 @@
-import { buildFromDdl } from '@netcracker/qubership-apihub-ddlapi'
+import { buildFromDdl } from '@netcracker/qubership-apihub-ddlapi/parser'
 
-// Smoke test: the ddlapi library is linked and importable from its package root.
+// Smoke test: the ddlapi parser is linked and importable from the '/parser' entry.
 describe('ddlapi link smoke test', () => {
-  it('buildFromDdl returns a Realm from the package root', async () => {
+  it('buildFromDdl returns a Realm from the parser entry', async () => {
     const realm = await buildFromDdl('CREATE TABLE t(id int)')
 
     expect(realm).toMatchObject({

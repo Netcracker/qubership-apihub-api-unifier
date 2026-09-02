@@ -44,7 +44,7 @@
     "@netcracker/qubership-apihub-ddlapi": "bugfix-update-infrastructure",
     "@netcracker/qubership-apihub-graphapi": "bugfix-update-infrastructure",
     "@netcracker/qubership-apihub-json-crawl": "bugfix-update-infrastructure",
-    "fast-equals": "4.0.3",
+    "fast-equals": "^5.0.1",
     "flatted": "^3.2.9",
     "object-hash": "3.0.0"
   },

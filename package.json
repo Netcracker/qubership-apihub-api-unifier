@@ -41,9 +41,9 @@
     "simplify"
   ],
   "dependencies": {
-    "@netcracker/qubership-apihub-ddlapi": "bugfix-update-infrastructure",
-    "@netcracker/qubership-apihub-graphapi": "bugfix-update-infrastructure",
-    "@netcracker/qubership-apihub-json-crawl": "bugfix-update-infrastructure",
+    "@netcracker/qubership-apihub-ddlapi": "dev",
+    "@netcracker/qubership-apihub-graphapi": "dev",
+    "@netcracker/qubership-apihub-json-crawl": "dev",
     "fast-equals": "^6.0.2",
     "flatted": "^3.2.9",
     "object-hash": "3.0.0"
